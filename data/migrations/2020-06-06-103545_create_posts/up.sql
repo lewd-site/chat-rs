@@ -1,0 +1,7 @@
+CREATE TABLE posts (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR NOT NULL,
+  tripcode VARCHAR NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL
+);

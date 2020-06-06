@@ -1,0 +1,23 @@
+{
+  "name": "chat",
+  "version": "1.0.0",
+  "main": "www/index.js",
+  "author": "Nina Lisitsinskaya <vvatashi@protonmail.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "parcel watch -d www frontend/index.html",
+    "build": "parcel build -d www frontend/index.html"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.12.4",
+    "parcel-plugin-svelte": "^4.0.6",
+    "sass": "^1.26.8",
+    "typescript": "^3.9.5"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "normalize.css": "^8.0.1",
+    "svelte": "^3.23.0"
+  }
+}

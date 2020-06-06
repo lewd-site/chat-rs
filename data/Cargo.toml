@@ -1,0 +1,12 @@
+[package]
+name = "data"
+version = "1.0.0"
+authors = ["Nina Lisitsinskaya <vvatashi@protonmail.com>"]
+edition = "2018"
+
+[dependencies]
+chrono = { version = "0.4", features = ["serde"] }
+diesel = { version = "1.4.4", features = ["chrono", "postgres"] }
+encoding_rs = { version = "0.8.23", features = ["fast-kanji-encode"] }
+pwhash = "0.3"
+serde = { version = "1.0", features = ["derive"] }

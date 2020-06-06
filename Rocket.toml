@@ -1,0 +1,2 @@
+[global.databases]
+pgsql_chat = { url = "postgres://chat:chat@localhost/chat" }

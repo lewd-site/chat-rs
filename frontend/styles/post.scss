@@ -1,0 +1,56 @@
+.post {
+    &__header {
+        display: flex;
+        flex-flow: row wrap;
+        align-items: baseline;
+
+        padding: 16px;
+    }
+
+    &__name {
+        font-weight: 600;
+        font-size: 18px;
+        line-height: 25px;
+    }
+
+    &__tripcode {
+        font-weight: 600;
+        font-size: 18px;
+        line-height: 25px;
+
+        &:not(:empty) {
+            margin-left: 0.25em;
+        }
+
+        &:not(:empty)::before {
+            content: '!';
+        }
+    }
+
+    &__id {
+        color: #E3833D;
+
+        margin-left: 0.5em;
+        margin-right: 0.5em;
+
+        &::before {
+            content: '№';
+        }
+    }
+
+    &__date {
+        color: #A9A9A9;
+
+        margin-right: 1em;
+    }
+
+    &__content {
+        padding: 16px;
+    }
+
+    &__footer {
+        &:not(:empty) {
+            padding: 8px 16px 16px;
+        }
+    }
+}

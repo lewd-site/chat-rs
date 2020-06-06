@@ -1,0 +1,24 @@
+{
+    "include": [
+        "frontend/**/*.ts",
+    ],
+    "exclude": [
+        "node_modules/**/*"
+    ],
+    "compilerOptions": {
+        "target": "ES2015",
+        "module": "CommonJS",
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "ES2015"
+        ],
+        "outDir": "./www",
+        "esModuleInterop": true,
+        "noImplicitAny": true,
+        "strict": true,
+        "types": [
+            "svelte"
+        ]
+    }
+}
