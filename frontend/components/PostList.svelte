@@ -1,4 +1,6 @@
 <script>
+  import { derived } from "svelte/store";
+
   import { posts } from "../stores.ts";
 
   function getName(name) {
@@ -36,9 +38,11 @@
 
     return `${hours}:${minutes}:${seconds} ${day}.${month}.${year}`;
   }
+
+  export const postValues = derived(posts, posts => Object.values(posts));
 </script>
 
-{#each $posts as post}
+{#each $postValues as post (post.id)}
   <section class="post-list__post post">
     <div class="post__header">
       <span class="post__name">{getName(post.name)}</span>

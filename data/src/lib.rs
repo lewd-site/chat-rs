@@ -1,9 +1,5 @@
-extern crate chrono;
-
 #[macro_use]
 extern crate diesel;
-
-extern crate encoding_rs;
 
 pub mod models;
 pub mod repositories;

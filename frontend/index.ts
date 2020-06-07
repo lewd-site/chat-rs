@@ -1,8 +1,12 @@
 import 'regenerator-runtime/runtime';
+
 import PostForm from './components/PostForm.svelte';
 import PostList from './components/PostList.svelte';
-import { Api } from './services/api';
-import { posts } from './stores';
+import config from './config';
+import Api from './services/api';
+import { addPosts } from './stores';
+import Ws from './ws';
+
 import './styles/index.scss';
 
 const postFormContainer = document.getElementById('post-form');
@@ -19,10 +23,12 @@ const postFrom = new PostForm({ target: postFormContainer });
 const postList = new PostList({ target: postListContainer });
 
 Api.getLatestPosts().then(items => {
-    posts.set(items);
+    addPosts(items);
 
     setTimeout(() => {
         const scrollingElement = (document.scrollingElement || document.body);
         scrollingElement.scrollTop = scrollingElement.scrollHeight;
     });
 });
+
+const ws = new Ws(config.wsUrl);

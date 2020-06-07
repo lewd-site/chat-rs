@@ -1,2 +1,8 @@
+[global]
+address = "127.0.0.1"
+port = 8000
+ws_address = "127.0.0.1"
+ws_port = 8001
+
 [global.databases]
 pgsql_chat = { url = "postgres://chat:chat@localhost/chat" }

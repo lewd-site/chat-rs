@@ -1,9 +1,11 @@
+use crate::ws::Ws;
 use crate::ChatDbConn;
 use data::models::posts::Post;
 use data::repositories::posts::PostRepository;
 use rocket::request::Form;
 use rocket::response::status::Created;
 use rocket::response::Redirect;
+use rocket::State;
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
 
@@ -24,17 +26,41 @@ pub struct PostResponse {
 }
 
 #[post("/", format = "json", data = "<data>")]
-pub fn create_post(data: Json<CreatePostRequest>, conn: ChatDbConn) -> Created<Json<PostResponse>> {
+pub fn create_post(
+    data: Json<CreatePostRequest>,
+    conn: ChatDbConn,
+    ws: State<Ws>,
+) -> Created<Json<PostResponse>> {
     let new_post = Post::new(&data.name, &data.message);
     let post = PostRepository::create(&*conn, &new_post);
+
+    let json = json!({
+        "event": "post_created",
+        "data": { "item": post },
+    })
+    .to_string();
+    ws.send_to_all(&json);
+
     let location = format!("/api/v1/posts/{}", post.id);
     Created(location, Some(Json(PostResponse { item: post })))
 }
 
 #[post("/", data = "<data>", rank = 1)]
-pub fn create_post_form(data: Form<CreatePostRequest>, conn: ChatDbConn) -> Redirect {
+pub fn create_post_form(
+    data: Form<CreatePostRequest>,
+    conn: ChatDbConn,
+    ws: State<Ws>,
+) -> Redirect {
     let new_post = Post::new(&data.name, &data.message);
-    PostRepository::create(&*conn, &new_post);
+    let post = PostRepository::create(&*conn, &new_post);
+
+    let json = json!({
+        "event": "post_created",
+        "data": { "item": post },
+    })
+    .to_string();
+    ws.send_to_all(&json);
+
     Redirect::found("/")
 }
 

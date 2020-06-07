@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 import { Post } from '../types';
 
 interface SubmitPostRequest {
@@ -30,3 +31,5 @@ export class Api {
         return response.data.item;
     }
 }
+
+export default Api;
