@@ -4,7 +4,7 @@ import PostForm from './components/PostForm.svelte';
 import PostList from './components/PostList.svelte';
 import config from './config';
 import Api from './services/api';
-import { addPosts } from './stores';
+import { addPosts, posts } from './stores';
 import Ws from './ws';
 
 import './styles/index.scss';
@@ -22,13 +22,13 @@ if (!postListContainer) {
 const postFrom = new PostForm({ target: postFormContainer });
 const postList = new PostList({ target: postListContainer });
 
-Api.getLatestPosts().then(items => {
-    addPosts(items);
-
+posts.subscribe(() => {
     setTimeout(() => {
         const scrollingElement = (document.scrollingElement || document.body);
         scrollingElement.scrollTop = scrollingElement.scrollHeight;
     });
 });
+
+Api.getLatestPosts().then(addPosts);
 
 const ws = new Ws(config.wsUrl);
