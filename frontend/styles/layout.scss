@@ -8,15 +8,20 @@
     overflow-x: hidden;
     overflow-y: scroll;
 
-    &__left,
-    &__right {
-        width: 25%;
+    &__left {
+        width: 16px;
     }
 
     &__center {
-        width: 50%;
+        flex: 1;
+
+        width: 100%;
 
         padding-top: 16px;
+    }
+
+    &__right {
+        width: 16px;
     }
 
     &__post-list {
@@ -27,12 +32,46 @@
         background: #36393F;
 
         position: fixed;
-        left: 25%;
-        right: 25%;
+        left: 16px;
+        right: 16px;
         bottom: 0;
 
-        width: 50%;
+        max-width: 100%;
 
         padding: 16px 0;
+    }
+
+    @media screen and (min-width: 900px) {
+        &__left {
+            width: 25%;
+        }
+
+        &__center {
+            width: 75%;
+        }
+
+        &__post-form {
+            left: 25%;
+            right: 16px;
+
+            max-width: 75%;
+        }
+    }
+
+    @media screen and (min-width: 1200px) {
+        &__right {
+            width: 25%;
+        }
+
+        &__center {
+            width: 50%;
+        }
+
+        &__post-form {
+            left: 25%;
+            right: 25%;
+
+            max-width: 50%;
+        }
     }
 }
