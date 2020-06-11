@@ -4,17 +4,29 @@ import { Post } from './types';
 
 type Posts = { [key: number]: Post };
 
+const MAX_POSTS = 100;
+
 export const posts = writable<Posts>({});
 
 export function addPosts(newPosts: Post[]) {
-    const indexedNewPosts = newPosts.reduce((result, post) => {
-        result[post.id] = post;
-        return result;
-    }, {} as Posts);
+    posts.update(posts => {
+        const values = Object.values(posts).concat(newPosts);
 
-    posts.update(posts => ({ ...posts, ...indexedNewPosts }));
+        return values.slice(-MAX_POSTS).reduce((result, post) => {
+            result[post.id] = post;
+            return result;
+        }, {} as Posts);
+    });
 }
 
 export function addPost(newPost: Post) {
-    posts.update(posts => ({ ...posts, [newPost.id]: newPost }));
+    posts.update(posts => {
+        const values = Object.values(posts);
+        values.push(newPost);
+
+        return values.slice(-MAX_POSTS).reduce((result, post) => {
+            result[post.id] = post;
+            return result;
+        }, {} as Posts);
+    });
 }

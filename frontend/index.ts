@@ -23,10 +23,13 @@ const postFrom = new PostForm({ target: postFormContainer });
 const postList = new PostList({ target: postListContainer });
 
 posts.subscribe(() => {
-    setTimeout(() => {
-        const scrollingElement = (document.scrollingElement || document.body);
-        scrollingElement.scrollTop = scrollingElement.scrollHeight;
-    });
+    const scrollingElement = (document.scrollingElement || document.body);
+    const useAutoscroll = (scrollingElement as any).offsetHeight + scrollingElement.scrollTop > scrollingElement.scrollHeight - 20;
+    if (useAutoscroll) {
+        setTimeout(() => {
+            scrollingElement.scrollTop = scrollingElement.scrollHeight;
+        });
+    }
 });
 
 Api.getLatestPosts().then(addPosts);

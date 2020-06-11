@@ -13,7 +13,7 @@ pub struct NewPost {
     pub created_at: NaiveDateTime,
 }
 
-#[derive(Queryable, Serialize)]
+#[derive(Identifiable, Queryable, Serialize)]
 pub struct Post {
     pub id: i32,
     pub name: String,
@@ -83,8 +83,8 @@ impl Post {
         let (name, tripcode) = Post::process_name(name);
 
         NewPost {
-            name: name,
-            tripcode: tripcode,
+            name,
+            tripcode,
             message: String::from(message),
             created_at: NaiveDateTime::from_timestamp(Utc::now().timestamp(), 0),
         }

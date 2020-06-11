@@ -12,6 +12,28 @@ html, body {
 }
 
 :focus,
+:active {
+    outline: none !important;
+}
+
 :-moz-focusring {
-  outline: none !important;
+    outline: none !important;
+}
+
+::-moz-focus-inner {
+    border: 0;
+}
+
+:invalid {
+    box-shadow: none;
+}
+
+:-moz-submit-invalid,
+:-moz-ui-invalid {
+    box-shadow: none;
+}
+
+:-webkit-autofill {
+    transition-delay: 1e9s;
+    transition-property: background-color, color;
 }

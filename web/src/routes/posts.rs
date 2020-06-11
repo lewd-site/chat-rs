@@ -1,6 +1,11 @@
+use crate::requests::CreatePostMultipart;
+use crate::requests::UploadedFile;
 use crate::ws::Ws;
 use crate::ChatDbConn;
+use chrono::prelude::*;
+use data::models::files::File;
 use data::models::posts::Post;
+use data::repositories::files::FileRepository;
 use data::repositories::posts::PostRepository;
 use rocket::request::Form;
 use rocket::response::status::Created;
@@ -9,57 +14,109 @@ use rocket::State;
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, FromForm)]
-pub struct CreatePostRequest {
+#[derive(Deserialize)]
+pub struct CreatePostJson {
+    name: String,
+    message: String,
+}
+
+#[derive(FromForm)]
+pub struct CreatePostForm {
     name: String,
     message: String,
 }
 
 #[derive(Serialize)]
+struct PostWithFiles {
+    id: i32,
+    name: String,
+    tripcode: String,
+    message: String,
+    created_at: NaiveDateTime,
+    files: Vec<File>,
+}
+
+impl PostWithFiles {
+    fn new(post: Post, files: Vec<File>) -> PostWithFiles {
+        PostWithFiles {
+            id: post.id,
+            name: post.name,
+            tripcode: post.tripcode,
+            message: post.message,
+            created_at: post.created_at,
+            files,
+        }
+    }
+}
+
+#[derive(Serialize)]
 pub struct PostListResponse {
-    items: Vec<Post>,
+    items: Vec<PostWithFiles>,
 }
 
 #[derive(Serialize)]
 pub struct PostResponse {
-    item: Post,
+    item: PostWithFiles,
+}
+
+fn create_post(
+    conn: ChatDbConn,
+    name: &str,
+    message: &str,
+    files: Vec<UploadedFile>,
+) -> PostWithFiles {
+    let new_post = Post::new(name, message);
+    let post = PostRepository::create(&*conn, &new_post);
+    let files = files
+        .into_iter()
+        .map(|file| {
+            let new_file =
+                File::new(file.content_type, file.file_name, file.path, post.id).unwrap();
+            FileRepository::create(&*conn, &new_file)
+        })
+        .collect();
+
+    PostWithFiles::new(post, files)
+}
+
+fn send_post_created_event(ws: &Ws, data: &PostWithFiles) {
+    let json = json!({
+        "event": "post_created",
+        "data": { "item": data },
+    })
+    .to_string();
+    ws.send_to_all(&json);
 }
 
 #[post("/", format = "json", data = "<data>")]
-pub fn create_post(
-    data: Json<CreatePostRequest>,
+pub fn create_post_json(
+    data: Json<CreatePostJson>,
     conn: ChatDbConn,
     ws: State<Ws>,
 ) -> Created<Json<PostResponse>> {
-    let new_post = Post::new(&data.name, &data.message);
-    let post = PostRepository::create(&*conn, &new_post);
+    let data = create_post(conn, &data.name, &data.message, Vec::new());
+    send_post_created_event(&ws, &data);
 
-    let json = json!({
-        "event": "post_created",
-        "data": { "item": post },
-    })
-    .to_string();
-    ws.send_to_all(&json);
-
-    let location = format!("/api/v1/posts/{}", post.id);
-    Created(location, Some(Json(PostResponse { item: post })))
+    let location = format!("/api/v1/posts/{}", data.id);
+    Created(location, Some(Json(PostResponse { item: data })))
 }
 
 #[post("/", data = "<data>", rank = 1)]
-pub fn create_post_form(
-    data: Form<CreatePostRequest>,
+pub fn create_post_form(data: Form<CreatePostForm>, conn: ChatDbConn, ws: State<Ws>) -> Redirect {
+    let data = create_post(conn, &data.name, &data.message, Vec::new());
+    send_post_created_event(&ws, &data);
+
+    Redirect::found("/")
+}
+
+#[post("/", data = "<data>", rank = 2)]
+pub fn create_post_multipart(
+    data: CreatePostMultipart,
     conn: ChatDbConn,
     ws: State<Ws>,
 ) -> Redirect {
-    let new_post = Post::new(&data.name, &data.message);
-    let post = PostRepository::create(&*conn, &new_post);
-
-    let json = json!({
-        "event": "post_created",
-        "data": { "item": post },
-    })
-    .to_string();
-    ws.send_to_all(&json);
+    let data = create_post(conn, &data.name, &data.message, data.files);
+    send_post_created_event(&ws, &data);
 
     Redirect::found("/")
 }
@@ -67,11 +124,23 @@ pub fn create_post_form(
 #[get("/", format = "json")]
 pub fn get_post_list(conn: ChatDbConn) -> Json<PostListResponse> {
     let posts = PostRepository::get_latest(&*conn);
-    Json(PostListResponse { items: posts })
+    let files = FileRepository::get_belonging_to_posts(&*conn, &posts);
+    let data = posts
+        .into_iter()
+        .zip(files)
+        .map(|(post, files)| PostWithFiles::new(post, files))
+        .collect();
+
+    Json(PostListResponse { items: data })
 }
 
 #[get("/<post_id>", format = "json")]
 pub fn get_post(conn: ChatDbConn, post_id: i32) -> Option<Json<PostResponse>> {
     let post = PostRepository::get_one(&*conn, post_id);
-    post.map(|post| Json(PostResponse { item: post }))
+    post.map(|post| {
+        let files = Vec::new();
+        let data = PostWithFiles::new(post, files);
+
+        Json(PostResponse { item: data })
+    })
 }

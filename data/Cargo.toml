@@ -7,6 +7,10 @@ edition = "2018"
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
 diesel = { version = "1.4.4", features = ["chrono", "postgres"] }
+image = "0.23.4"
+md5 = "0.7"
+mime = "0.3.16"
+mime_guess = "2.0.3"
 encoding_rs = { version = "0.8.23", features = ["fast-kanji-encode"] }
 pwhash = "0.3"
 serde = { version = "1.0", features = ["derive"] }

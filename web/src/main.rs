@@ -6,6 +6,7 @@ extern crate rocket;
 #[macro_use]
 extern crate rocket_contrib;
 
+mod requests;
 mod routes;
 mod ws;
 
@@ -24,8 +25,9 @@ fn rocket() -> rocket::Rocket {
         .mount(
             "/api/v1/posts",
             routes![
-                posts::create_post,
+                posts::create_post_json,
                 posts::create_post_form,
+                posts::create_post_multipart,
                 posts::get_post_list,
                 posts::get_post,
             ],
