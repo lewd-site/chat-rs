@@ -13,6 +13,18 @@ impl FileRepository {
             .grouped_by(&posts)
     }
 
+    pub fn get_one_by_md5(conn: &PgConnection, hash: &str) -> Option<File> {
+        use crate::schema::files::dsl::*;
+
+        let items: Vec<File> = files
+            .filter(md5.eq(hash))
+            .limit(1)
+            .load::<File>(conn)
+            .unwrap();
+
+        items.into_iter().next()
+    }
+
     pub fn create(conn: &PgConnection, file: &NewFile) -> File {
         use crate::schema::files::dsl::*;
 

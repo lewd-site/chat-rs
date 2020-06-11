@@ -86,7 +86,7 @@
           <picture>
             <img
               class="post__file-preview"
-              src="/src/{file.md5}.{file.extension}"
+              src="/thumb/{file.md5}?max_width=360"
               alt="Preview" />
           </picture>
         </a>

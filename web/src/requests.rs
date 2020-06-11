@@ -29,7 +29,7 @@ impl FromDataSimple for CreatePostMultipart {
                 MultipartFormDataField::text("name"),
                 MultipartFormDataField::text("message"),
                 MultipartFormDataField::file("file")
-                    .repetition(Repetition::infinite())
+                    .repetition(Repetition::fixed(5))
                     .size_limit(100 * 1024 * 1024), // 100 MB.
             ]);
 
@@ -50,8 +50,6 @@ impl FromDataSimple for CreatePostMultipart {
                 }
                 None => String::from(""),
             };
-
-            println!("{}", form_data.files.len());
 
             let files = match form_data.files.remove("file") {
                 Some(file_fields) => file_fields

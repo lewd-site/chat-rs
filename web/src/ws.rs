@@ -38,13 +38,16 @@ impl Ws {
 
     pub fn send_to_all(&self, message: &str) {
         let message = Message::text(message);
-        let mut clients = self.clients.lock().unwrap();
-        for (key, value) in clients.clone().iter() {
-            let mut client = value.lock().unwrap();
-            match client.write_message(message.clone()) {
-                Err(_) => clients.remove(key),
-                _ => None,
-            };
-        }
+        let clients = Arc::clone(&self.clients);
+        thread::spawn(move || {
+            let mut clients = clients.lock().unwrap();
+            for (key, value) in clients.clone().iter() {
+                let mut client = value.lock().unwrap();
+                match client.write_message(message.clone()) {
+                    Err(_) => clients.remove(key),
+                    _ => None,
+                };
+            }
+        });
     }
 }
