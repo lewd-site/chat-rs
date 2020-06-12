@@ -1,0 +1,164 @@
+.menu {
+    pointer-events: none;
+
+    &__bar {
+        display: block;
+
+        background: #36393F;
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+
+        width: 100%;
+        padding: 29px 27px;
+
+        pointer-events: initial;
+    }
+
+    &__show {
+        background: transparent;
+        background-image: url('../images/menu.svg');
+        background-position: center center;
+        background-repeat: no-repeat;
+        border: 0;
+
+        display: block;
+
+        width: 16px;
+        height: 12px;
+
+        padding: 0;
+
+        cursor: pointer;
+    }
+
+    &__hide {
+        background: transparent;
+        background-image: url('../images/close.svg');
+        background-position: center center;
+        background-repeat: no-repeat;
+        border: 0;
+
+        display: block;
+
+        width: 13px;
+        height: 13px;
+
+        padding: 0;
+
+        cursor: pointer;
+    }
+
+    &__inner {
+        display: flex;
+        flex-flow: column nowrap;
+
+        width: 100%;
+        height: 100%;
+
+        pointer-events: initial;
+    }
+
+    &__header {
+        background: #36393F;
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: center;
+
+        padding: 24px;
+    }
+
+    &__title {
+        margin: 0;
+
+        font-size: 18px;
+        line-height: 25px;
+    }
+
+    &__content {
+        background: #2F3136;
+
+        flex: 1;
+    }
+
+    &__footer {
+        background: #43474F;
+
+        padding: 16px 24px;
+    }
+
+    &__footer-inputs {
+        display: flex;
+        flex-flow: column nowrap;
+    }
+
+    &__footer-input-wrapper {
+        position: relative;
+        display: block;
+
+        background: transparent;
+
+        border: 1px solid transparent;
+        border-radius: 7px;
+        box-sizing: border-box;
+
+        height: 25px;
+        padding: 0 25px 0 8px;
+
+        &:hover {
+            background: #393C42;
+        }
+
+        &:hover::after {
+            content: '';
+
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+
+            background: transparent;
+            background-image: url('../images/edit.svg');
+            background-position: center center;
+            background-repeat: no-repeat;
+            border: 0;
+
+            display: block;
+
+            width: 23px;
+            height: 23px;
+
+            pointer-events: none;
+        }
+
+        &:focus-within {
+            background: #36393F;
+            border: 1px solid #9DA2B2;
+        }
+
+        &:not(:last-child) {
+            margin-bottom: 8px;
+        }
+    }
+
+    &__footer-input {
+        display: block;
+
+        background: transparent;
+        border: 0;
+
+        width: 100%;
+        height: 100%;
+
+        color: #EEEEEE;
+        font-size: 18px;
+    }
+
+    @media screen and (min-width: 900px) {
+        &__bar {
+            background: transparent;
+            box-shadow: unset;
+        }
+    }
+}

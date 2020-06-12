@@ -3,8 +3,8 @@
 
   export let post;
 
-  function getName(name) {
-    if (!name || !name.length) {
+  function getName(name, tripcode) {
+    if ((!name || !name.length) && (!tripcode || !tripcode.length)) {
       return "Anonymous";
     }
 
@@ -70,7 +70,7 @@
 </script>
 
 <div class="post__header">
-  <span class="post__name">{getName(post.name)}</span>
+  <span class="post__name">{getName(post.name, post.tripcode)}</span>
   <span class="post__tripcode">{post.tripcode}</span>
   <span class="post__id">{post.id}</span>
   <time class="post__date" datetime={post.created_at}>

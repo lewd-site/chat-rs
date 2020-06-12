@@ -13,7 +13,35 @@
 </head>
 
 <body class="layout">
-    <aside class="layout__left"></aside>
+    <aside class="layout__left">
+        <div id="menu" class="layout__menu menu">
+            <div class="menu__bar" hidden>
+                <button class="menu__show" type="button"></button>
+            </div>
+
+            <div class="menu__inner">
+                <header class="menu__header">
+                    <h2 class="menu__title">Меню</h2>
+                    <button class="menu__hide" type="button"></button>
+                </header>
+
+                <section class="menu__content">
+                </section>
+
+                <footer class="menu__footer">
+                    <div class="menu__footer-inputs">
+                        <div class="menu__footer-input-wrapper">
+                            <input class="menu__footer-input" type="text" placeholder="Имя" name="name" value="" />
+                        </div>
+
+                        <div class="menu__footer-input-wrapper">
+                            <input class="menu__footer-input" type="password" placeholder="Трипкод" name="tripcode" value="" />
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </aside>
 
     <main class="layout__center">
         <div id="post-list" class="layout__post-list post-list"></div>

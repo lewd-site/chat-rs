@@ -1,7 +1,6 @@
 <script>
   import Api from "../services/api";
 
-  let name = "";
   let message = "";
   let files = [];
   let previews = [];
@@ -31,6 +30,14 @@
   }
 
   function handleSubmit(e) {
+    let name = localStorage.getItem("settings.name") || "";
+    let tripcode = localStorage.getItem("settings.tripcode") || "";
+    if (tripcode.startsWith("#")) {
+      tripcode = tripcode.substr(1);
+    }
+
+    name = `${name}#${tripcode}`;
+
     Api.submitPost({ name, message, files }).then(() => {
       message = "";
       files = [];
@@ -45,8 +52,6 @@
   action="/api/v1/posts"
   enctype="multipart/form-data"
   on:submit|preventDefault={handleSubmit}>
-  <input type="hidden" name="name" bind:value={name} hidden />
-
   <div class="post-form__previews-row">
     {#each previews as preview, index (preview)}
       <picture>

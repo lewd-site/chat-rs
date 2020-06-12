@@ -1,6 +1,12 @@
 @import url('../../node_modules/normalize.css/normalize.css');
 @import './base';
 @import './layout';
+@import './menu';
 @import './post-form';
 @import './post-list';
 @import './post';
+
+[hidden] {
+    display: none;
+    visibility: hidden;
+}
