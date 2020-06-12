@@ -1,0 +1,46 @@
+.markup {
+    &_underline {
+        text-decoration: underline;
+    }
+
+    &_code,
+    &_codeblock {
+        background: rgba(0, 0, 0, 0.1);
+        border: 0;
+        border-radius: 3px;
+        color: inherit;
+
+        font-family: 'Fira Code', monospace;
+        font-style: normal;
+        font-weight: normal;
+
+        text-decoration: none;
+
+        margin: 0;
+
+        word-wrap: break-word;
+    }
+
+    &_code {
+        display: inline;
+
+        white-space: pre-wrap;
+    }
+
+    &_codeblock {
+        display: block;
+
+        overflow: auto;
+    }
+
+    &_spoiler {
+        background: rgba(0, 0, 0, 0.1);
+        color: transparent;
+        border: 0;
+        border-radius: 3px;
+    }
+
+    .post__message:hover &_spoiler {
+        color: inherit;
+    }
+}

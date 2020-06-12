@@ -58,14 +58,58 @@
     return classes.join(" ");
   }
 
-  function getThumbWidth(file) {
-    const scale = 250 / Math.max(250, file.width, file.height);
-    return Math.round(file.width * scale);
+  function escapeHtml(input) {
+    return input
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
-  function getThumbHeight(file) {
-    const scale = 250 / Math.max(250, file.width, file.height);
-    return Math.round(file.height * scale);
+  function getSegmentMarkup(segment) {
+    let markup = escapeHtml(segment.text);
+    segment.tags.forEach(tag => {
+      switch (tag.type) {
+        case "Bold":
+          markup = `<strong class="markup markup_bold">${markup}</strong>`;
+          break;
+
+        case "Italic":
+          markup = `<em class="markup markup_italic">${markup}</em>`;
+          break;
+
+        case "Underline":
+          markup = `<span class="markup markup_underline">${markup}</span>`;
+          break;
+
+        case "Strike":
+          markup = `<del class="markup markup_strike">${markup}</del>`;
+          break;
+
+        case "Superscript":
+          markup = `<sup class="markup markup_superscript">${markup}</sup>`;
+          break;
+
+        case "Subscript":
+          markup = `<sub class="markup markup_subscript">${markup}</sub>`;
+          break;
+
+        case "Code":
+          markup = `<pre class="markup markup_code">${markup}</pre>`;
+          break;
+
+        case "CodeBlock":
+          markup = `<pre class="markup markup_codeblock">${markup}</pre>`;
+          break;
+
+        case "Spoiler":
+          markup = `<span class="markup markup_spoiler">${markup}</span>`;
+          break;
+      }
+    });
+
+    return markup;
   }
 </script>
 
@@ -94,7 +138,11 @@
     {/each}
   </div>
 
-  <div class="post__message">{post.message}</div>
+  <div class="post__message">
+    {#each post.message as segment}
+      {@html getSegmentMarkup(segment)}
+    {/each}
+  </div>
 </div>
 
 <div class="post__footer" />

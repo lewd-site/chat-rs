@@ -41,10 +41,13 @@
     }
 
     &__content {
-        display: flex;
-        flex-flow: row nowrap;
+        padding: 16px 16px 0;
 
-        padding: 16px;
+        &::after {
+            content: '';
+            clear: both;
+            display: table;
+        }
     }
 
     &__files {
@@ -52,6 +55,8 @@
         align-items: stretch;
         justify-content: stretch;
         gap: 8px;
+
+        float: left;
 
         & > * {
             max-width: 240px;
@@ -278,6 +283,7 @@
 
         &:not(:empty) {
             margin-right: 16px;
+            margin-bottom: 16px;
         }
     }
 
@@ -298,6 +304,12 @@
         height: 100%;
 
         object-fit: cover;
+    }
+
+    &__message {
+        margin-bottom: 16px;
+
+        word-wrap: break-word;
     }
 
     &__footer {

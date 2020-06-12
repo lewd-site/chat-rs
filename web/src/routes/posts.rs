@@ -4,6 +4,7 @@ use crate::ws::Ws;
 use crate::ChatDbConn;
 use chrono::prelude::*;
 use data::models::files::File;
+use data::models::message_parser::{MessageParser, Segment};
 use data::models::posts::Post;
 use data::repositories::files::FileRepository;
 use data::repositories::posts::PostRepository;
@@ -31,7 +32,8 @@ struct PostWithFiles {
     id: i32,
     name: String,
     tripcode: String,
-    message: String,
+    message_raw: String,
+    message: Vec<Segment>,
     created_at: NaiveDateTime,
     files: Vec<File>,
 }
@@ -42,7 +44,8 @@ impl PostWithFiles {
             id: post.id,
             name: post.name,
             tripcode: post.tripcode,
-            message: post.message,
+            message_raw: post.message.clone(),
+            message: MessageParser::str_to_segments(&post.message),
             created_at: post.created_at,
             files,
         }
