@@ -33,7 +33,7 @@ html, body {
     box-shadow: none;
 }
 
-:-webkit-autofill {
+input:-webkit-autofill {
     transition-delay: 1e9s;
     transition-property: background-color, color;
 }

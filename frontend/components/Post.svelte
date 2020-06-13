@@ -1,5 +1,6 @@
 <script>
   import { onMount } from "svelte";
+  import { mediaBoxFile } from "../stores";
 
   export let post;
 
@@ -128,6 +129,12 @@
 
     return markup.join("");
   }
+
+  function handleFileClick(file) {
+    mediaBoxFile.update(currentFile => {
+      return currentFile !== file ? file : null;
+    });
+  }
 </script>
 
 <div class="post__header">
@@ -143,7 +150,10 @@
   <div class={getFilesClass(post.files)}>
     {#each post.files as file (file.id)}
       <div class="post__file">
-        <a href="/src/{file.md5}.{file.extension}" target="_blank">
+        <a
+          href="/src/{file.md5}.{file.extension}"
+          target="_blank"
+          on:click|preventDefault={e => handleFileClick(file)}>
           <picture>
             <img
               class="post__file-preview"

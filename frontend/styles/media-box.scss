@@ -1,0 +1,67 @@
+.media-box {
+    z-index: 15;
+
+    pointer-events: none;
+
+    &__controls {
+        position: absolute;
+        top: 0;
+        right: 0;
+
+        display: flex;
+        flex-flow: column nowrap;
+
+        z-index: 25;
+
+        pointer-events: initial;
+    }
+
+    &__content {
+        position: absolute;
+        top: 0;
+        left: 0;
+
+        outline: 1px solid #43474F;
+
+        z-index: 20;
+
+        pointer-events: initial;
+    }
+
+    &__image {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    &__close,
+    &__zoom-in,
+    &__zoom-out {
+        background: transparent;
+        background-color: rgba(0, 0, 0, 0.4);
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: 80% 80%;
+        border: 0;
+
+        display: block;
+
+        width: 32px;
+        height: 32px;
+
+        margin: 0;
+        padding: 0;
+    }
+
+    &__close {
+        background-image: url('../images/la/times-solid.svg');
+    }
+
+    &__zoom-in {
+        background-image: url('../images/la/search-plus-solid.svg');
+    }
+
+    &__zoom-out {
+        background-image: url('../images/la/search-minus-solid.svg');
+    }
+}

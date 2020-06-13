@@ -1,5 +1,6 @@
 import 'regenerator-runtime/runtime';
 
+import MediaBox from './components/MediaBox.svelte';
 import PostForm from './components/PostForm.svelte';
 import PostList from './components/PostList.svelte';
 import config from './config';
@@ -20,8 +21,14 @@ if (!postListContainer) {
     throw new Error('#post-list not found');
 }
 
+const mediaBoxContainer = document.getElementById('media-box');
+if (!mediaBoxContainer) {
+    throw new Error('#media-box not found');
+}
+
 const postFrom = new PostForm({ target: postFormContainer });
 const postList = new PostList({ target: postListContainer });
+const mediaBox = new MediaBox({ target: mediaBoxContainer });
 
 posts.subscribe(() => {
     const scrollingElement = (document.scrollingElement || document.body);

@@ -30,3 +30,5 @@ export function addPost(newPost: Post) {
         }, {} as Posts);
     });
 }
+
+export const mediaBoxFile = writable<null | File>(null);

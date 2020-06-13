@@ -2,7 +2,7 @@
   import { derived } from "svelte/store";
 
   import Post from "./Post.svelte";
-  import { posts } from "../stores.ts";
+  import { posts } from "../stores";
 
   export const postValues = derived(posts, posts => Object.values(posts));
 </script>
