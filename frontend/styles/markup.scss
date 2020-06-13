@@ -46,5 +46,17 @@
 
     &_reflink {
         color: #E3833D;
+
+        &::before {
+            content: '>>';
+        }
+    }
+
+    &_quote {
+        color: #E3833D;
+
+        &::before {
+            content: '>';
+        }
     }
 }

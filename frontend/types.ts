@@ -23,7 +23,11 @@ interface RefLink {
     readonly id: number;
 }
 
-export type Tag = BBCode | RefLink;
+interface Quote {
+    readonly type: 'Quote';
+}
+
+export type Tag = BBCode | RefLink | Quote;
 
 export interface Markup {
     readonly text: string;

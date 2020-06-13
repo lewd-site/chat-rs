@@ -110,10 +110,23 @@
         case "RefLink":
           markup = `<a class="markup markup_reflink" href="#post_${tag.id}">${markup}</a>`;
           break;
+
+        case "Quote":
+          markup = `<span class="markup markup_quote">${markup}</span>`;
+          break;
       }
     });
 
     return markup;
+  }
+
+  function getMarkup(segments) {
+    const markup = [];
+    for (let segment of segments) {
+      markup.push(getSegmentMarkup(segment));
+    }
+
+    return markup.join("");
   }
 </script>
 
@@ -143,9 +156,7 @@
   </div>
 
   <div class="post__message">
-    {#each post.message as segment}
-      {@html getSegmentMarkup(segment)}
-    {/each}
+    {@html getMarkup(post.message)}
   </div>
 </div>
 

@@ -3,7 +3,7 @@ use nom::bytes::complete::{is_not, tag};
 use nom::character::complete::{char, digit1, one_of};
 use nom::combinator::map;
 use nom::multi::many0;
-use nom::sequence::{delimited, preceded, tuple};
+use nom::sequence::{delimited, preceded};
 use nom::IResult;
 use serde::Serialize;
 
@@ -20,9 +20,17 @@ pub enum Tag {
     CodeBlock,
     Spoiler,
     RefLink { id: u32 },
+    Quote,
 }
 
 impl Tag {
+    pub fn is_ref_link(&self) -> bool {
+        match self {
+            Tag::RefLink { id: _ } => true,
+            _ => false,
+        }
+    }
+
     pub fn opening(&self) -> &str {
         match self {
             Tag::Bold => "[b]",
@@ -35,6 +43,7 @@ impl Tag {
             Tag::CodeBlock => "[codeblock]",
             Tag::Spoiler => "[spoiler]",
             Tag::RefLink { id: _ } => ">>",
+            Tag::Quote => ">",
         }
     }
 
@@ -50,6 +59,7 @@ impl Tag {
             Tag::CodeBlock => "[/codeblock]",
             Tag::Spoiler => "[/spoiler]",
             Tag::RefLink { id: _ } => "",
+            Tag::Quote => "",
         }
     }
 }
@@ -58,6 +68,7 @@ impl Tag {
 pub enum Token {
     Text(String),
     RefLink(u32),
+    Quote(String),
     OpeningTag(Tag),
     ClosingTag(Tag),
 }
@@ -68,6 +79,12 @@ pub struct Segment {
     pub tags: Vec<Tag>,
 }
 
+impl Segment {
+    pub fn is_ref_link(&self) -> bool {
+        self.tags.iter().position(|tag| tag.is_ref_link()) != None
+    }
+}
+
 pub struct MessageParser();
 
 impl MessageParser {
@@ -75,6 +92,9 @@ impl MessageParser {
         alt((
             map(preceded(tag(">>"), digit1), |s: &str| {
                 Token::RefLink(s.parse().unwrap())
+            }),
+            map(preceded(char('>'), is_not("\r\n")), |s: &str| {
+                Token::Quote(String::from(s))
             }),
             map(is_not("[>"), |s: &str| Token::Text(String::from(s))),
             // Parse incomplete tags as text.
@@ -138,7 +158,7 @@ impl MessageParser {
                 let last = segments.pop();
                 match last {
                     Some(last) => {
-                        if last.tags == segment.tags {
+                        if last.tags == segment.tags && !last.is_ref_link() {
                             segments.push(Segment {
                                 text: format!("{}{}", last.text, segment.text),
                                 tags: last.tags,
@@ -181,21 +201,38 @@ impl MessageParser {
                     }
                 }
                 Token::RefLink(id) => {
-                    let text = format!(">>{}", id);
+                    let text = id.to_string();
 
                     if active_tags.contains(&Tag::CodeBlock) {
                         result.push(Segment {
-                            text,
+                            text: format!(">>{}", text),
                             tags: vec![Tag::CodeBlock],
                         });
                     } else if active_tags.contains(&Tag::Code) {
                         result.push(Segment {
-                            text,
+                            text: format!(">>{}", text),
                             tags: vec![Tag::Code],
                         });
                     } else {
                         let mut tags = active_tags.clone();
                         tags.push(Tag::RefLink { id });
+                        result.push(Segment { text, tags });
+                    }
+                }
+                Token::Quote(text) => {
+                    if active_tags.contains(&Tag::CodeBlock) {
+                        result.push(Segment {
+                            text: format!(">{}", text),
+                            tags: vec![Tag::CodeBlock],
+                        });
+                    } else if active_tags.contains(&Tag::Code) {
+                        result.push(Segment {
+                            text: format!(">{}", text),
+                            tags: vec![Tag::Code],
+                        });
+                    } else {
+                        let mut tags = active_tags.clone();
+                        tags.push(Tag::Quote);
                         result.push(Segment { text, tags });
                     }
                 }
