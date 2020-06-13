@@ -1,10 +1,9 @@
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
-use nom::character::complete::char;
+use nom::character::complete::{char, digit1, one_of};
 use nom::combinator::map;
 use nom::multi::many0;
-use nom::sequence::delimited;
-use nom::sequence::preceded;
+use nom::sequence::{delimited, preceded, tuple};
 use nom::IResult;
 use serde::Serialize;
 
@@ -20,6 +19,7 @@ pub enum Tag {
     Code,
     CodeBlock,
     Spoiler,
+    RefLink { id: u32 },
 }
 
 impl Tag {
@@ -34,6 +34,7 @@ impl Tag {
             Tag::Code => "[code]",
             Tag::CodeBlock => "[codeblock]",
             Tag::Spoiler => "[spoiler]",
+            Tag::RefLink { id: _ } => ">>",
         }
     }
 
@@ -48,6 +49,7 @@ impl Tag {
             Tag::Code => "[/code]",
             Tag::CodeBlock => "[/codeblock]",
             Tag::Spoiler => "[/spoiler]",
+            Tag::RefLink { id: _ } => "",
         }
     }
 }
@@ -55,6 +57,7 @@ impl Tag {
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token {
     Text(String),
+    RefLink(u32),
     OpeningTag(Tag),
     ClosingTag(Tag),
 }
@@ -70,11 +73,12 @@ pub struct MessageParser();
 impl MessageParser {
     fn text(input: &str) -> IResult<&str, Token> {
         alt((
-            // Parse incomplete tags as text.
-            map(preceded(char('['), is_not("[")), |s| {
-                Token::Text(String::from(format!("[{}", s)))
+            map(preceded(tag(">>"), digit1), |s: &str| {
+                Token::RefLink(s.parse().unwrap())
             }),
-            map(is_not("["), |s| Token::Text(String::from(s))),
+            map(is_not("[>"), |s: &str| Token::Text(String::from(s))),
+            // Parse incomplete tags as text.
+            map(one_of("[>"), |ch: char| Token::Text(ch.to_string())),
         ))(input)
     }
 
@@ -174,6 +178,25 @@ impl MessageParser {
                             text,
                             tags: active_tags.clone(),
                         });
+                    }
+                }
+                Token::RefLink(id) => {
+                    let text = format!(">>{}", id);
+
+                    if active_tags.contains(&Tag::CodeBlock) {
+                        result.push(Segment {
+                            text,
+                            tags: vec![Tag::CodeBlock],
+                        });
+                    } else if active_tags.contains(&Tag::Code) {
+                        result.push(Segment {
+                            text,
+                            tags: vec![Tag::Code],
+                        });
+                    } else {
+                        let mut tags = active_tags.clone();
+                        tags.push(Tag::RefLink { id });
+                        result.push(Segment { text, tags });
                     }
                 }
                 Token::OpeningTag(tag) => {

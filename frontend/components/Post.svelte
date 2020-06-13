@@ -106,6 +106,10 @@
         case "Spoiler":
           markup = `<span class="markup markup_spoiler">${markup}</span>`;
           break;
+
+        case "RefLink":
+          markup = `<a class="markup markup_reflink" href="#post_${tag.id}">${markup}</a>`;
+          break;
       }
     });
 
