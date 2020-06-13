@@ -6,7 +6,7 @@ import PostList from './components/PostList.svelte';
 import config from './config';
 import Menu from './menu';
 import Api from './services/api';
-import { addPosts, posts } from './stores';
+import { setPosts, posts } from './stores';
 import Ws from './ws';
 
 import './styles/index.scss';
@@ -40,7 +40,7 @@ posts.subscribe(() => {
     }
 });
 
-Api.getLatestPosts().then(addPosts);
+Api.getLatestPosts().then(setPosts);
 
 const ws = new Ws(config.wsUrl);
 

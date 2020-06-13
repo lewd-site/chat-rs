@@ -152,6 +152,9 @@
             & > :nth-child(1) {
                 grid-column: 1;
                 grid-row: 1 / 4;
+
+                max-width: (240px * 1.25);
+                max-height: (240px * 1.25);
             }
 
             & > :nth-child(2) {
@@ -170,8 +173,8 @@
             }
 
             & > :not(:first-child) {
-                max-width: (240px / 3);
-                max-height: (240px / 3 - 6px);
+                max-width: (240px * 1.25 / 3);
+                max-height: (240px * 1.25 / 3 - 6px);
             }
         }
 
@@ -182,6 +185,9 @@
             & > :nth-child(1) {
                 grid-column: 1 / 4;
                 grid-row: 1;
+
+                max-width: (240px * 1.25);
+                max-height: (240px * 1.25);
             }
 
             & > :nth-child(2) {
@@ -200,8 +206,8 @@
             }
 
             & > :not(:first-child) {
-                max-width: (240px / 3 - 6px);
-                max-height: (240px / 3);
+                max-width: (240px * 1.25 / 3 - 6px);
+                max-height: (240px * 1.25 / 3);
             }
         }
 
@@ -213,8 +219,8 @@
                 grid-column: 1;
                 grid-row: 1 / 5;
 
-                max-width: (240px / 2 * 3);
-                max-height: (240px / 2 * 3);
+                max-width: (240px * 1.5);
+                max-height: (240px * 1.5);
             }
 
             & > :nth-child(2) {
@@ -238,8 +244,8 @@
             }
 
             & > :not(:first-child) {
-                max-width: (240px / 2 * 3 / 4);
-                max-height: (240px / 2 * 3 / 4 - 6px);
+                max-width: (240px * 1.5 / 4);
+                max-height: (240px * 1.5 / 4 - 6px);
             }
         }
 
@@ -251,8 +257,8 @@
                 grid-column: 1 / 5;
                 grid-row: 1;
 
-                max-width: (240px / 2 * 3);
-                max-height: (240px / 2 * 3);
+                max-width: (240px * 1.5);
+                max-height: (240px * 1.5);
             }
 
             & > :nth-child(2) {
@@ -276,8 +282,8 @@
             }
 
             & > :not(:first-child) {
-                max-width: (240px / 2 * 3 / 4 - 6px);
-                max-height: (240px / 2 * 3 / 4);
+                max-width: (240px * 1.5 / 4 - 6px);
+                max-height: (240px * 1.5 / 4);
             }
         }
 
@@ -314,8 +320,25 @@
     }
 
     &__footer {
+        display: flex;
+        flex-flow: row wrap;
+
         &:not(:empty) {
             padding: 8px 16px 16px;
+        }
+    }
+
+    &__footer-reflink {
+        color: #E3833D;
+        font-size: 14px;
+        font-style: italic;
+
+        &::before {
+            content: '>>';
+        }
+
+        &:not(:last-child) {
+            margin-right: 0.5em;
         }
     }
 }

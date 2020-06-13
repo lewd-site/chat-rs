@@ -1,5 +1,5 @@
 import Api from './services/api';
-import { addPost, addPosts } from './stores';
+import { addPost, setPosts } from './stores';
 import { Post } from './types';
 
 interface WsPostCreated {
@@ -37,7 +37,7 @@ export class Ws {
 
     private onOpen = (e: Event) => {
         // Reload latest posts after websocket connected.
-        Api.getLatestPosts().then(addPosts);
+        Api.getLatestPosts().then(setPosts);
     };
 
     private onClose = (e: CloseEvent) => {

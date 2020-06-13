@@ -12,18 +12,18 @@ export interface File {
     readonly length: null | number;
 }
 
-interface BBCode {
+export interface BBCode {
     readonly type:
     | 'Bold' | 'Italic' | 'Underline' | 'Strike'
     | 'Superscript' | 'Subscript' | 'Code' | 'Spoiler';
 }
 
-interface RefLink {
+export interface RefLink {
     readonly type: 'RefLink';
     readonly id: number;
 }
 
-interface Quote {
+export interface Quote {
     readonly type: 'Quote';
 }
 
@@ -39,7 +39,9 @@ export interface Post {
     readonly name: string;
     readonly tripcode: string;
     readonly message_raw: string;
-    readonly message: Markup,
+    readonly message: Markup[];
     readonly created_at: string;
     readonly files: File[];
+
+    reply_from: undefined | number[];
 }

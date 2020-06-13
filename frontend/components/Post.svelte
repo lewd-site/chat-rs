@@ -1,5 +1,4 @@
 <script>
-  import { onMount } from "svelte";
   import { mediaBoxFile } from "../stores";
 
   export let post;
@@ -170,4 +169,10 @@
   </div>
 </div>
 
-<div class="post__footer" />
+<div class="post__footer">
+  {#if post.reply_from}
+    {#each post.reply_from as id (id)}
+      <a class="post__footer-reflink" href="#post_{id}">{id}</a>
+    {/each}
+  {/if}
+</div>
