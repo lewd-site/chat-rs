@@ -1,6 +1,7 @@
 import Api from './services/api';
 import { addPost, setPosts } from './stores';
 import { Post } from './types';
+import utils from './utils';
 
 interface WsPostCreated {
     readonly event: 'post_created',
@@ -35,9 +36,16 @@ export class Ws {
         this.ws = null;
     };
 
-    private onOpen = (e: Event) => {
+    private onOpen = async (e: Event) => {
         // Reload latest posts after websocket connected.
-        Api.getLatestPosts().then(setPosts);
+        const posts = await Api.getLatestPosts();
+
+        const scroll = utils.isAtBottom();
+        if (scroll) {
+            setTimeout(utils.scrollToBottom);
+        }
+
+        setPosts(posts);
     };
 
     private onClose = (e: CloseEvent) => {
@@ -56,6 +64,11 @@ export class Ws {
 
         switch (message.event) {
             case 'post_created': {
+                const scroll = utils.isAtBottom();
+                if (scroll) {
+                    setTimeout(utils.scrollToBottom);
+                }
+
                 addPost(message.data.item);
                 break;
             }

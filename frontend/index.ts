@@ -6,10 +6,11 @@ import PostList from './components/PostList.svelte';
 import config from './config';
 import Menu from './menu';
 import Api from './services/api';
-import { setPosts, posts } from './stores';
+import { setPosts, posts, Posts, addPosts, unloadOldPosts } from './stores';
 import Ws from './ws';
 
 import './styles/index.scss';
+import utils from './utils';
 
 const postFormContainer = document.getElementById('post-form');
 if (!postFormContainer) {
@@ -30,17 +31,28 @@ const postFrom = new PostForm({ target: postFormContainer });
 const postList = new PostList({ target: postListContainer });
 const mediaBox = new MediaBox({ target: mediaBoxContainer });
 
-posts.subscribe(() => {
-    const scrollingElement = (document.scrollingElement || document.body);
-    const useAutoscroll = (scrollingElement as any).offsetHeight + scrollingElement.scrollTop > scrollingElement.scrollHeight - 20;
-    if (useAutoscroll) {
-        setTimeout(() => {
-            scrollingElement.scrollTop = scrollingElement.scrollHeight;
-        });
+let _posts: Posts = {};
+posts.subscribe(posts => _posts = posts);
+
+window.addEventListener('scroll', async () => {
+    if (utils.isAtTop()) {
+        const firstPost = Object.values(_posts)[0];
+        if (!firstPost) {
+            return;
+        }
+
+        const oldPosts = await Api.getPostsBefore(firstPost.id);
+        addPosts(oldPosts);
+        utils.maintainScrollBottom();
+    } else if (utils.isAtBottom()) {
+        unloadOldPosts();
     }
 });
 
-Api.getLatestPosts().then(setPosts);
+Api.getLatestPosts().then(posts => {
+    setTimeout(utils.scrollToBottom);
+    setPosts(posts);
+});
 
 const ws = new Ws(config.wsUrl);
 

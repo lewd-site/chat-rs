@@ -124,9 +124,13 @@ pub fn create_post_multipart(
     Redirect::found("/")
 }
 
-#[get("/", format = "json")]
-pub fn get_post_list(conn: ChatDbConn) -> Json<PostListResponse> {
-    let posts = PostRepository::get_latest(&*conn);
+#[get("/?<before_id>", format = "json")]
+pub fn get_post_list(conn: ChatDbConn, before_id: Option<i32>) -> Json<PostListResponse> {
+    let posts = match before_id {
+        Some(before_id) => PostRepository::get_before(&*conn, before_id),
+        None => PostRepository::get_latest(&*conn),
+    };
+
     let files = FileRepository::get_belonging_to_posts(&*conn, &posts);
     let data = posts
         .into_iter()

@@ -18,6 +18,20 @@ impl PostRepository {
         items
     }
 
+    pub fn get_before(conn: &PgConnection, before_id: i32) -> Vec<Post> {
+        use crate::schema::posts::dsl::*;
+
+        let mut items = posts
+            .filter(id.lt(before_id))
+            .order(created_at.desc())
+            .limit(100)
+            .load::<Post>(conn)
+            .unwrap();
+
+        items.reverse();
+        items
+    }
+
     pub fn get_one(conn: &PgConnection, post_id: i32) -> Option<Post> {
         use crate::schema::posts::dsl::*;
 

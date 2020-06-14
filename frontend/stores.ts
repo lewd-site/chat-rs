@@ -2,17 +2,28 @@ import { writable } from 'svelte/store';
 
 import { Post, RefLink } from './types';
 
-type Posts = { [key: number]: Post };
+export type Posts = { [key: number]: Post };
 
 const MAX_POSTS = 100;
 
 export const posts = writable<Posts>({});
 
-function processPost(post: Post, posts: Post[]): Post {
+function hashToArray(posts: Posts): Post[] {
+    return Object.values(posts);
+}
+
+function arrayToHash(posts: Post[]): Posts {
+    return posts.reduce((result, post) => {
+        result[post.id] = post;
+        return result;
+    }, {} as Posts);
+}
+
+function processPost(post: Post, allPosts: Post[]) {
     post.message.forEach(segment => {
         const refLinkTags = segment.tags.filter(tag => tag.type === 'RefLink') as RefLink[];
         refLinkTags.forEach(tag => {
-            const targetPost = posts.find(p => +p.id === +tag.id);
+            const targetPost = allPosts.find(p => +p.id === +tag.id);
             if (targetPost !== undefined) {
                 if (targetPost.reply_from === undefined) {
                     targetPost.reply_from = [post.id];
@@ -22,45 +33,44 @@ function processPost(post: Post, posts: Post[]): Post {
             }
         });
     });
+}
 
-    return post;
+function processPosts(posts: Post[], allPosts: Post[]) {
+    posts.forEach(post => processPost(post, allPosts));
 }
 
 export function setPosts(newPosts: Post[]) {
     newPosts.forEach(newPost => processPost(newPost, newPosts));
-
-    const newPostsHash = newPosts.slice(-MAX_POSTS).reduce((result, post) => {
-        result[post.id] = post;
-        return result;
-    }, {} as Posts);
-
-    posts.set(newPostsHash);
+    posts.set(arrayToHash(newPosts));
 }
 
 export function addPosts(newPosts: Post[]) {
     posts.update(posts => {
-        const values = Object.values(posts).concat(newPosts);
+        const values = hashToArray(posts).concat(newPosts);
+        values.sort((a, b) => +a.id - b.id);
 
-        newPosts.forEach(newPost => processPost(newPost, values));
+        processPosts(newPosts, values);
 
-        return values.slice(-MAX_POSTS).reduce((result, post) => {
-            result[post.id] = post;
-            return result;
-        }, {} as Posts);
+        return arrayToHash(values);
     });
 }
 
 export function addPost(newPost: Post) {
     posts.update(posts => {
-        const values = Object.values(posts);
+        const values = hashToArray(posts);
         values.push(newPost);
+        values.sort((a, b) => +a.id - b.id);
 
         processPost(newPost, values)
 
-        return values.slice(-MAX_POSTS).reduce((result, post) => {
-            result[post.id] = post;
-            return result;
-        }, {} as Posts);
+        return arrayToHash(values);
+    });
+}
+
+export function unloadOldPosts() {
+    posts.update(posts => {
+        const values = hashToArray(posts);
+        return arrayToHash(values.slice(-MAX_POSTS));
     });
 }
 

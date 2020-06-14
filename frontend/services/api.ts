@@ -41,6 +41,11 @@ export class Api {
         return response.data.items;
     }
 
+    public static async getPostsBefore(postId: number): Promise<Post[]> {
+        const response = await axios.get<PostListResponse>(`/api/v1/posts?before_id=${postId}`);
+        return response.data.items;
+    }
+
     public static async getPost(postId: number): Promise<Post> {
         const response = await axios.get<PostResponse>(`/api/v1/posts/${postId}`);
         return response.data.item;
