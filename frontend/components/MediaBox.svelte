@@ -60,6 +60,8 @@
     isDragged = false;
   }
 
+  let src = null;
+
   mediaBoxFile.subscribe(file => {
     if (!file) {
       return;
@@ -75,6 +77,13 @@
     height = file.height * scale;
     offsetX = window.innerWidth / 2 - width / 2;
     offsetY = window.innerHeight / 2 - height / 2;
+
+    // Unset an old image and set a new one only at the next iteration of the event loop
+    // to avoid flash of the old image.
+    src = null;
+    setTimeout(() => {
+      src = `/src/${file.md5}.${file.extension}`;
+    });
   });
 
   const WHEEL_SCALE_STEP = 1.1;
@@ -136,11 +145,29 @@
   }
 
   function handleZoomInClick() {
-    handleZoom(offsetX + width / 2, offsetY + height / 2, CLICK_SCALE_STEP);
+    const originX = Math.max(
+      0,
+      Math.min(offsetX + width / 2, window.innerWidth)
+    );
+    const originY = Math.max(
+      0,
+      Math.min(offsetY + height / 2, window.innerHeight)
+    );
+
+    handleZoom(originX, originY, CLICK_SCALE_STEP);
   }
 
   function handleZoomOutClick() {
-    handleZoom(offsetX + width / 2, offsetY + height / 2, 1 / CLICK_SCALE_STEP);
+    const originX = Math.max(
+      0,
+      Math.min(offsetX + width / 2, window.innerWidth)
+    );
+    const originY = Math.max(
+      0,
+      Math.min(offsetY + height / 2, window.innerHeight)
+    );
+
+    handleZoom(originX, originY, 1 / CLICK_SCALE_STEP);
   }
 </script>
 
@@ -165,10 +192,7 @@
     on:wheel={handleWheel}>
     {#if $mediaBoxFile.mimetype.startsWith('image/')}
       <picture>
-        <img
-          class="media-box__image"
-          src="/src/{$mediaBoxFile.md5}.{$mediaBoxFile.extension}"
-          alt="" />
+        <img class="media-box__image" {src} alt="" />
       </picture>
     {/if}
   </div>

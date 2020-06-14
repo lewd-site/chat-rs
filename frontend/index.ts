@@ -8,9 +8,10 @@ import Menu from './menu';
 import Api from './services/api';
 import { setPosts, posts, Posts, addPosts, unloadOldPosts } from './stores';
 import Ws from './ws';
+import utils from './utils';
 
 import './styles/index.scss';
-import utils from './utils';
+import 'prosemirror-view/style/prosemirror.css';
 
 const postFormContainer = document.getElementById('post-form');
 if (!postFormContainer) {

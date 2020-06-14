@@ -11,6 +11,10 @@ html, body {
     line-height: 22px;
 }
 
+p {
+    margin: 0;
+}
+
 :focus,
 :active {
     outline: none !important;

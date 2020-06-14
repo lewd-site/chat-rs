@@ -10,6 +10,14 @@
     "build": "parcel build -d www frontend/index.html"
   },
   "devDependencies": {
+    "@types/prosemirror-commands": "^1.0.1",
+    "@types/prosemirror-history": "^1.0.1",
+    "@types/prosemirror-inputrules": "^1.0.2",
+    "@types/prosemirror-keymap": "^1.0.2",
+    "@types/prosemirror-model": "^1.7.2",
+    "@types/prosemirror-state": "^1.2.4",
+    "@types/prosemirror-transform": "^1.1.1",
+    "@types/prosemirror-view": "^1.11.4",
     "parcel-bundler": "^1.12.4",
     "parcel-plugin-svelte": "^4.0.6",
     "sass": "^1.26.8",
@@ -18,6 +26,14 @@
   "dependencies": {
     "axios": "^0.19.2",
     "normalize.css": "^8.0.1",
+    "prosemirror-commands": "^1.1.4",
+    "prosemirror-history": "^1.1.3",
+    "prosemirror-inputrules": "^1.1.2",
+    "prosemirror-keymap": "^1.1.4",
+    "prosemirror-model": "^1.10.0",
+    "prosemirror-state": "^1.3.3",
+    "prosemirror-transform": "^1.2.6",
+    "prosemirror-view": "^1.14.13",
     "svelte": "^3.23.0"
   }
 }

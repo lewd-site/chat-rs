@@ -1,11 +1,14 @@
 <script>
+  import RichTextBox from "./RichTextBox.svelte";
   import Api from "../services/api";
+  import utils from "../utils";
 
   let message = "";
   let files = [];
   let previews = [];
 
   let inputFiles = null;
+  let formElement;
   let messageElement;
 
   function setFiles(e) {
@@ -16,12 +19,14 @@
     }
 
     updatePreviews();
+    setTimeout(updateSize);
   }
 
   function removeFileAt(index) {
     files.splice(index, 1);
 
     updatePreviews();
+    setTimeout(updateSize);
   }
 
   function updatePreviews(e) {
@@ -41,9 +46,28 @@
     Api.submitPost({ name, message, files }).then(() => {
       message = "";
       files = [];
-      updatePreviews();
+      messageElement.clear();
       messageElement.focus();
+      updatePreviews();
+      setTimeout(updateSize);
     });
+  }
+
+  function handleChange() {
+    setTimeout(updateSize);
+  }
+
+  function updateSize() {
+    const scroll = utils.isAtBottom();
+
+    const rect = formElement.getBoundingClientRect();
+    document.querySelector(
+      ".layout__post-list"
+    ).style.marginBottom = `${rect.height + 46}px`;
+
+    if (scroll) {
+      setTimeout(utils.scrollToBottom);
+    }
   }
 </script>
 
@@ -51,7 +75,8 @@
   method="POST"
   action="/api/v1/posts"
   enctype="multipart/form-data"
-  on:submit|preventDefault={handleSubmit}>
+  on:submit|preventDefault={handleSubmit}
+  bind:this={formElement}>
   <div class="post-form__previews-row">
     {#each previews as preview, index (preview)}
       <picture>
@@ -77,11 +102,12 @@
       </label>
     </div>
 
-    <textarea
-      class="post-form__message"
+    <RichTextBox
+      className="post-form__message"
       name="message"
       bind:value={message}
-      bind:this={messageElement} />
+      bind:this={messageElement}
+      on:change={handleChange} />
 
     <div class="post-form__submit-wrapper">
       <button class="post-form__submit" type="submit" />
