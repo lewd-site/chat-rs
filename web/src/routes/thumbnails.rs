@@ -50,10 +50,14 @@ fn create_thumbnail(src: &Path, dst: &Path, max_size: u32) -> Result<(), Box<dyn
 
 #[get("/<hash>?<max_width>")]
 pub fn get_thumbnail(conn: ChatDbConn, hash: String, max_width: Option<i32>) -> Option<CachedFile> {
+    let max_width = max_width.unwrap_or(360);
+    // TODO: Check list of allowed thumbnail sizes.
+    if max_width != 360 {
+        return None;
+    }
+
     let file = FileRepository::get_one_by_md5(&*conn, &hash);
     file.map(|file| {
-        let max_width = max_width.unwrap_or(250);
-
         let thumb_dir = concat!(env!("CARGO_MANIFEST_DIR"), "/../www/thumb");
         let thumb_extension = get_thumb_extension(&file.extension);
         let thumb_filename = format!("{}_{}.{}", hash, max_width, thumb_extension);

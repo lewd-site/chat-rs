@@ -9,6 +9,8 @@ chrono = { version = "0.4", features = ["serde"] }
 data = { path = "../data" }
 diesel = { version = "1.4.4", features = ["postgres"] }
 image = "0.23.5"
+jsonwebtoken = "7.1.1"
+lazy_static = "1.4.0"
 mime = "0.3.16"
 rocket = "0.4.5"
 rocket_contrib = { version = "0.4.5", features = ["databases", "diesel_postgres_pool", "json", "serve"] }

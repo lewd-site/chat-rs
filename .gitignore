@@ -3,4 +3,5 @@
 /target
 /www
 /.env
+/public.pem
 /yarn-error.log

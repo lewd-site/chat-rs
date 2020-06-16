@@ -1,5 +1,4 @@
-use crate::requests::CreatePostMultipart;
-use crate::requests::UploadedFile;
+use crate::requests::{CreatePostMultipart, UploadedFile};
 use crate::ws::Ws;
 use crate::ChatDbConn;
 use chrono::prelude::*;
@@ -8,12 +7,82 @@ use data::models::message_parser::{MessageParser, Segment};
 use data::models::posts::Post;
 use data::repositories::files::FileRepository;
 use data::repositories::posts::PostRepository;
-use rocket::request::Form;
+use jsonwebtoken::{Algorithm, DecodingKey, Validation};
+use rocket::http::Status;
+use rocket::request::{Form, FromRequest, Outcome};
 use rocket::response::status::Created;
 use rocket::response::Redirect;
+use rocket::Request;
 use rocket::State;
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
+use std::fs;
+
+lazy_static! {
+    static ref DECODING_KEY_RAW: Vec<u8> =
+        fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/../public.pem")).unwrap();
+    static ref DECODING_KEY: DecodingKey<'static> =
+        DecodingKey::from_rsa_pem(&DECODING_KEY_RAW).unwrap();
+}
+
+pub struct BearerToken<'a>(&'a str);
+
+impl<'a, 'r> FromRequest<'a, 'r> for BearerToken<'a> {
+    type Error = ();
+
+    fn from_request(request: &'a Request<'r>) -> Outcome<Self, ()> {
+        let headers = request.headers();
+        let header = headers.get("Authorization").last();
+        match header {
+            Some(header) => {
+                let mut header = header.splitn(2, ' ');
+                let auth_type = header.next().unwrap();
+                if auth_type != "Bearer" {
+                    return Outcome::Forward(());
+                }
+
+                let token = header.next().unwrap();
+                Outcome::Success(BearerToken(token))
+            }
+            None => Outcome::Forward(()),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+struct Claims {
+    user_uuid: String,
+    user_name: String,
+    user_email: String,
+    iat: u64,
+    nbf: u64,
+    exp: u64,
+}
+
+pub struct Authenticated(Claims);
+
+impl<'a, 'r> FromRequest<'a, 'r> for Authenticated {
+    type Error = ();
+
+    fn from_request(request: &'a Request<'r>) -> Outcome<Self, ()> {
+        let BearerToken(token) = request.guard::<BearerToken>()?;
+
+        let validation = Validation {
+            algorithms: vec![Algorithm::RS256],
+            validate_nbf: true,
+            validate_exp: true,
+            leeway: 60,
+            aud: None,
+            iss: None,
+            sub: None,
+        };
+
+        match jsonwebtoken::decode::<Claims>(token, &*DECODING_KEY, &validation) {
+            Ok(token_data) => Outcome::Success(Authenticated(token_data.claims)),
+            Err(_) => Outcome::Failure((Status::Unauthorized, ())),
+        }
+    }
+}
 
 #[derive(Deserialize)]
 pub struct CreatePostJson {
@@ -93,6 +162,7 @@ fn send_post_created_event(ws: &Ws, data: &PostWithFiles) {
 
 #[post("/", format = "json", data = "<data>")]
 pub fn create_post_json(
+    _auth: Authenticated,
     data: Json<CreatePostJson>,
     conn: ChatDbConn,
     ws: State<Ws>,
@@ -105,7 +175,12 @@ pub fn create_post_json(
 }
 
 #[post("/", data = "<data>", rank = 1)]
-pub fn create_post_form(data: Form<CreatePostForm>, conn: ChatDbConn, ws: State<Ws>) -> Redirect {
+pub fn create_post_form(
+    _auth: Authenticated,
+    data: Form<CreatePostForm>,
+    conn: ChatDbConn,
+    ws: State<Ws>,
+) -> Redirect {
     let data = create_post(conn, &data.name, &data.message, Vec::new());
     send_post_created_event(&ws, &data);
 
@@ -114,6 +189,7 @@ pub fn create_post_form(data: Form<CreatePostForm>, conn: ChatDbConn, ws: State<
 
 #[post("/", data = "<data>", rank = 2)]
 pub fn create_post_multipart(
+    _auth: Authenticated,
     data: CreatePostMultipart,
     conn: ChatDbConn,
     ws: State<Ws>,
