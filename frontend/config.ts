@@ -1,5 +1,6 @@
 export const config = {
-    wsUrl: 'ws://127.0.0.1:8001',
+    wsUrl: 'ws://localhost:8001',
+    ssoOrigin: 'http://localhost:8100',
 };
 
 export default config;

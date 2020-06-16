@@ -1,4 +1,3 @@
-import Api from './services/api';
 import { addPost, setPosts } from './stores';
 import { Post } from './types';
 import utils from './utils';
@@ -38,7 +37,7 @@ export class Ws {
 
     private onOpen = async (e: Event) => {
         // Reload latest posts after websocket connected.
-        const posts = await Api.getLatestPosts();
+        const posts = await window.api!.getLatestPosts();
 
         const scroll = utils.isAtBottom();
         if (scroll) {

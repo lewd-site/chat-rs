@@ -75,3 +75,5 @@ export function unloadOldPosts() {
 }
 
 export const mediaBoxFile = writable<null | File>(null);
+
+export const authModal = writable<boolean>(false);

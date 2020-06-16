@@ -1,6 +1,5 @@
 <script>
   import RichTextBox from "./RichTextBox.svelte";
-  import Api from "../services/api";
   import utils from "../utils";
 
   let message = "";
@@ -43,7 +42,7 @@
 
     name = `${name}#${tripcode}`;
 
-    Api.submitPost({ name, message, files }).then(() => {
+    window.api.submitPost({ name, message, files }).then(() => {
       message = "";
       files = [];
       messageElement.clear();
@@ -71,7 +70,10 @@
   }
 </script>
 
+<div class="post-form__left"></div>
+
 <form
+  class="post-form__main"
   method="POST"
   action="/api/v1/posts"
   enctype="multipart/form-data"
@@ -114,3 +116,5 @@
     </div>
   </div>
 </form>
+
+<div class="post-form__right"></div>

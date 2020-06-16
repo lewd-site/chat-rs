@@ -1,0 +1,76 @@
+.auth-modal {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+
+    pointer-events: none;
+
+    &__content {
+        background: #43474F;
+
+        border: 1px solid #36393F;
+        border-radius: 5px;
+
+        max-width: 600px;
+
+        padding: 16px;
+
+        z-index: 50;
+
+        pointer-events: initial;
+    }
+
+    &__email,
+    &__password {
+        display: block;
+        width: 100%;
+
+        background: #393C42;
+        color: #EEEEEE;
+        font-size: 18px;
+
+        border: 1px solid transparent;
+        border-radius: 7px;
+
+        padding: 0 8px;
+        margin-bottom: 8px;
+
+        &:focus {
+            background: #36393F;
+            border: 1px solid #9DA2B2;
+        }
+    }
+
+    &__error {
+        color: #E33D3D;
+        margin-bottom: 8px;
+    }
+
+    &__actions {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: center;
+    }
+
+    &__cancel,
+    &__submit {
+        background: #43474F;
+
+        border: 1px solid #36393F;
+        border-radius: 18.5px;
+
+        color: #9DA2B2;
+        line-height: 25px;
+        font-size: 18px;
+        font-weight: 600;
+
+        padding: 6px 16px;
+
+        cursor: pointer;
+    }
+
+    &__cancel {
+        margin-right: 8px;
+    }
+}
