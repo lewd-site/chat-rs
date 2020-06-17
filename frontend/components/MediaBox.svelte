@@ -1,5 +1,5 @@
 <script>
-  import { mediaBoxFile } from "../stores";
+  import { mediaBoxFile } from "../stores/files";
 
   let content = null;
 

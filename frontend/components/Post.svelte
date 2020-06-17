@@ -1,7 +1,15 @@
 <script>
-  import { mediaBoxFile } from "../stores";
+  import { mediaBoxFile } from "../stores/files";
+  import {
+    hasPopup,
+    addPopup,
+    setPopupHover,
+    checkPopup
+  } from "../stores/post_popups";
 
   export let post;
+
+  const POPUP_OPEN_TIME = 100;
 
   function getName(name, tripcode) {
     if ((!name || !name.length) && (!tripcode || !tripcode.length)) {
@@ -108,7 +116,7 @@
           break;
 
         case "RefLink":
-          markup = `<a class="markup markup_reflink" href="#post_${tag.id}">${markup}</a>`;
+          markup = `<a class="markup markup_reflink" href="#post_${tag.id}" data-show-post-popup="${tag.id}">${markup}</a>`;
           break;
 
         case "Quote":
@@ -134,6 +142,51 @@
       return currentFile !== file ? file : null;
     });
   }
+
+  let showPopupTimeout = null;
+
+  function handleMouseOver(e) {
+    if (!e.target.hasAttribute("data-show-post-popup")) {
+      return;
+    }
+
+    if (hasPopup(e.target)) {
+      setPopupHover(e.target, true);
+    } else {
+      const parentPopup = e.target.closest("[data-post-popup]");
+      const layoutBox = document.body.getBoundingClientRect();
+      const top = e.clientY - layoutBox.top;
+      const left = e.clientX - layoutBox.left;
+      const bottomToTop = e.clientY > window.innerHeight / 2;
+      const rightToLeft = e.clientX > window.innerWidth / 2;
+
+      showPopupTimeout = setTimeout(() => {
+        addPopup(
+          e.target,
+          parentPopup ? +parentPopup.getAttribute("data-post-popup") : null,
+          +e.target.getAttribute("data-show-post-popup"),
+          top,
+          left,
+          bottomToTop,
+          rightToLeft
+        );
+      }, POPUP_OPEN_TIME);
+    }
+  }
+
+  function handleMouseOut(e) {
+    if (!e.target.hasAttribute("data-show-post-popup")) {
+      return;
+    }
+
+    if (showPopupTimeout) {
+      clearTimeout(showPopupTimeout);
+      showPopupTimeout = null;
+    }
+
+    setPopupHover(e.target, false);
+    checkPopup(e.target);
+  }
 </script>
 
 <div class="post__header">
@@ -145,7 +198,10 @@
   </time>
 </div>
 
-<div class="post__content">
+<div
+  class="post__content"
+  on:mouseover={handleMouseOver}
+  on:mouseout={handleMouseOut}>
   <div class={getFilesClass(post.files)}>
     {#each post.files as file (file.id)}
       <div class="post__file">
@@ -169,10 +225,18 @@
   </div>
 </div>
 
-<div class="post__footer">
+<div
+  class="post__footer"
+  on:mouseover={handleMouseOver}
+  on:mouseout={handleMouseOut}>
   {#if post.reply_from}
     {#each post.reply_from as id (id)}
-      <a class="post__footer-reflink" href="#post_{id}">{id}</a>
+      <a
+        class="post__footer-reflink"
+        href="#post_{id}"
+        data-show-post-popup={id}>
+        {id}
+      </a>
     {/each}
   {/if}
 </div>

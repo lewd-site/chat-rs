@@ -1,0 +1,13 @@
+.post-popups {
+    &__post {
+        position: absolute;
+
+        background: #43474F;
+        border: 1px solid #36393F;
+        border-radius: 5px;
+
+        max-width: 50vw;
+    }
+
+    z-index: 10;
+}

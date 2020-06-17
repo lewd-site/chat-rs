@@ -1,5 +1,5 @@
 <script>
-  import { authModal } from "../stores";
+  import { showAuthModal } from "../stores/auth";
 
   let email = "";
   let password = "";
@@ -10,7 +10,7 @@
   }
 
   function handleCancel(e) {
-    authModal.set(false);
+    showAuthModal.set(false);
     error = "";
   }
 
@@ -19,7 +19,7 @@
 
     try {
       await window.sso.loginByEmail(email, password);
-      authModal.set(false);
+      showAuthModal.set(false);
       error = "";
 
       authButton.setAttribute("hidden", "");
@@ -31,7 +31,7 @@
   }
 </script>
 
-{#if $authModal}
+{#if $showAuthModal}
   <form class="auth-modal__content" on:submit|preventDefault={handleSubmit}>
     <input
       class="auth-modal__email"

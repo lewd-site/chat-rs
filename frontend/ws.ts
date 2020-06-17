@@ -1,4 +1,4 @@
-import { addPost, setPosts } from './stores';
+import { addPost, setPosts } from './stores/posts';
 import { Post } from './types';
 import utils from './utils';
 

@@ -4,12 +4,13 @@ import AuthModal from './components/AuthModal.svelte';
 import MediaBox from './components/MediaBox.svelte';
 import PostForm from './components/PostForm.svelte';
 import PostList from './components/PostList.svelte';
+import PostPopups from './components/PostPopups.svelte';
 import config from './config';
 import Menu from './menu';
 import Api from './services/api';
 import Sso from './services/sso';
-import * as stores from './stores';
-import { Posts } from './stores';
+import { showAuthModal } from './stores/auth';
+import { Posts, posts, setPosts, addPosts, unloadOldPosts } from './stores/posts';
 import Ws from './ws';
 import utils from './utils';
 
@@ -44,10 +45,16 @@ if (!mediaBoxContainer) {
     throw new Error('#media-box not found');
 }
 
+const postPopupsContainer = document.getElementById('post-popups');
+if (!postPopupsContainer) {
+    throw new Error('#post-popups not found');
+}
+
 const authModal = new AuthModal({ target: authModalContainer });
 const postFrom = new PostForm({ target: postFormContainer });
 const postList = new PostList({ target: postListContainer });
 const mediaBox = new MediaBox({ target: mediaBoxContainer });
+const postpopUps = new PostPopups({ target: postPopupsContainer });
 
 window.sso = new Sso();
 window.api = new Api(window.sso);
@@ -55,17 +62,27 @@ window.ws = new Ws(config.wsUrl);
 
 window.api.getLatestPosts().then(posts => {
     setTimeout(utils.scrollToBottom);
-    stores.setPosts(posts);
+    setPosts(posts);
 });
 
 const authButton = document.getElementById('login');
-authButton?.setAttribute("hidden", "");
+authButton?.setAttribute('hidden', '');
 authButton?.addEventListener('click', e => {
-    stores.authModal.set(true);
+    showAuthModal.set(true);
 });
 
 setTimeout(async () => {
     await window.sso!.get();
+
+    if (!window.sso!.hasAccessToken || window.sso!.hasExpired) {
+        const email = localStorage['auth_email'];
+        if (window.sso!.hasRefreshToken && email) {
+            try {
+                await window.sso!.refreshByEmail(email);
+            } catch (e) { }
+        }
+    }
+
     if (window.sso!.hasAccessToken && !window.sso!.hasExpired) {
         authButton?.setAttribute('hidden', '');
     } else {
@@ -74,7 +91,7 @@ setTimeout(async () => {
 }, 1000);
 
 let _posts: Posts = {};
-stores.posts.subscribe(posts => _posts = posts);
+posts.subscribe(posts => _posts = posts);
 
 window.addEventListener('scroll', async () => {
     if (utils.isAtTop()) {
@@ -84,10 +101,10 @@ window.addEventListener('scroll', async () => {
         }
 
         const oldPosts = await window.api!.getPostsBefore(firstPost.id);
-        stores.addPosts(oldPosts);
+        addPosts(oldPosts);
         utils.maintainScrollBottom();
     } else if (utils.isAtBottom()) {
-        stores.unloadOldPosts();
+        unloadOldPosts();
     }
 });
 

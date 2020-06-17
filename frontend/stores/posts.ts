@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 
-import { Post, RefLink } from './types';
+import { RefLink, Post } from '../types';
 
 export type Posts = { [key: number]: Post };
 
@@ -73,7 +73,3 @@ export function unloadOldPosts() {
         return arrayToHash(values.slice(-MAX_POSTS));
     });
 }
-
-export const mediaBoxFile = writable<null | File>(null);
-
-export const authModal = writable<boolean>(false);

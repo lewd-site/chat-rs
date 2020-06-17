@@ -43,5 +43,18 @@ export interface Post {
     readonly created_at: string;
     readonly files: File[];
 
-    reply_from: undefined | number[];
+    reply_from?: number[];
+}
+
+export interface PostPopup {
+    readonly id: number;
+    readonly parentPopupId: null | number;
+    readonly link: HTMLElement;
+    readonly postId: number;
+    readonly top: number;
+    readonly left: number;
+    readonly bottomToTop: boolean;
+    readonly rightToLeft: boolean;
+
+    hover: boolean;
 }
