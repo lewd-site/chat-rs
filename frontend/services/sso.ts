@@ -6,9 +6,9 @@ interface TokenData {
     readonly user_uuid: string;
     readonly user_name: string;
     readonly user_email: string;
-    readonly iat: string;
-    readonly nbf: string;
-    readonly exp: string;
+    readonly iat: number;
+    readonly nbf: number;
+    readonly exp: number;
 }
 
 class Deferred<T> {
@@ -63,7 +63,7 @@ export class Sso {
         }
 
         const now = Date.now();
-        const exp = Date.parse(this.accessTokenData!.exp);
+        const exp = this.accessTokenData!.exp * 1000;
 
         return exp <= now;
     }

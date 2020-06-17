@@ -45,7 +45,7 @@ fn main() {
     let rocket = rocket();
 
     let ws_address = rocket.config().get_str("ws_address").unwrap_or("127.0.0.1");
-    let ws_port = rocket.config().get_str("ws_port").unwrap_or("8001");
+    let ws_port = rocket.config().get_int("ws_port").unwrap_or(8001);
     let ws_address = format!("{}:{}", ws_address, ws_port);
     let ws = Ws::new(&ws_address);
     let rocket = rocket.manage(ws);

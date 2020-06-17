@@ -10,7 +10,7 @@
         border-radius: 3px;
         color: inherit;
 
-        font-family: 'Fira Code', monospace;
+        font-family: $monospace;
         font-style: normal;
         font-weight: normal;
 
@@ -54,7 +54,7 @@
     }
 
     &_quote {
-        color: #E3833D;
+        color: #3DE389;
 
         &::before {
             content: '>';
