@@ -30,7 +30,12 @@
 
   function updatePreviews(e) {
     previews.forEach(preview => URL.revokeObjectURL(preview));
-    previews = files.map(file => URL.createObjectURL(file));
+    previews = files.map(file => ({
+      type: file.type,
+      name: file.name,
+      size: file.size,
+      src: URL.createObjectURL(file)
+    }));
   }
 
   function handleSubmit(e) {
@@ -70,7 +75,7 @@
   }
 </script>
 
-<div class="post-form__left"></div>
+<div class="post-form__left" />
 
 <form
   class="post-form__main"
@@ -80,14 +85,31 @@
   on:submit|preventDefault={handleSubmit}
   bind:this={formElement}>
   <div class="post-form__previews-row">
-    {#each previews as preview, index (preview)}
-      <picture>
-        <img
-          class="post-form__preview"
-          src={preview}
-          alt="Preview"
+    {#each previews as preview, index (preview.src)}
+      {#if preview.type.startsWith('image/')}
+        <picture title={preview.name}>
+          <img
+            class="post-form__preview post-form__preview_image"
+            src={preview.src}
+            alt="Preview"
+            on:click|preventDefault={e => removeFileAt(index)} />
+        </picture>
+      {:else if preview.type.startsWith('audio/')}
+        <div
+          class="post-form__preview post-form__preview_audio"
+          title={preview.name}
           on:click|preventDefault={e => removeFileAt(index)} />
-      </picture>
+      {:else if preview.type.startsWith('video/')}
+        <video
+          class="post-form__preview post-form__preview_video"
+          autoplay
+          loop
+          muted
+          title={preview.name}
+          on:click|preventDefault={e => removeFileAt(index)}>
+          <source src={preview.src} />
+        </video>
+      {/if}
     {/each}
   </div>
 
@@ -117,4 +139,4 @@
   </div>
 </form>
 
-<div class="post-form__right"></div>
+<div class="post-form__right" />

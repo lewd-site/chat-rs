@@ -49,6 +49,20 @@
         cursor: pointer;
     }
 
+    &__preview_audio {
+        background: transparent;
+        background-image: url('../images/la/music-solid.svg');
+        background-position: center center;
+        background-repeat: no-repeat;
+        border: 0;
+
+        border: 2px dashed #9DA2B2;
+    }
+
+    &__preview_video {
+        border: 2px dashed #9DA2B2;
+    }
+
     &__message-row {
         position: relative;
 
