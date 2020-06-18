@@ -7,6 +7,28 @@
         border-radius: 5px;
 
         max-width: 50vw;
+
+        transform: scale(1);
+        transform-origin: 0 0;
+        opacity: 1;
+        transition: transform 100ms linear, opacity 100ms linear;
+
+        &_bottom-to-top {
+            transform-origin: 0 100%;
+        }
+
+        &_right-to-left {
+            transform-origin: 100% 0;
+        }
+
+        &_bottom-to-top#{#{&}_right-to-left} {
+            transform-origin: 100% 100%;
+        }
+
+        &_fade {
+            transform: scale(0);
+            opacity: 0;
+        }
     }
 
     z-index: 10;

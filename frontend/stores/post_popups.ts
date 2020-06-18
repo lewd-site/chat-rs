@@ -45,9 +45,11 @@ export function addPopup(
         bottomToTop,
         rightToLeft,
         hover: true,
+        fade: true,
     };
 
     popups.update(popups => ({ ...popups, [id]: popup }));
+    setTimeout(() => setPopupFadeById(id, false), 100);
 }
 
 export function setPopupHoverById(id: number, hover: boolean) {
@@ -60,6 +62,16 @@ export function setPopupHoverById(id: number, hover: boolean) {
     });
 }
 
+export function setPopupFadeById(id: number, fade: boolean) {
+    popups.update(popups => {
+        if (!_popups[id]) {
+            return popups;
+        }
+
+        return { ...popups, [id]: { ...popups[id], fade } };
+    });
+}
+
 export function setPopupHover(link: HTMLElement, hover: boolean) {
     const popup = getPopup(link);
     if (popup) {
@@ -68,31 +80,35 @@ export function setPopupHover(link: HTMLElement, hover: boolean) {
 }
 
 function doCheckPopup(id: number) {
-    popups.update(popups => {
-        const popup = popups[id];
-        if (!popup) {
-            return popups;
+    const popup = _popups[id];
+    if (!popup) {
+        return;
+    }
+
+    if (popup.hover) {
+        return;
+    }
+
+    const children = Object.values(_popups).filter(popup => popup.parentPopupId === +id);
+    if (children.some(popup => popup.hover)) {
+        return;
+    }
+
+    setTimeout(() => {
+        if (popup.parentPopupId) {
+            doCheckPopup(popup.parentPopupId);
         }
+    }, POPUP_CLOSE_TIME);
 
-        if (popup.hover) {
-            return popups;
-        }
+    setPopupFadeById(popup.id, true);
 
-        const children = Object.values(popups).filter(popup => popup.parentPopupId === +id);
-        if (children.some(popup => popup.hover)) {
-            return popups;
-        }
-
-        setTimeout(() => {
-            if (popup.parentPopupId) {
-                doCheckPopup(popup.parentPopupId);
-            }
-        }, POPUP_CLOSE_TIME);
-
-        const _popups = { ...popups };
-        delete _popups[popup.id];
-        return _popups;
-    });
+    setTimeout(() => {
+        popups.update(popups => {
+            const _popups = { ...popups };
+            delete _popups[popup.id];
+            return _popups;
+        });
+    }, 100);
 }
 
 export function checkPopupById(id: number) {

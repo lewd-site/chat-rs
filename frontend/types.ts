@@ -55,6 +55,6 @@ export interface PostPopup {
     readonly left: number;
     readonly bottomToTop: boolean;
     readonly rightToLeft: boolean;
-
-    hover: boolean;
+    readonly hover: boolean;
+    readonly fade: boolean;
 }

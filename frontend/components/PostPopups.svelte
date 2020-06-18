@@ -43,6 +43,10 @@
       classes.push("post-popups__post_right-to-left");
     }
 
+    if (popup.fade) {
+      classes.push("post-popups__post_fade");
+    }
+
     return classes.join(" ");
   }
 
