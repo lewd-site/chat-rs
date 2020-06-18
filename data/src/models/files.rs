@@ -6,6 +6,7 @@ use mime::Mime;
 use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 #[derive(Insertable)]
 #[table_name = "files"]
@@ -39,6 +40,129 @@ pub struct File {
 }
 
 impl File {
+    fn get_extension_by_mime_type(mimetype: &str) -> Result<&str, String> {
+        match mimetype {
+            "image/jpeg" => Ok("jpg"),
+            "image/pjpeg" => Ok("jpg"),
+            "image/png" => Ok("png"),
+            "image/x-png" => Ok("png"),
+            "image/gif" => Ok("gif"),
+            "image/webp" => Ok("webp"),
+
+            "audio/mp3" => Ok("mp3"),
+            "audio/mpeg" => Ok("mp3"),
+            "audio/mpeg3" => Ok("mp3"),
+            "audio/mpeg-3" => Ok("mp3"),
+            "audio/mpg" => Ok("mp3"),
+            "audio/x-mp3" => Ok("mp3"),
+            "audio/x-mpeg" => Ok("mp3"),
+            "audio/x-mpeg3" => Ok("mp3"),
+            "audio/x-mpeg-3" => Ok("mp3"),
+            "audio/x-mpg" => Ok("mp3"),
+            "audio/mp4" => Ok("mp4"),
+            "audio/m4a" => Ok("mp4"),
+            "audio/x-m4a" => Ok("mp4"),
+            "audio/webm" => Ok("webm"),
+
+            "video/mp4" => Ok("mp4"),
+            "video/mpeg4" => Ok("mp4"),
+            "video/x-m4v" => Ok("mp4"),
+            "video/webm" => Ok("webm"),
+            _ => Err(format!("Unknown mimetype: {}", mimetype)),
+        }
+    }
+
+    fn get_image_dimensions(
+        path: &PathBuf,
+    ) -> Result<(Option<i32>, Option<i32>, Option<i32>), String> {
+        let reader = match Reader::open(path.clone()) {
+            Ok(reader) => reader,
+            Err(_) => return Err(format!("Can't read file: {}", path.to_string_lossy())),
+        };
+
+        let reader = match reader.with_guessed_format() {
+            Ok(reader) => reader,
+            Err(_) => {
+                return Err(format!(
+                    "Can't guess file format: {}",
+                    path.to_string_lossy()
+                ))
+            }
+        };
+
+        match reader.into_dimensions() {
+            Ok((width, height)) => Ok((Some(width as i32), Some(height as i32), None)),
+            Err(_) => Err(format!(
+                "Can't determine file dimensions: {}",
+                path.to_string_lossy()
+            )),
+        }
+    }
+
+    fn get_audio_dimensions(
+        path: &PathBuf,
+    ) -> Result<(Option<i32>, Option<i32>, Option<i32>), String> {
+        let output = Command::new("ffprobe")
+            .arg("-i")
+            .arg(path)
+            .arg("-select_streams")
+            .arg("a:0")
+            .arg("-show_entries")
+            .arg("format=duration")
+            .arg("-v")
+            .arg("quiet")
+            .arg("-of")
+            .arg("csv=p=0:nk=1")
+            .output();
+
+        match output {
+            Ok(output) => {
+                let output = String::from_utf8(output.stdout).unwrap();
+                let lines: Vec<&str> = output.split(|c| c == ',' || c == '\n').collect();
+                let mut lines = lines.into_iter();
+                let duration: f32 = lines.next().unwrap().parse().unwrap();
+                let duration = duration.ceil() as i32;
+
+                Ok((None, None, Some(duration)))
+            }
+            Err(_) => Err(format!("Can't read file: {}", path.to_string_lossy())),
+        }
+    }
+
+    fn get_video_dimensions(
+        path: &PathBuf,
+    ) -> Result<(Option<i32>, Option<i32>, Option<i32>), String> {
+        let output = Command::new("ffprobe")
+            .arg("-i")
+            .arg(path)
+            .arg("-select_streams")
+            .arg("v:0")
+            .arg("-show_entries")
+            .arg("stream=width,height")
+            .arg("-show_entries")
+            .arg("format=duration")
+            .arg("-v")
+            .arg("quiet")
+            .arg("-of")
+            .arg("csv=p=0:nk=1")
+            .output();
+
+        match output {
+            Ok(output) => {
+                let output = String::from_utf8(output.stdout).unwrap();
+                let lines: Vec<&str> = output.split(|c| c == ',' || c == '\n').collect();
+                let mut lines = lines.into_iter();
+                let width: i32 = lines.next().unwrap().parse().unwrap();
+                let height: i32 = lines.next().unwrap().parse().unwrap();
+                let duration: f32 = lines.next().unwrap().parse().unwrap();
+                let duration = duration.ceil() as i32;
+
+                Ok((Some(width), Some(height), Some(duration)))
+            }
+            Err(_) => Err(format!("Can't read file: {}", path.to_string_lossy())),
+        }
+    }
+
     pub fn new(
         content_type: Option<Mime>,
         file_name: Option<String>,
@@ -49,37 +173,15 @@ impl File {
 
         let content_type = content_type.unwrap_or(mime::APPLICATION_OCTET_STREAM);
         let mimetype = String::from(content_type.to_string());
-
-        let extension = String::from(match &mimetype[..] {
-            "image/jpeg" => "jpg",
-            "image/pjpeg" => "jpg",
-            "image/png" => "png",
-            "image/x-png" => "png",
-            "image/gif" => "gif",
-            "image/webp" => "webp",
-            _ => return Err(format!("Unknown mimetype: {}", mimetype)),
-        });
+        let extension = String::from(File::get_extension_by_mime_type(&mimetype)?);
 
         let created_at = NaiveDateTime::from_timestamp(Utc::now().timestamp(), 0);
 
-        let reader = match Reader::open(path.clone()) {
-            Ok(reader) => reader,
-            Err(_) => return Err(format!("Can't read file: {}", path.to_string_lossy())),
-        };
-
-        let reader = match reader.with_guessed_format() {
-            Ok(reader) => reader,
-            Err(_) => return Err(format!("Can't read file: {}", path.to_string_lossy())),
-        };
-
-        let (width, height) = match reader.into_dimensions() {
-            Ok(dimensions) => dimensions,
-            Err(_) => {
-                return Err(format!(
-                    "Can't determine image dimensions: {}",
-                    path.to_string_lossy()
-                ))
-            }
+        let (width, height, length) = match mimetype.clone() {
+            mimetype if mimetype.starts_with("image/") => File::get_image_dimensions(&path)?,
+            mimetype if mimetype.starts_with("audio/") => File::get_audio_dimensions(&path)?,
+            mimetype if mimetype.starts_with("video/") => File::get_video_dimensions(&path)?,
+            _ => (None, None, None),
         };
 
         let content = match fs::read(path.clone()) {
@@ -105,9 +207,9 @@ impl File {
             extension,
             created_at,
             post_id,
-            width: Some(width as i32),
-            height: Some(height as i32),
-            length: None,
+            width,
+            height,
+            length,
         };
 
         Ok(result)

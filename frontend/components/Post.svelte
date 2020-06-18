@@ -203,7 +203,9 @@
   on:mouseover={handleMouseOver}
   on:mouseout={handleMouseOut}>
   <div class={getFilesClass(post.files)}>
-    {#each post.files as file (file.id)}
+    {#each post.files.filter(file =>
+      file.mimetype.startsWith('image/')
+    ) as file (file.id)}
       <div class="post__file">
         <a
           href="/src/{file.md5}.{file.extension}"

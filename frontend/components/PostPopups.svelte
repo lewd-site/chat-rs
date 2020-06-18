@@ -75,6 +75,8 @@
     data-post-popup={value.popup.id}
     on:mouseenter={e => handleMouseEnter(e, value.popup)}
     on:mouseleave={e => handleMouseLeave(e, value.popup)}>
-    <Post post={value.post} />
+    {#if value.post}
+      <Post post={value.post} />
+    {/if}
   </section>
 {/each}
