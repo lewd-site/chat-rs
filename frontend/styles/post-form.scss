@@ -148,21 +148,11 @@
         cursor: pointer;
     }
 
-    @media screen and (min-width: 900px) {
+    @media screen and (min-width: 1200px) {
         &__left {
             width: 25%;
         }
 
-        &__main {
-            width: 75%;
-        }
-
-        &__menu {
-            width: 22%;
-        }
-    }
-
-    @media screen and (min-width: 1400px) {
         &__right {
             width: 25%;
         }

@@ -87,26 +87,8 @@
         height: 100%;
     }
 
-    @media screen and (min-width: 900px) {
-        &__left {
-            width: 25%;
-        }
-
-        &__center {
-            width: 75%;
-            max-width: calc(75% - 16px);
-        }
-
-        &__menu {
-            width: 22%;
-        }
-
-        &__auth {
-            margin-right: 8px;
-        }
-    }
-
-    @media screen and (min-width: 1400px) {
+    @media screen and (min-width: 1200px) {
+        &__left,
         &__right {
             width: 25%;
         }
@@ -114,6 +96,10 @@
         &__center {
             width: 50%;
             max-width: 50%;
+        }
+
+        &__menu {
+            width: 22%;
         }
 
         &__auth {
