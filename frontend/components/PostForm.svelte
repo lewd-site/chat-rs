@@ -12,9 +12,7 @@
 
   function setFiles(e) {
     if (inputFiles && inputFiles.length) {
-      files = [...inputFiles].slice(0, 5);
-    } else {
-      files = [];
+      files = [...files, ...inputFiles].slice(0, 5);
     }
 
     updatePreviews();

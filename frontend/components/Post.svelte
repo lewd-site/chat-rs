@@ -187,6 +187,10 @@
     setPopupHover(e.target, false);
     checkPopup(e.target);
   }
+
+  function getImageFiles(files) {
+    return files.filter(file => file.mimetype.startsWith("image/"));
+  }
 </script>
 
 <div class="post__header">
@@ -202,10 +206,8 @@
   class="post__content"
   on:mouseover={handleMouseOver}
   on:mouseout={handleMouseOut}>
-  <div class={getFilesClass(post.files)}>
-    {#each post.files.filter(file =>
-      file.mimetype.startsWith('image/')
-    ) as file (file.id)}
+  <div class={getFilesClass(getImageFiles(post.files))}>
+    {#each getImageFiles(post.files) as file (file.id)}
       <div class="post__file">
         <a
           href="/src/{file.md5}.{file.extension}"
