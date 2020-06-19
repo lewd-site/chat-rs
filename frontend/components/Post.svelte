@@ -210,6 +210,7 @@
         <a
           href="/src/{file.md5}.{file.extension}"
           target="_blank"
+          title={file.name}
           on:click|preventDefault={e => handleFileClick(file)}>
           <picture>
             <img
@@ -224,6 +225,27 @@
 
   <div class="post__message">
     {@html getMarkup(post.message)}
+  </div>
+
+  <div class="post__videos">
+    {#each post.files.filter(file =>
+      file.mimetype.startsWith('video/')
+    ) as file (file.id)}
+      <div class="post__video">
+        <a
+          href="/src/{file.md5}.{file.extension}"
+          target="_blank"
+          title={file.name}
+          on:click|preventDefault={e => handleFileClick(file)}>
+          <picture>
+            <img
+              class="post__video-preview"
+              src="/thumb/{file.md5}?max_width=360"
+              alt="Preview" />
+          </picture>
+        </a>
+      </div>
+    {/each}
   </div>
 </div>
 

@@ -6,6 +6,7 @@ use rocket::response::{self, NamedFile, Responder};
 use rocket::{Request, Response};
 use std::error::Error;
 use std::path::Path;
+use std::process::Command;
 
 pub struct CachedFile {
     file: NamedFile,
@@ -39,11 +40,33 @@ fn get_thumb_extension(file_extension: &str) -> &str {
     }
 }
 
-fn create_thumbnail(src: &Path, dst: &Path, max_size: u32) -> Result<(), Box<dyn Error>> {
+fn create_image_thumbnail(src: &Path, dst: &Path, max_size: u32) -> Result<(), Box<dyn Error>> {
     let image = Reader::open(src)?.with_guessed_format()?.decode()?;
     image
         .resize(max_size, max_size, FilterType::Lanczos3)
         .save(dst)?;
+
+    Ok(())
+}
+
+fn create_video_thumbnail(src: &Path, dst: &Path, max_size: u32) -> Result<(), Box<dyn Error>> {
+    Command::new("ffmpeg")
+        .arg("-ss")
+        .arg("1")
+        .arg("-i")
+        .arg(src)
+        .arg("-vframes")
+        .arg("1")
+        .arg("-vf")
+        .arg(format!(
+            "scale={}:{}:force_original_aspect_ratio=decrease",
+            max_size, max_size
+        ))
+        .arg(dst)
+        .arg("-v")
+        .arg("quiet")
+        .arg("-y")
+        .output()?;
 
     Ok(())
 }
@@ -67,7 +90,15 @@ pub fn get_thumbnail(conn: ChatDbConn, hash: String, max_width: Option<i32>) -> 
             let src_filename = format!("{}.{}", hash, file.extension);
             let src_path = Path::new(src_dir).join(src_filename);
 
-            create_thumbnail(&src_path, &thumb_path, max_width as u32).unwrap();
+            match file.mimetype.clone() {
+                mimetype if mimetype.starts_with("image/") => {
+                    create_image_thumbnail(&src_path, &thumb_path, max_width as u32).unwrap();
+                }
+                mimetype if mimetype.starts_with("video/") => {
+                    create_video_thumbnail(&src_path, &thumb_path, max_width as u32).unwrap();
+                }
+                _ => {}
+            };
         }
 
         NamedFile::open(thumb_path)

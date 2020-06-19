@@ -28,9 +28,13 @@
         z-index: 20;
 
         pointer-events: initial;
+
+        &_video {
+            padding-top: 16px;
+        }
     }
 
-    &__image {
+    &__media {
         display: block;
         width: 100%;
         height: 100%;
