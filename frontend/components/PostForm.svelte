@@ -1,5 +1,5 @@
 <script>
-  import RichTextBox from "./RichTextBox.svelte";
+  import TextBox from "./TextBox.svelte";
   import utils from "../utils";
 
   let message = "";
@@ -124,7 +124,7 @@
       </label>
     </div>
 
-    <RichTextBox
+    <TextBox
       className="post-form__message"
       name="message"
       bind:value={message}
