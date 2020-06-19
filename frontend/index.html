@@ -7,7 +7,8 @@
 
     <title>Chat</title>
 
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" />
 
     <script src="./index.ts" async defer></script>
@@ -50,6 +51,13 @@
     </main>
 
     <aside class="layout__right"></aside>
+
+    <div id="controls" class="layout__controls controls">
+        <button id="scroll-to-top" class="controls__top"></button>
+        <button id="scroll-to-bottom" class="controls__bottom"></button>
+        <div class="controls__separator"></div>
+        <button id="toggle-nsfw" class="controls__nsfw"></button>
+    </div>
 
     <div id="post-form" class="layout__post-form post-form"></div>
     <div id="post-popups" class="layout__post-popups post-popups"></div>

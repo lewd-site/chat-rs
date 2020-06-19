@@ -100,7 +100,7 @@ posts.subscribe(posts => _posts = posts);
 window.addEventListener('scroll', async () => {
     if (utils.isAtTop()) {
         const firstPost = Object.values(_posts)[0];
-        if (!firstPost) {
+        if (!firstPost || +firstPost.id === 1) {
             return;
         }
 
@@ -116,3 +116,13 @@ const menuElement = document.getElementById('menu');
 if (menuElement) {
     const menu = new Menu(menuElement);
 }
+
+document.getElementById('scroll-to-top')?.addEventListener('click', e => {
+    e.preventDefault();
+    utils.scrollToTop();
+});
+
+document.getElementById('scroll-to-bottom')?.addEventListener('click', e => {
+    e.preventDefault();
+    utils.scrollToBottom();
+});

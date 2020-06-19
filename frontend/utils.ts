@@ -13,6 +13,11 @@ export class Utils {
         return offsetHeight + scrollTop > scrollHeight - BOTTOM_SCROLL_MARGIN;
     }
 
+    public scrollToTop() {
+        const scrollingElement = (document.scrollingElement || document.body);
+        scrollingElement.scrollTop = 1;
+    }
+
     public scrollToBottom() {
         const scrollingElement = (document.scrollingElement || document.body);
         scrollingElement.scrollTop = scrollingElement.scrollHeight;

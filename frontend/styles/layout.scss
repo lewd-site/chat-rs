@@ -60,6 +60,14 @@
         z-index: 5;
     }
 
+    &__controls {
+        position: fixed;
+        top: 70px;
+        right: 16px;
+
+        padding: 16px;
+    }
+
     &__media-box {
         position: fixed;
         top: 0;
@@ -100,6 +108,11 @@
 
         &__menu {
             width: 22%;
+        }
+
+        &__controls {
+            top: 0;
+            left: 75%;
         }
 
         &__auth {

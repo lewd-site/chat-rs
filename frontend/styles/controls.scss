@@ -1,0 +1,51 @@
+.controls {
+    &__top,
+    &__bottom,
+    &__nsfw {
+        background: #43474F;
+        background-position: center center;
+        background-repeat: no-repeat;
+        border: 1px solid #36393F;
+        border-radius: 3px;
+
+        display: block;
+
+        width: 36px;
+        height: 36px;
+
+        padding: 0;
+
+        cursor: pointer;
+
+        &:not(:last-child) {
+            margin-bottom: 8px;
+        }
+    }
+
+    &__top {
+        background-image: url('../images/up.svg');
+    }
+
+    &__bottom {
+        background-image: url('../images/down.svg');
+    }
+
+    &__nsfw {
+        background-image: url('../images/image.svg');
+    }
+
+    &__separator {
+        display: block;
+
+        background: #43474F;
+        border: 1px solid #36393F;
+        border-radius: 3px;
+
+        width: 36px;
+        height: 4px;
+
+        &:not(:last-child) {
+            margin-bottom: 8px;
+        }
+    }
+}
