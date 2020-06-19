@@ -6,6 +6,7 @@ import PostForm from './components/PostForm.svelte';
 import PostList from './components/PostList.svelte';
 import PostPopups from './components/PostPopups.svelte';
 import config from './config';
+import EventEmitter from './event-emitter';
 import Menu from './menu';
 import Api from './services/api';
 import Sso from './services/sso';
@@ -22,8 +23,11 @@ declare global {
         sso?: Sso;
         api?: Api;
         ws?: Ws;
+        eventBus?: EventEmitter;
     }
 }
+
+window.eventBus = new EventEmitter();
 
 const authModalContainer = document.getElementById('auth-modal');
 if (!authModalContainer) {

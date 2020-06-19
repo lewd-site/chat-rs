@@ -1,6 +1,5 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
-  import { createEventDispatcher } from "svelte";
+  import { onMount, onDestroy, createEventDispatcher } from "svelte";
 
   export let className = "";
   export let name = "";
@@ -22,7 +21,16 @@
     element.focus();
   }
 
-  function updateHeight() {
+  export function getSelectionRange() {
+    return { start: element.selectionStart, end: element.selectionEnd };
+  }
+
+  export function setSelectionRange(range) {
+    element.selectionStart = range.start;
+    element.selectionEnd = range.end;
+  }
+
+  export function updateHeight() {
     element.style.height = "54px";
     element.style.height = element.scrollHeight + "px";
   }

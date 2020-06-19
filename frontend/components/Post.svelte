@@ -188,6 +188,10 @@
     checkPopup(e.target);
   }
 
+  function handleReplyClick(e) {
+    window.eventBus.dispatch("reply", post.id);
+  }
+
   function getImageFiles(files) {
     return files.filter(file => file.mimetype.startsWith("image/"));
   }
@@ -200,6 +204,7 @@
   <time class="post__date" datetime={post.created_at}>
     {formatTime(post.created_at)}
   </time>
+  <button class="post__reply" on:click|preventDefault={handleReplyClick} />
 </div>
 
 <div

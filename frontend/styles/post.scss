@@ -2,7 +2,7 @@
     &__header {
         display: flex;
         flex-flow: row wrap;
-        align-items: baseline;
+        align-items: center;
 
         padding: 16px 16px 0;
     }
@@ -37,7 +37,20 @@
     &__date {
         color: #A9A9A9;
 
-        margin-right: 1em;
+        margin-right: 16px;
+    }
+
+    &__reply {
+        background: #36393F;
+        background-image: url('../images/reply.svg');
+        background-position: center center;
+        background-repeat: no-repeat;
+
+        border: 0;
+        border-radius: 3px;
+
+        width: 35px;
+        height: 30px;
     }
 
     &__content {

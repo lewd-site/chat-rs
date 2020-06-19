@@ -1,4 +1,5 @@
 <script>
+  import { onMount, onDestroy } from "svelte";
   import TextBox from "./TextBox.svelte";
   import utils from "../utils";
 
@@ -71,6 +72,69 @@
       setTimeout(utils.scrollToBottom);
     }
   }
+
+  function handleReply(postId) {
+    const selection = window
+      .getSelection()
+      .toString()
+      .replace(/\r/g, "")
+      .trim()
+      .replace(/^(.+)$/gm, "> $1");
+
+    const range = messageElement.getSelectionRange();
+    const textBefore = message.substr(0, range.start);
+    const textAfter = message.substr(range.end);
+    let cursor = textBefore.length;
+
+    const replyToTheSamePost =
+      textBefore.lastIndexOf(`>>${postId}`) !== -1 &&
+      textBefore.lastIndexOf(`>>${postId}`) === textBefore.lastIndexOf(">>");
+
+    let textToInsert = replyToTheSamePost ? "" : `>>${postId}`;
+
+    if (selection.length) {
+      if (textToInsert.length) {
+        textToInsert += `\n${selection}`;
+      } else {
+        textToInsert = selection;
+      }
+    }
+
+    if (textToInsert.length) {
+      if (textBefore.length && !textBefore.endsWith("\n")) {
+        textToInsert = `\n${textToInsert}`;
+      }
+
+      if (textAfter.length) {
+        if (textAfter.startsWith("\n")) {
+          textToInsert = `${textToInsert}\n`;
+        } else {
+          textToInsert = `${textToInsert}\n\n`;
+          cursor--;
+        }
+      } else {
+        textToInsert = `${textToInsert}\n`;
+      }
+    }
+
+    message = [textBefore, textToInsert, textAfter].join("");
+    cursor += textToInsert.length;
+
+    setTimeout(() => {
+      messageElement.updateHeight();
+      messageElement.focus();
+      messageElement.setSelectionRange({ start: cursor, end: cursor });
+      setTimeout(updateSize);
+    });
+  }
+
+  onMount(() => {
+    window.eventBus.subscribe("reply", handleReply);
+  });
+
+  onDestroy(() => {
+    window.eventBus.unsubscribe("reply", handleReply);
+  });
 </script>
 
 <div class="post-form__left" />
