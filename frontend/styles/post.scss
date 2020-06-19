@@ -355,6 +355,27 @@
         object-fit: cover;
     }
 
+    &__audios {
+        display: flex;
+        flex-flow: row wrap;
+
+        &:not(:empty) {
+            margin-bottom: 8px;
+        }
+    }
+
+    &__audio {
+        display: block;
+
+        border: 0;
+
+        max-width: 360px;
+        max-height: 360px;
+
+        margin-right: 8px;
+        margin-bottom: 8px;
+    }
+
     &__footer {
         display: flex;
         flex-flow: row wrap;
