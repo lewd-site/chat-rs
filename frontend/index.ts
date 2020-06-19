@@ -11,6 +11,7 @@ import Menu from './menu';
 import Api from './services/api';
 import Sso from './services/sso';
 import { showAuthModal } from './stores/auth';
+import { nsfwMode, toggleNSFWMode } from './stores/files';
 import { Posts, posts, setPosts, addPosts, unloadOldPosts } from './stores/posts';
 import Ws from './ws';
 import utils from './utils';
@@ -125,4 +126,17 @@ document.getElementById('scroll-to-top')?.addEventListener('click', e => {
 document.getElementById('scroll-to-bottom')?.addEventListener('click', e => {
     e.preventDefault();
     utils.scrollToBottom();
+});
+
+document.getElementById('toggle-nsfw')?.addEventListener('click', e => {
+    e.preventDefault();
+    toggleNSFWMode();
+});
+
+nsfwMode.subscribe(nsfwMode => {
+    if (nsfwMode) {
+        document.body.classList.add('nsfw');
+    } else {
+        document.body.classList.remove('nsfw');
+    }
 });

@@ -325,6 +325,13 @@
         height: 100%;
 
         object-fit: cover;
+
+        opacity: 1;
+        transition: opacity 300ms ease;
+
+        .nsfw &:not(:hover) {
+            opacity: 0.05;
+        }
     }
 
     &__message {
@@ -370,6 +377,13 @@
         height: 100%;
 
         object-fit: cover;
+
+        opacity: 1;
+        transition: opacity 300ms ease;
+
+        .nsfw &:not(:hover) {
+            opacity: 0.05;
+        }
     }
 
     &__audios {
