@@ -8,7 +8,7 @@ edition = "2018"
 chrono = { version = "0.4", features = ["serde"] }
 data = { path = "../data" }
 diesel = { version = "1.4.4", features = ["postgres"] }
-image = "0.23.5"
+image = { git = "https://github.com/image-rs/image.git", rev = "260f929" }
 jsonwebtoken = "7.1.1"
 lazy_static = "1.4.0"
 mime = "0.3.16"
