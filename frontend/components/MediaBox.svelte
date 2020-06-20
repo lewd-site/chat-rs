@@ -1,7 +1,6 @@
 <script>
+  import VideoPlayer from "./VideoPlayer.svelte";
   import { mediaBoxFile } from "../stores/files";
-
-  const VIDEO_PADDING = 16;
 
   let content = null;
 
@@ -69,30 +68,16 @@
       return;
     }
 
-    let scale;
-    if (file.mimetype.startsWith("video/")) {
-      scale = Math.min(
-        window.innerWidth / file.width,
-        window.innerHeight / (file.height + VIDEO_PADDING),
-        1
-      );
-    } else {
-      scale = Math.min(
-        window.innerWidth / file.width,
-        window.innerHeight / file.height,
-        1
-      );
-    }
+    const scale = Math.min(
+      window.innerWidth / file.width,
+      window.innerHeight / file.height,
+      1
+    );
 
     width = file.width * scale;
     height = file.height * scale;
     offsetX = window.innerWidth / 2 - width / 2;
-
-    if (file.mimetype.startsWith("video/")) {
-      offsetY = window.innerHeight / 2 - (height + VIDEO_PADDING) / 2;
-    } else {
-      offsetY = window.innerHeight / 2 - height / 2;
-    }
+    offsetY = window.innerHeight / 2 - height / 2;
 
     // Unset an old image and set a new one only at the next iteration of the event loop
     // to avoid flash of the old image.
@@ -202,7 +187,7 @@
 
   <div
     class="media-box__content media-box__content_{$mediaBoxFile.mimetype.split('/')[0]}"
-    style="left: {offsetX}px; top: {offsetY}px; width: {width}px; height: {$mediaBoxFile.mimetype.startsWith('video/') ? height + VIDEO_PADDING : height}px"
+    style="left: {offsetX}px; top: {offsetY}px; width: {width}px; height: {height}px"
     bind:this={content}
     on:pointerdown={handlePointerDown}
     on:wheel={handleWheel}>
@@ -211,14 +196,9 @@
         <img class="media-box__media media-box__media_image" {src} alt="" />
       </picture>
     {:else if $mediaBoxFile.mimetype.startsWith('video/') && src}
-      <video
-        class="media-box__media media-box__media_video"
-        autoplay
-        loop
-        controls
-        preload="metadata">
-        <source {src} />
-      </video>
+      <VideoPlayer
+        className="media-box__media media-box__media_video"
+        file={$mediaBoxFile} />
     {/if}
   </div>
 {/if}

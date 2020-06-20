@@ -6,9 +6,11 @@
 
   let audioElement = null;
   let seekElement = null;
+
   let expanded = false;
+  let volume = 0.5;
   let currentTime = 0;
-  $: duration = file ? file.length : 0;
+  let duration = 0;
 
   $: _currentTime = formatTime(currentTime);
   $: _duration = formatTime(duration);
@@ -22,6 +24,10 @@
     .join(" ");
 
   function formatTime(value) {
+    if (!value) {
+      return "0:00";
+    }
+
     const seconds = Math.floor(value % 60);
     const minutes = Math.floor(value / 60);
 
@@ -35,6 +41,11 @@
 
   export function open() {
     expanded = true;
+
+    volume =
+      localStorage.getItem("settings.volume") !== null
+        ? +localStorage.getItem("settings.volume")
+        : 0.5;
 
     if (updateInterval) {
       clearInterval(updateInterval);
@@ -103,6 +114,16 @@
     window.addEventListener("pointermove", handlePointerMove);
   }
 
+  function handleLoaded(e) {
+    duration = audioElement.duration;
+    audioElement.volume = volume;
+  }
+
+  function handleVolumeChange(e) {
+    volume = audioElement.volume;
+    localStorage.setItem("settings.volume", volume.toString());
+  }
+
   onMount(() => {
     window.eventBus.subscribe("audio_open", handleAudioOpen);
   });
@@ -124,10 +145,11 @@
     <audio
       autoplay
       loop
-      controls
       preload="metadata"
       hidden
-      bind:this={audioElement}>
+      bind:this={audioElement}
+      on:loadedmetadata={handleLoaded}
+      on:volumechange={handleVolumeChange}>
       <source src="/src/{file.md5}.{file.extension}" />
     </audio>
 
