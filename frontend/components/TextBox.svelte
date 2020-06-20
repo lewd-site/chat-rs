@@ -5,15 +5,20 @@
   export let name = "";
   export let value = "";
 
-  let element;
+  let element = null;
+  let selectionStart = 0;
+  let selectionEnd = 0;
 
   const dispatch = createEventDispatcher();
 
   export function clear() {
     value = "";
+
     setTimeout(() => {
       element.style.height = "54px";
       element.style.height = element.scrollHeight + "px";
+
+      checkSelection();
     });
   }
 
@@ -48,7 +53,16 @@
     checkSelection();
   }
 
-  function checkSelection() {}
+  function checkSelection() {
+    if (
+      element.selectionStart !== selectionStart ||
+      element.selectionEnd !== selectionEnd
+    ) {
+      selectionStart = element.selectionStart;
+      selectionEnd = element.selectionEnd;
+      dispatch("selectionChange", { start: selectionStart, end: selectionEnd });
+    }
+  }
 
   onMount(() => {
     updateHeight();

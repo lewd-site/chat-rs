@@ -6,6 +6,7 @@
   let message = "";
   let files = [];
   let previews = [];
+  let showMarkup = false;
 
   let inputFiles = null;
   let formElement;
@@ -57,6 +58,12 @@
   }
 
   function handleChange() {
+    setTimeout(updateSize);
+  }
+
+  function handleSelectionChange(e) {
+    const length = e.detail.end - e.detail.start;
+    showMarkup = length > 0;
     setTimeout(updateSize);
   }
 
@@ -128,6 +135,33 @@
     });
   }
 
+  function insertMarkup(tag) {
+    const range = messageElement.getSelectionRange();
+    const textBefore = message.substr(0, range.start);
+    const selectedText = message.substr(range.start, range.end - range.start);
+    const textAfter = message.substr(range.end);
+    const selectionStart = textBefore.length + tag.length + 2;
+    const selectionEnd = selectionStart + selectedText.length;
+
+    message = [
+      textBefore,
+      `[${tag}]`,
+      selectedText,
+      `[/${tag}]`,
+      textAfter
+    ].join("");
+
+    setTimeout(() => {
+      messageElement.updateHeight();
+      messageElement.focus();
+      messageElement.setSelectionRange({
+        start: selectionStart,
+        end: selectionEnd
+      });
+      setTimeout(updateSize);
+    });
+  }
+
   onMount(() => {
     window.eventBus.subscribe("reply", handleReply);
   });
@@ -175,6 +209,64 @@
     {/each}
   </div>
 
+  {#if showMarkup}
+    <div class="post-form__markup-row">
+      <button
+        class="post-form__bold"
+        on:click|preventDefault={e => insertMarkup('b')}>
+        Tt
+      </button>
+
+      <button
+        class="post-form__italic"
+        on:click|preventDefault={e => insertMarkup('i')}>
+        Tt
+      </button>
+
+      <button
+        class="post-form__underline"
+        on:click|preventDefault={e => insertMarkup('u')}>
+        Tt
+      </button>
+
+      <button
+        class="post-form__strike"
+        on:click|preventDefault={e => insertMarkup('s')}>
+        Tt
+      </button>
+
+      <button
+        class="post-form__sup"
+        on:click|preventDefault={e => insertMarkup('sup')}>
+        <span>Tt</span>
+      </button>
+
+      <button
+        class="post-form__sub"
+        on:click|preventDefault={e => insertMarkup('sub')}>
+        <span>Tt</span>
+      </button>
+
+      <button
+        class="post-form__code"
+        on:click|preventDefault={e => insertMarkup('code')}>
+        Code
+      </button>
+
+      <button
+        class="post-form__codeblock"
+        on:click|preventDefault={e => insertMarkup('codeblock')}>
+        Code Block
+      </button>
+
+      <button
+        class="post-form__spoiler"
+        on:click|preventDefault={e => insertMarkup('spoiler')}>
+        Spoiler
+      </button>
+    </div>
+  {/if}
+
   <div class="post-form__message-row">
     <div class="post-form__attachment-wrapper">
       <label class="post-form__attachment">
@@ -193,7 +285,8 @@
       name="message"
       bind:value={message}
       bind:this={messageElement}
-      on:change={handleChange} />
+      on:change={handleChange}
+      on:selectionChange={handleSelectionChange} />
 
     <div class="post-form__submit-wrapper">
       <button class="post-form__submit" type="submit" />
