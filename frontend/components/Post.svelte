@@ -7,13 +7,16 @@
     setPopupHover,
     checkPopup
   } from "../stores/post_popups";
+  import { posts } from "../stores/posts";
 
   export let post;
 
   const POPUP_OPEN_TIME = 100;
 
-  function getName(name, tripcode) {
-    if ((!name || !name.length) && (!tripcode || !tripcode.length)) {
+  let _posts = $posts;
+
+  function getName(post) {
+    if (!post.name.length && !post.tripcode.length) {
       return "Anonymous";
     }
 
@@ -117,7 +120,16 @@
           break;
 
         case "RefLink":
-          markup = `<a class="markup markup_reflink" href="#post_${tag.id}" data-show-post-popup="${tag.id}">${markup}</a>`;
+          const targetPost = _posts[tag.id];
+          if (targetPost) {
+            markup +=
+              `<span class="reflink__author">` +
+              `<span class="reflink__name">${getName(targetPost)}</span>` +
+              `<span class="reflink__tripcode">${targetPost.tripcode}</span>` +
+              `</span>`;
+          }
+
+          markup = `<a class="markup markup_reflink reflink" href="#post_${tag.id}" data-show-post-popup="${tag.id}">${markup}</a>`;
           break;
 
         case "Quote":
@@ -147,14 +159,15 @@
   let showPopupTimeout = null;
 
   function handleMouseOver(e) {
-    if (!e.target.hasAttribute("data-show-post-popup")) {
+    let target = e.target.closest("[data-show-post-popup]");
+    if (!target) {
       return;
     }
 
-    if (hasPopup(e.target)) {
-      setPopupHover(e.target, true);
+    if (hasPopup(target)) {
+      setPopupHover(target, true);
     } else {
-      const parentPopup = e.target.closest("[data-post-popup]");
+      const parentPopup = target.closest("[data-post-popup]");
       const layoutBox = document.body.getBoundingClientRect();
       const top = e.clientY - layoutBox.top;
       const left = e.clientX - layoutBox.left;
@@ -163,9 +176,9 @@
 
       showPopupTimeout = setTimeout(() => {
         addPopup(
-          e.target,
+          target,
           parentPopup ? +parentPopup.getAttribute("data-post-popup") : null,
-          +e.target.getAttribute("data-show-post-popup"),
+          +target.getAttribute("data-show-post-popup"),
           top,
           left,
           bottomToTop,
@@ -176,7 +189,8 @@
   }
 
   function handleMouseOut(e) {
-    if (!e.target.hasAttribute("data-show-post-popup")) {
+    let target = e.target.closest("[data-show-post-popup]");
+    if (!target) {
       return;
     }
 
@@ -185,8 +199,8 @@
       showPopupTimeout = null;
     }
 
-    setPopupHover(e.target, false);
-    checkPopup(e.target);
+    setPopupHover(target, false);
+    checkPopup(target);
   }
 
   function handleReplyClick(e) {
@@ -199,7 +213,7 @@
 </script>
 
 <div class="post__header">
-  <span class="post__name">{getName(post.name, post.tripcode)}</span>
+  <span class="post__name">{getName(post)}</span>
   <span class="post__tripcode">{post.tripcode}</span>
   <span class="post__id">{post.id}</span>
   <time class="post__date" datetime={post.created_at}>
@@ -272,10 +286,16 @@
   {#if post.reply_from}
     {#each post.reply_from as id (id)}
       <a
-        class="post__footer-reflink"
+        class="post__footer-reflink reflink"
         href="#post_{id}"
         data-show-post-popup={id}>
         {id}
+        {#if $posts[id]}
+          <span class="reflink__author">
+            <span class="reflink__name">{getName($posts[id])}</span>
+            <span class="reflink__tripcode">{$posts[id].tripcode}</span>
+          </span>
+        {/if}
       </a>
     {/each}
   {/if}

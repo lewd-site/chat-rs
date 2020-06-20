@@ -1,0 +1,25 @@
+.reflink {
+    &__author {
+        display: inline-flex;
+        flex-flow: row nowrap;
+
+        font-size: 0.8em;
+        margin-left: 0.25em;
+
+        &::before {
+            content: '(';
+        }
+
+        &::after {
+            content: ')';
+        }
+    }
+
+    &__tripcode {
+        &:not(:empty) {
+            &::before {
+                content: '!';
+            }
+        }
+    }
+}
