@@ -165,6 +165,7 @@
       class="video-player__video"
       autoplay
       loop
+      disablePictureInPicture
       preload="metadata"
       bind:this={videoElement}
       on:loadedmetadata={handleLoaded}

@@ -41,10 +41,9 @@
     }
 
     &__reply {
+        position: relative;
+
         background: #36393F;
-        background-image: url('../images/reply.svg');
-        background-position: center center;
-        background-repeat: no-repeat;
 
         border: 0;
         border-radius: 3px;
@@ -53,6 +52,26 @@
         height: 30px;
 
         cursor: pointer;
+
+        &::after {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+
+            content: '';
+
+            background: $icon;
+
+            mask-image: url('../images/reply.svg');
+            mask-position: center center;
+            mask-repeat: no-repeat;
+        }
+
+        &:hover::after {
+            background: $icon-hover;
+        }
     }
 
     &__content {

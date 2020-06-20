@@ -14,10 +14,12 @@
     }
 
     &__show {
-        background: transparent;
-        background-image: url('../images/menu.svg');
-        background-position: center center;
-        background-repeat: no-repeat;
+        background: $icon;
+
+        mask-image: url('../images/menu.svg');
+        mask-position: center center;
+        mask-repeat: no-repeat;
+
         border: 0;
 
         display: block;
@@ -28,13 +30,19 @@
         padding: 0;
 
         cursor: pointer;
+
+        &:hover {
+            background: $icon-hover;
+        }
     }
 
     &__hide {
-        background: transparent;
-        background-image: url('../images/close.svg');
-        background-position: center center;
-        background-repeat: no-repeat;
+        background: $icon;
+
+        mask-image: url('../images/close.svg');
+        mask-position: center center;
+        mask-repeat: no-repeat;
+
         border: 0;
 
         display: block;
@@ -45,6 +53,10 @@
         padding: 0;
 
         cursor: pointer;
+
+        &:hover {
+            background: $icon-hover;
+        }
     }
 
     &__inner {
@@ -122,6 +134,7 @@
             background-image: url('../images/edit.svg');
             background-position: center center;
             background-repeat: no-repeat;
+
             border: 0;
 
             display: block;

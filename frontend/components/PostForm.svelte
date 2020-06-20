@@ -60,8 +60,6 @@
       name = `${name}#${tripcode}`;
     }
 
-    console.log(name);
-
     try {
       disabled = true;
       const post = await window.api
@@ -229,6 +227,7 @@
           autoplay
           loop
           muted
+          disablePictureInPicture
           title={preview.name}
           on:click|preventDefault={e => removeFileAt(index)}>
           <source src={preview.src} />

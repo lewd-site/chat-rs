@@ -2,10 +2,12 @@
     &__top,
     &__bottom,
     &__nsfw {
+        position: relative;
+
         background: #43474F;
-        background-position: center center;
-        background-repeat: no-repeat;
+
         border: 1px solid #36393F;
+
         border-radius: 3px;
 
         display: block;
@@ -17,21 +19,46 @@
 
         cursor: pointer;
 
+        &::after {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+
+            content: '';
+
+            background: $icon;
+
+            mask-position: center center;
+            mask-repeat: no-repeat;
+        }
+
+        &:hover::after {
+            background: $icon-hover;
+        }
+
         &:not(:last-child) {
             margin-bottom: 8px;
         }
     }
 
     &__top {
-        background-image: url('../images/up.svg');
+        &::after {
+            mask-image: url('../images/up.svg');
+        }
     }
 
     &__bottom {
-        background-image: url('../images/down.svg');
+        &::after {
+            mask-image: url('../images/down.svg');
+        }
     }
 
     &__nsfw {
-        background-image: url('../images/image.svg');
+        &::after {
+            mask-image: url('../images/image.svg');
+        }
     }
 
     &__separator {

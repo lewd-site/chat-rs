@@ -51,10 +51,12 @@
     &__zoom-out,
     &__original,
     &__fit {
-        background: transparent;
-        background-position: center center;
-        background-repeat: no-repeat;
-        background-size: 100% 100%;
+        background: $icon;
+
+        mask-position: center center;
+        mask-repeat: no-repeat;
+        mask-size: 100% 100%;
+
         border: 0;
 
         display: block;
@@ -68,33 +70,37 @@
         padding: 0;
 
         cursor: pointer;
+
+        &:hover {
+            background: $icon-hover;
+        }
     }
 
     &__close {
-        background-image: url('../images/gallery-times.svg');
+        mask-image: url('../images/gallery-times.svg');
     }
 
     &__zoom-in {
-        background-image: url('../images/gallery-plus.svg');
+        mask-image: url('../images/gallery-plus.svg');
     }
 
     &__zoom-out {
-        background-image: url('../images/gallery-minus.svg');
+        mask-image: url('../images/gallery-minus.svg');
     }
 
     &__original {
-        background-image: url('../images/gallery-original.svg');
+        mask-image: url('../images/gallery-original.svg');
     }
 
     &__fit {
-        background-image: url('../images/gallery-fit.svg');
+        mask-image: url('../images/gallery-fit.svg');
     }
 
     &__prev,
     &__next {
+        position: relative;
+
         background: transparent;
-        background-position: center center;
-        background-repeat: no-repeat;
 
         border: 0;
         border-radius: 0;
@@ -109,15 +115,39 @@
         &:hover {
             background-color: #1E2023;
         }
+
+        &::after {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+
+            content: '';
+
+            background: $icon;
+
+            mask-position: center center;
+            mask-repeat: no-repeat;
+        }
+
+        &:hover::after {
+            background: $icon-hover;
+        }
     }
 
     &__prev {
-        background-image: url('../images/gallery-up.svg');
         margin: 44px 0 16px;
+
+        &::after {
+            mask-image: url('../images/gallery-up.svg');
+        }
     }
 
     &__next {
-        background-image: url('../images/gallery-down.svg');
+        &::after {
+            mask-image: url('../images/gallery-down.svg');
+        }
     }
 
     &__files {
