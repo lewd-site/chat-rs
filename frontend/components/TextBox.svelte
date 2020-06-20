@@ -4,6 +4,7 @@
   export let className = "";
   export let name = "";
   export let value = "";
+  export let disabled = false;
 
   let element = null;
   let selectionStart = 0;
@@ -78,4 +79,5 @@
   bind:this={element}
   on:input={handleInput}
   on:mouseup={handleMouseUp}
-  on:keyup={handleKeyUp} />
+  on:keyup={handleKeyUp}
+  {disabled} />

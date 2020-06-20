@@ -7,6 +7,7 @@
   let files = [];
   let previews = [];
   let showMarkup = false;
+  let disabled = false;
 
   let inputFiles = null;
   let formElement;
@@ -38,7 +39,15 @@
     }));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
+    if (disabled) {
+      return;
+    }
+
+    if (message.length === 0 && files.length === 0) {
+      return;
+    }
+
     let name = localStorage.getItem("settings.name") || "";
     let tripcode = localStorage.getItem("settings.tripcode") || "";
     if (tripcode.startsWith("#")) {
@@ -47,14 +56,21 @@
 
     name = `${name}#${tripcode}`;
 
-    window.api.submitPost({ name, message, files }).then(() => {
-      message = "";
-      files = [];
-      messageElement.clear();
-      messageElement.focus();
-      updatePreviews();
-      setTimeout(updateSize);
-    });
+    try {
+      disabled = true;
+      const post = await window.api
+        .submitPost({ name, message, files })
+        .then(() => {
+          message = "";
+          files = [];
+          messageElement.clear();
+          messageElement.focus();
+          updatePreviews();
+          setTimeout(updateSize);
+        });
+    } finally {
+      disabled = false;
+    }
   }
 
   function handleChange() {
@@ -276,7 +292,8 @@
           bind:files={inputFiles}
           on:change={setFiles}
           multiple
-          hidden />
+          hidden
+          {disabled} />
       </label>
     </div>
 
@@ -286,7 +303,8 @@
       bind:value={message}
       bind:this={messageElement}
       on:change={handleChange}
-      on:selectionChange={handleSelectionChange} />
+      on:selectionChange={handleSelectionChange}
+      {disabled} />
 
     <div class="post-form__submit-wrapper">
       <button class="post-form__submit" type="submit" />
