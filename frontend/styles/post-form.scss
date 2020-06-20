@@ -54,7 +54,6 @@
         background-image: url('../images/play.svg');
         background-position: center center;
         background-repeat: no-repeat;
-        border: 0;
 
         border: 2px dashed #9DA2B2;
     }
@@ -68,30 +67,39 @@
         flex-flow: row nowrap;
 
         width: 100%;
+        height: 40px;
 
-        margin-bottom: 16px;
+        padding-bottom: 16px;
+    }
 
-        & > button {
-            background: #43474F;
-            color: #9DA2B2;
+    &__bold,
+    &__italic,
+    &__underline,
+    &__strike,
+    &__sub,
+    &__sup,
+    &__code,
+    &__codeblock,
+    &__spoiler {
+        background: #43474F;
+        color: #9DA2B2;
 
-            border: 0;
-            border-radius: 3px;
+        border: 0;
+        border-radius: 3px;
 
-            min-width: 24px;
-            height: 24px;
+        min-width: 24px;
+        height: 24px;
 
-            padding: 0 4px;
+        padding: 0 4px;
 
-            white-space: pre;
+        white-space: pre;
 
-            &:not(:last-child) {
-                margin-right: 8px;
-            }
+        &:not(:last-child) {
+            margin-right: 8px;
+        }
 
-            &:hover {
-                background: #292B30;
-            }
+        &:hover {
+            background: #292B30;
         }
     }
 
@@ -130,6 +138,21 @@
     &__code,
     &__codeblock {
         font-family: $monospace;
+    }
+
+    &__pin {
+        background: transparent;
+        background-image: url('../images/pin.svg');
+        background-position: center center;
+        background-repeat: no-repeat;
+
+        border: 0;
+
+        width: 16px;
+
+        padding: 0;
+
+        cursor: pointer;
     }
 
     &__message-row {

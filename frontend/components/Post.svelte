@@ -20,7 +20,7 @@
       return "Anonymous";
     }
 
-    return name;
+    return post.name;
   }
 
   function formatTime(time) {

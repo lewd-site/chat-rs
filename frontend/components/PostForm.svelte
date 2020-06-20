@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy } from "svelte";
+  import { slide } from "svelte/transition";
   import TextBox from "./TextBox.svelte";
   import utils from "../utils";
 
@@ -7,6 +8,7 @@
   let files = [];
   let previews = [];
   let showMarkup = false;
+  let markupPinned = localStorage.getItem("settings.markup_pinned") === "true";
   let disabled = false;
 
   let inputFiles = null;
@@ -54,7 +56,11 @@
       tripcode = tripcode.substr(1);
     }
 
-    name = `${name}#${tripcode}`;
+    if (tripcode.length) {
+      name = `${name}#${tripcode}`;
+    }
+
+    console.log(name);
 
     try {
       disabled = true;
@@ -80,7 +86,7 @@
   function handleSelectionChange(e) {
     const length = e.detail.end - e.detail.start;
     showMarkup = length > 0;
-    setTimeout(updateSize);
+    setTimeout(updateSize, 150);
   }
 
   function updateSize() {
@@ -178,8 +184,14 @@
     });
   }
 
+  function toggleMarkupPinned() {
+    markupPinned = !markupPinned;
+    localStorage["settings.markup_pinned"] = markupPinned.toString();
+  }
+
   onMount(() => {
     window.eventBus.subscribe("reply", handleReply);
+    setTimeout(updateSize);
   });
 
   onDestroy(() => {
@@ -225,8 +237,8 @@
     {/each}
   </div>
 
-  {#if showMarkup}
-    <div class="post-form__markup-row">
+  {#if showMarkup || markupPinned}
+    <div class="post-form__markup-row" transition:slide={{ duration: 150 }}>
       <button
         class="post-form__bold"
         on:click|preventDefault={e => insertMarkup('b')}>
@@ -280,6 +292,10 @@
         on:click|preventDefault={e => insertMarkup('spoiler')}>
         Spoiler
       </button>
+
+      <button
+        class="post-form__pin"
+        on:click|preventDefault={toggleMarkupPinned} />
     </div>
   {/if}
 

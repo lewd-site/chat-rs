@@ -1,6 +1,10 @@
 <script>
+  import { fade } from "svelte/transition";
   import VideoPlayer from "./VideoPlayer.svelte";
+  import { hslide } from "../anim";
   import { mediaBoxFiles, mediaBoxFile } from "../stores/files";
+
+  const PADDING_H = 96;
 
   let content = null;
 
@@ -16,6 +20,14 @@
   let isDragging = false;
   let isDragged = false;
 
+  function getViewWidth() {
+    return window.innerWidth - PADDING_H;
+  }
+
+  function getViewHeight() {
+    return window.innerHeight;
+  }
+
   function handlePointerUp(e) {
     window.removeEventListener("pointerup", handlePointerUp);
     window.removeEventListener("pointermove", handlePointerMove);
@@ -29,8 +41,11 @@
   }
 
   function handlePointerMove(e) {
-    const mouseX = Math.max(0, Math.min(e.clientX, window.innerWidth));
-    const mouseY = Math.max(0, Math.min(e.clientY, window.innerHeight));
+    const windowWidth = getViewWidth();
+    const windowHeight = getViewHeight();
+
+    const mouseX = Math.max(0, Math.min(e.clientX, windowWidth));
+    const mouseY = Math.max(0, Math.min(e.clientY, windowHeight));
 
     const deltaX = mouseX - dragStartMouseX;
     const deltaY = mouseY - dragStartMouseY;
@@ -68,16 +83,19 @@
       return;
     }
 
+    const windowWidth = getViewWidth();
+    const windowHeight = getViewHeight();
+
     const scale = Math.min(
-      window.innerWidth / file.width,
-      window.innerHeight / file.height,
+      Math.min(windowWidth, 800) / file.width,
+      windowHeight / file.height,
       1
     );
 
     width = file.width * scale;
     height = file.height * scale;
-    offsetX = window.innerWidth / 2 - width / 2;
-    offsetY = window.innerHeight / 2 - height / 2;
+    offsetX = windowWidth / 2 - width / 2;
+    offsetY = windowHeight / 2 - height / 2;
 
     // Unset an old image and set a new one only at the next iteration of the event loop
     // to avoid flash of the old image.
@@ -95,6 +113,10 @@
   const MAX_HEIGHT = 8000;
 
   function handleZoom(mouseX, mouseY, scale) {
+    if (!$mediaBoxFile) {
+      return;
+    }
+
     const newWidth = width * scale;
     const newHeight = height * scale;
 
@@ -131,6 +153,10 @@
   }
 
   function handleWheel(e) {
+    if (!$mediaBoxFile) {
+      return;
+    }
+
     if (e.deltaY === 0) {
       return;
     }
@@ -146,43 +172,46 @@
   }
 
   function handleZoomInClick() {
-    const originX = Math.max(
-      0,
-      Math.min(offsetX + width / 2, window.innerWidth)
-    );
+    if (!$mediaBoxFile) {
+      return;
+    }
 
-    const originY = Math.max(
-      0,
-      Math.min(offsetY + height / 2, window.innerHeight)
-    );
+    const windowWidth = getViewWidth();
+    const windowHeight = getViewHeight();
+
+    const originX = Math.max(0, Math.min(offsetX + width / 2, windowWidth));
+
+    const originY = Math.max(0, Math.min(offsetY + height / 2, windowHeight));
 
     handleZoom(originX, originY, CLICK_SCALE_STEP);
   }
 
   function handleZoomOutClick() {
-    const originX = Math.max(
-      0,
-      Math.min(offsetX + width / 2, window.innerWidth)
-    );
+    if (!$mediaBoxFile) {
+      return;
+    }
 
-    const originY = Math.max(
-      0,
-      Math.min(offsetY + height / 2, window.innerHeight)
-    );
+    const windowWidth = getViewWidth();
+    const windowHeight = getViewHeight();
+
+    const originX = Math.max(0, Math.min(offsetX + width / 2, windowWidth));
+
+    const originY = Math.max(0, Math.min(offsetY + height / 2, windowHeight));
 
     handleZoom(originX, originY, 1 / CLICK_SCALE_STEP);
   }
 
   function handleZoomOriginal() {
-    const originX = Math.max(
-      0,
-      Math.min(offsetX + width / 2, window.innerWidth)
-    );
+    if (!$mediaBoxFile) {
+      return;
+    }
 
-    const originY = Math.max(
-      0,
-      Math.min(offsetY + height / 2, window.innerHeight)
-    );
+    const windowWidth = getViewWidth();
+    const windowHeight = getViewHeight();
+
+    const originX = Math.max(0, Math.min(offsetX + width / 2, windowWidth));
+
+    const originY = Math.max(0, Math.min(offsetY + height / 2, windowHeight));
 
     const currentScale = width / $mediaBoxFile.width;
 
@@ -190,21 +219,22 @@
   }
 
   function handleZoomFit() {
-    const originX = Math.max(
-      0,
-      Math.min(offsetX + width / 2, window.innerWidth)
-    );
+    if (!$mediaBoxFile) {
+      return;
+    }
 
-    const originY = Math.max(
-      0,
-      Math.min(offsetY + height / 2, window.innerHeight)
-    );
+    const windowWidth = getViewWidth();
+    const windowHeight = getViewHeight();
+
+    const originX = Math.max(0, Math.min(offsetX + width / 2, windowWidth));
+
+    const originY = Math.max(0, Math.min(offsetY + height / 2, windowHeight));
 
     const currentScale = width / $mediaBoxFile.width;
 
     const scale = Math.min(
-      window.innerWidth / $mediaBoxFile.width,
-      window.innerHeight / $mediaBoxFile.height,
+      windowWidth / $mediaBoxFile.width,
+      windowHeight / $mediaBoxFile.height,
       1
     );
 
@@ -254,6 +284,10 @@
   }
 
   function handleGalleryWheel(e) {
+    if (!$mediaBoxFile) {
+      return;
+    }
+
     if (e.deltaY === 0) {
       return;
     }
@@ -269,7 +303,10 @@
 </script>
 
 {#if $mediaBoxFile !== null}
-  <div class="media-box__controls" on:wheel={handleGalleryWheel}>
+  <div
+    class="media-box__controls"
+    on:wheel={handleGalleryWheel}
+    transition:hslide={{ duration: 300 }}>
     <button
       class="media-box__close"
       title="Закрыть"
@@ -324,7 +361,8 @@
     style="left: {offsetX}px; top: {offsetY}px; width: {width}px; height: {height}px"
     bind:this={content}
     on:pointerdown={handlePointerDown}
-    on:wheel={handleWheel}>
+    on:wheel={handleWheel}
+    transition:fade={{ duration: 0 }}>
     {#if $mediaBoxFile.mimetype.startsWith('image/') && src}
       <picture>
         <img class="media-box__media media-box__media_image" {src} alt="" />

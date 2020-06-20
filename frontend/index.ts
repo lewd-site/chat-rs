@@ -2,12 +2,12 @@ import 'regenerator-runtime/runtime';
 
 import AuthModal from './components/AuthModal.svelte';
 import MediaBox from './components/MediaBox.svelte';
+import Menu from './components/Menu.svelte';
 import PostForm from './components/PostForm.svelte';
 import PostList from './components/PostList.svelte';
 import PostPopups from './components/PostPopups.svelte';
 import config from './config';
 import EventEmitter from './event-emitter';
-import Menu from './menu';
 import Api from './services/api';
 import Sso from './services/sso';
 import { showAuthModal } from './stores/auth';
@@ -36,6 +36,11 @@ if (typeof config.sentryDsn !== 'undefined') {
 
 window.eventBus = new EventEmitter();
 
+const menuContainer = document.getElementById('menu');
+if (!menuContainer) {
+    throw new Error('#menu not found');
+}
+
 const authModalContainer = document.getElementById('auth-modal');
 if (!authModalContainer) {
     throw new Error('#auth-modal not found');
@@ -61,6 +66,7 @@ if (!postPopupsContainer) {
     throw new Error('#post-popups not found');
 }
 
+const menu = new Menu({ target: menuContainer });
 const authModal = new AuthModal({ target: authModalContainer });
 const postFrom = new PostForm({ target: postFormContainer });
 const postList = new PostList({ target: postListContainer });
@@ -118,11 +124,6 @@ window.addEventListener('scroll', async () => {
         unloadOldPosts();
     }
 });
-
-const menuElement = document.getElementById('menu');
-if (menuElement) {
-    const menu = new Menu(menuElement);
-}
 
 document.getElementById('scroll-to-top')?.addEventListener('click', e => {
     e.preventDefault();
