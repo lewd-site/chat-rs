@@ -17,6 +17,7 @@ function isWsEvent(data: any): data is WsEvent {
 
 export class Ws {
     private ws: null | WebSocket = null;
+    private keepAliveInterval: null | number = null;
 
     public constructor(private readonly url: string) {
         this.open();
@@ -28,11 +29,25 @@ export class Ws {
         this.ws.addEventListener('close', this.onClose);
         this.ws.addEventListener('message', this.onMessage);
         this.ws.addEventListener('error', this.onError);
+
+        const ws = this.ws;
+        this.keepAliveInterval = setInterval(() => {
+            if (ws.readyState !== ws.OPEN) {
+                return;
+            }
+
+            ws.send('keepalive');
+        }, 60000);
     };
 
     private close = () => {
         this.ws?.close();
         this.ws = null;
+
+        if (this.keepAliveInterval) {
+            clearInterval(this.keepAliveInterval);
+            this.keepAliveInterval = null;
+        }
     };
 
     private onOpen = async (e: Event) => {
