@@ -19,6 +19,9 @@
         "strict": true,
         "types": [
             "svelte"
-        ]
+        ],
+        "sourceMap": true,
+        "inlineSources": true,
+        "sourceRoot": "/"
     }
 }

@@ -21,11 +21,17 @@ import 'prosemirror-view/style/prosemirror.css';
 
 declare global {
     interface Window {
+        readonly Sentry?: any;
+
         sso?: Sso;
         api?: Api;
         ws?: Ws;
         eventBus?: EventEmitter;
     }
+}
+
+if (typeof config.sentryDsn !== 'undefined') {
+    window.Sentry.init({ dsn: config.sentryDsn });
 }
 
 window.eventBus = new EventEmitter();
