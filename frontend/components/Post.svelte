@@ -1,4 +1,5 @@
 <script>
+  import AudioPlayer from "./AudioPlayer.svelte";
   import { mediaBoxFile } from "../stores/files";
   import {
     hasPopup,
@@ -259,9 +260,7 @@
     {#each post.files.filter(file =>
       file.mimetype.startsWith('audio/')
     ) as file (file.id)}
-      <audio class="post__audio" title={file.name} loop controls preload="none">
-        <source src="/src/{file.md5}.{file.extension}" />
-      </audio>
+      <AudioPlayer className="post__audio" {file} />
     {/each}
   </div>
 </div>

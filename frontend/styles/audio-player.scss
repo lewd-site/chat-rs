@@ -1,0 +1,140 @@
+.audio-player {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+
+    background: #36393F;
+    border: 0;
+    border-radius: 5px;
+
+    width: 78px;
+    height: 78px;
+
+    padding: 16px;
+
+    overflow: hidden;
+
+    transition: width 300ms ease;
+
+    &_expanded {
+        width: 320px;
+    }
+
+    &__icon {
+        background: transparent;
+        background-image: url('../images/play.svg');
+        background-position: center center;
+        background-repeat: no-repeat;
+
+        flex-shrink: 0;
+
+        width: 46px;
+        height: 46px;
+
+        margin-right: 16px;
+
+        cursor: pointer;
+    }
+
+    &__main {
+        display: flex;
+        flex-flow: column nowrap;
+
+        width: 100%;
+
+        overflow: hidden;
+    }
+
+    &__title {
+        font-size: 14px;
+
+        width: 100%;
+
+        margin-bottom: 10px;
+
+        white-space: pre;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__controls {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+    }
+
+    &__seek {
+        position: relative;
+
+        flex: 1;
+
+        width: 100%;
+        height: 8px;
+
+        margin: 0 8px;
+
+        cursor: pointer;
+
+        &::before {
+            position: absolute;
+            top: 2px;
+            left: 0;
+
+            content: '';
+
+            background: #C4C4C4;
+
+            border: 0;
+            border-radius: 2px;
+
+            width: 100%;
+            height: 4px;
+        }
+    }
+
+    &__seek-time {
+        position: absolute;
+        top: 2px;
+        left: 0;
+        width: 0%;
+
+        background: #E3833D;
+
+        border: 0;
+        border-radius: 2px;
+
+        height: 4px;
+
+        pointer-events: none;
+    }
+
+    &__seek-handle {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 8px;
+        height: 8px;
+
+        display: none;
+
+        background: transparent;
+        background-image: url('../images/seek-handle.svg');
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+
+        transform: translate(-50%, -50%);
+
+        pointer-events: none;
+    }
+
+    &__seek:hover &__seek-handle {
+        display: block;
+    }
+
+    &__time,
+    &__duration {
+        color: #A9A9A9;
+        font-size: 12px;
+    }
+}
