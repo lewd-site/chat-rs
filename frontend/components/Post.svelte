@@ -1,6 +1,6 @@
 <script>
   import AudioPlayer from "./AudioPlayer.svelte";
-  import { mediaBoxFile } from "../stores/files";
+  import { mediaBoxFiles, mediaBoxFile } from "../stores/files";
   import {
     hasPopup,
     addPopup,
@@ -151,6 +151,16 @@
   }
 
   function handleFileClick(file) {
+    mediaBoxFiles.update(currentFile => {
+      return currentFile !== file
+        ? post.files.filter(
+            file =>
+              file.mimetype.startsWith("image/") ||
+              file.mimetype.startsWith("video/")
+          )
+        : [];
+    });
+
     mediaBoxFile.update(currentFile => {
       return currentFile !== file ? file : null;
     });

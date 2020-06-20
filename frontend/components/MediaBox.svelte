@@ -1,6 +1,6 @@
 <script>
   import VideoPlayer from "./VideoPlayer.svelte";
-  import { mediaBoxFile } from "../stores/files";
+  import { mediaBoxFiles, mediaBoxFile } from "../stores/files";
 
   let content = null;
 
@@ -150,6 +150,7 @@
       0,
       Math.min(offsetX + width / 2, window.innerWidth)
     );
+
     const originY = Math.max(
       0,
       Math.min(offsetY + height / 2, window.innerHeight)
@@ -163,6 +164,7 @@
       0,
       Math.min(offsetX + width / 2, window.innerWidth)
     );
+
     const originY = Math.max(
       0,
       Math.min(offsetY + height / 2, window.innerHeight)
@@ -170,19 +172,151 @@
 
     handleZoom(originX, originY, 1 / CLICK_SCALE_STEP);
   }
+
+  function handleZoomOriginal() {
+    const originX = Math.max(
+      0,
+      Math.min(offsetX + width / 2, window.innerWidth)
+    );
+
+    const originY = Math.max(
+      0,
+      Math.min(offsetY + height / 2, window.innerHeight)
+    );
+
+    const currentScale = width / $mediaBoxFile.width;
+
+    handleZoom(originX, originY, 1 / currentScale);
+  }
+
+  function handleZoomFit() {
+    const originX = Math.max(
+      0,
+      Math.min(offsetX + width / 2, window.innerWidth)
+    );
+
+    const originY = Math.max(
+      0,
+      Math.min(offsetY + height / 2, window.innerHeight)
+    );
+
+    const currentScale = width / $mediaBoxFile.width;
+
+    const scale = Math.min(
+      window.innerWidth / $mediaBoxFile.width,
+      window.innerHeight / $mediaBoxFile.height,
+      1
+    );
+
+    handleZoom(originX, originY, scale / currentScale);
+  }
+
+  function handlePrevious() {
+    if ($mediaBoxFiles.length === 1) {
+      return;
+    }
+
+    let index = $mediaBoxFiles.findIndex(file => $mediaBoxFile === file) - 1;
+    if (index < 0) {
+      index += $mediaBoxFiles.length;
+    }
+
+    mediaBoxFile.set($mediaBoxFiles[index]);
+  }
+
+  function handleNext() {
+    if ($mediaBoxFiles.length === 1) {
+      return;
+    }
+
+    let index = $mediaBoxFiles.findIndex(file => $mediaBoxFile === file) + 1;
+    if (index >= $mediaBoxFiles.length) {
+      index -= $mediaBoxFiles.length;
+    }
+
+    mediaBoxFile.set($mediaBoxFiles[index]);
+  }
+
+  function handleFileClick(file) {
+    if ($mediaBoxFile !== file) {
+      mediaBoxFile.set(file);
+    }
+  }
+
+  function getGalleryFileClass(file, currentFile) {
+    const classes = [
+      "media-box__file",
+      file === currentFile ? "media-box__file_current" : null,
+      "media-box__file_" + file.mimetype.split("/")[0]
+    ];
+
+    return classes.filter(c => c).join(" ");
+  }
+
+  function handleGalleryWheel(e) {
+    if (e.deltaY === 0) {
+      return;
+    }
+
+    e.preventDefault();
+
+    if (e.deltaY < 0) {
+      handlePrevious();
+    } else {
+      handleNext();
+    }
+  }
 </script>
 
 {#if $mediaBoxFile !== null}
-  <div class="media-box__controls">
+  <div class="media-box__controls" on:wheel={handleGalleryWheel}>
     <button
       class="media-box__close"
+      title="Закрыть"
       on:click|preventDefault={handleCloseClick} />
+
     <button
       class="media-box__zoom-in"
+      title="Увеличить"
       on:click|preventDefault={handleZoomInClick} />
+
     <button
       class="media-box__zoom-out"
+      title="Уменьшить"
       on:click|preventDefault={handleZoomOutClick} />
+
+    <button
+      class="media-box__original"
+      title="Оригинальный размер"
+      on:click|preventDefault={handleZoomOriginal} />
+
+    <button
+      class="media-box__fit"
+      title="По размеру окна"
+      on:click|preventDefault={handleZoomFit} />
+
+    {#if $mediaBoxFiles.length > 1}
+      <button
+        class="media-box__prev"
+        on:click|preventDefault={handlePrevious} />
+
+      <div class="media-box__files">
+        {#each $mediaBoxFiles as file (file.id)}
+          <div
+            class={getGalleryFileClass(file, $mediaBoxFile)}
+            on:click|preventDefault={e => handleFileClick(file)}>
+            <picture>
+              <img
+                class="media-box__preview"
+                src="/thumb/{file.md5}?max_width=360"
+                alt="Preview" />
+            </picture>
+          </div>
+        {/each}
+      </div>
+
+      <button class="media-box__next" on:click|preventDefault={handleNext} />
+    {/if}
   </div>
 
   <div
