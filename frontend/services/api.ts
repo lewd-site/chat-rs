@@ -42,7 +42,7 @@ export class Api {
             const email = localStorage['auth_email'];
             if (email) {
                 try {
-                    await this.sso.refreshByEmail(email);
+                    window.token = await this.sso.refreshByEmail(email);
                     config.headers['Authorization'] = `Bearer ${this.sso.accessToken}`;
                 } catch (e) { }
             }

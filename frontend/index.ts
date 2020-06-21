@@ -9,7 +9,7 @@ import PostPopups from './components/PostPopups.svelte';
 import config from './config';
 import EventEmitter from './event-emitter';
 import Api from './services/api';
-import Sso from './services/sso';
+import Sso, { TokenData } from './services/sso';
 import { showAuthModal } from './stores/auth';
 import { nsfwMode, toggleNSFWMode } from './stores/files';
 import { Posts, posts, setPosts, addPosts, unloadOldPosts } from './stores/posts';
@@ -27,6 +27,7 @@ declare global {
         api?: Api;
         ws?: Ws;
         eventBus?: EventEmitter;
+        token?: TokenData | null;
     }
 }
 
@@ -89,13 +90,13 @@ authButton?.addEventListener('click', e => {
 });
 
 setTimeout(async () => {
-    await window.sso!.get();
+    window.token = await window.sso!.get();
 
     if (!window.sso!.hasAccessToken || window.sso!.hasExpired) {
         const email = localStorage['auth_email'];
         if (window.sso!.hasRefreshToken && email) {
             try {
-                await window.sso!.refreshByEmail(email);
+                window.token = await window.sso!.refreshByEmail(email);
             } catch (e) { }
         }
     }

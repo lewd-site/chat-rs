@@ -2,7 +2,7 @@ import jwtDecode from 'jwt-decode';
 
 import config from '../config';
 
-interface TokenData {
+export interface TokenData {
     readonly user_uuid: string;
     readonly user_name: string;
     readonly user_email: string;

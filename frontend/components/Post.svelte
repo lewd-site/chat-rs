@@ -229,7 +229,9 @@
   <time class="post__date" datetime={post.created_at}>
     {formatTime(post.created_at)}
   </time>
-  <button class="post__reply" on:click|preventDefault={handleReplyClick} />
+  {#if post.user_uuid === null || typeof window.token === 'undefined' || window.token === null || post.user_uuid !== window.token.user_uuid}
+    <button class="post__reply" on:click|preventDefault={handleReplyClick} />
+  {/if}
 </div>
 
 <div

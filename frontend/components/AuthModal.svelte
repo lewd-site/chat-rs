@@ -18,7 +18,7 @@
     const authButton = document.getElementById("login");
 
     try {
-      await window.sso.loginByEmail(email, password);
+      window.token = await window.sso.loginByEmail(email, password);
       showAuthModal.set(false);
       error = "";
 
