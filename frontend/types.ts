@@ -58,3 +58,10 @@ export interface PostPopup {
     readonly hover: boolean;
     readonly fade: boolean;
 }
+
+export interface Notification {
+    readonly id: number;
+    readonly user_uuid: string;
+    readonly read: boolean;
+    readonly post: Post;
+}

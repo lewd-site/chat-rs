@@ -1,0 +1,40 @@
+.notification {
+    &__title {
+        display: flex;
+        flex-flow: row wrap;
+
+        color: #EEEEEE;
+        font-size: 16px;
+        line-height: 22px;
+
+        margin-bottom: 4px;
+    }
+
+    &__name {
+        margin-left: 0.25em;
+    }
+
+    &__tripcode {
+        &:not(:empty) {
+            &::before {
+                content: '!';
+            }
+        }
+    }
+
+    &__message {
+        color: #C0C0C0;
+        font-size: 14px;
+        line-height: 19px;
+
+        white-space: pre-line;
+
+        margin-bottom: 8px;
+    }
+
+    &__footer {
+        color: #C0C0C0;
+        font-size: 14px;
+        line-height: 19px;
+    }
+}

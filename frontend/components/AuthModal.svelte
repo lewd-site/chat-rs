@@ -1,5 +1,5 @@
 <script>
-  import { showAuthModal } from "../stores/auth";
+  import { showAuthModal, token } from "../stores/auth";
 
   let email = "";
   let password = "";
@@ -18,7 +18,7 @@
     const authButton = document.getElementById("login");
 
     try {
-      window.token = await window.sso.loginByEmail(email, password);
+      token.set(await window.sso.loginByEmail(email, password));
       showAuthModal.set(false);
       error = "";
 

@@ -1,7 +1,8 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
 import Sso from './sso';
-import { Post } from '../types';
+import { token } from '../stores/auth';
+import { Post, Notification } from '../types';
 
 interface SubmitPostRequest {
     readonly name: string;
@@ -17,8 +18,33 @@ interface PostResponse {
     readonly item: Post;
 }
 
+interface NotificationListResponse {
+    readonly items: Notification[];
+}
+
 export class Api {
     public constructor(private readonly sso: Sso) { }
+
+    private getToken = async (): Promise<string | null> => {
+        token.set(await this.sso.get());
+
+        if (this.sso.hasAccessToken && !this.sso.hasExpired) {
+            return this.sso.accessToken;
+        }
+
+        if (this.sso.hasRefreshToken) {
+            const email = localStorage['auth_email'];
+            if (email) {
+                try {
+                    token.set(await this.sso.refreshByEmail(email));
+
+                    return this.sso.accessToken;
+                } catch (e) { }
+            }
+        }
+
+        return null;
+    };
 
     public submitPost = async (data: SubmitPostRequest): Promise<Post> => {
         const formData = new FormData();
@@ -35,17 +61,9 @@ export class Api {
             headers: { 'Content-Type': 'multipart/form-data' },
         };
 
-        await this.sso.get();
-        if (this.sso.hasAccessToken && !this.sso.hasExpired) {
-            config.headers['Authorization'] = `Bearer ${this.sso.accessToken}`;
-        } else if (this.sso.hasRefreshToken) {
-            const email = localStorage['auth_email'];
-            if (email) {
-                try {
-                    window.token = await this.sso.refreshByEmail(email);
-                    config.headers['Authorization'] = `Bearer ${this.sso.accessToken}`;
-                } catch (e) { }
-            }
+        const token = await this.getToken();
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
         }
 
         const response = await axios.post<PostResponse>('/api/v1/posts', formData, config);
@@ -65,6 +83,18 @@ export class Api {
     public getPost = async (postId: number): Promise<Post> => {
         const response = await axios.get<PostResponse>(`/api/v1/posts/${postId}`);
         return response.data.item;
+    };
+
+    public getNotifications = async (): Promise<Notification[]> => {
+        const config: AxiosRequestConfig = { headers: {} };
+
+        const token = await this.getToken();
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await axios.get<NotificationListResponse>('/api/v1/notifications', config);
+        return response.data.items;
     };
 }
 

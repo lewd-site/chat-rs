@@ -92,6 +92,18 @@
         background: #2F3136;
 
         flex: 1;
+
+        padding: 16px 8px;
+
+        overflow-y: auto;
+    }
+
+    &__notification {
+        background: #292B30;
+        border-radius: 5px;
+
+        padding: 8px;
+        margin-bottom: 16px;
     }
 
     &__footer {

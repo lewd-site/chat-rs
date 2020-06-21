@@ -1,5 +1,6 @@
 <script>
   import AudioPlayer from "./AudioPlayer.svelte";
+  import { token } from "../stores/auth";
   import { mediaBoxFiles, mediaBoxFile } from "../stores/files";
   import {
     hasPopup,
@@ -229,7 +230,7 @@
   <time class="post__date" datetime={post.created_at}>
     {formatTime(post.created_at)}
   </time>
-  {#if post.user_uuid === null || typeof window.token === 'undefined' || window.token === null || post.user_uuid !== window.token.user_uuid}
+  {#if post.user_uuid === null || $token === null || post.user_uuid !== $token.user_uuid}
     <button class="post__reply" on:click|preventDefault={handleReplyClick} />
   {/if}
 </div>

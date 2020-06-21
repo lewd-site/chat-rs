@@ -9,8 +9,9 @@ import PostPopups from './components/PostPopups.svelte';
 import config from './config';
 import EventEmitter from './event-emitter';
 import Api from './services/api';
-import Sso, { TokenData } from './services/sso';
-import { showAuthModal } from './stores/auth';
+import Sso from './services/sso';
+import { showAuthModal, token } from './stores/auth';
+import { notifications, addNotifications } from './stores/notifications';
 import { nsfwMode, toggleNSFWMode } from './stores/files';
 import { Posts, posts, setPosts, addPosts, unloadOldPosts } from './stores/posts';
 import Ws from './ws';
@@ -27,7 +28,6 @@ declare global {
         api?: Api;
         ws?: Ws;
         eventBus?: EventEmitter;
-        token?: TokenData | null;
     }
 }
 
@@ -81,6 +81,10 @@ window.ws = new Ws(config.wsUrl);
 window.api.getLatestPosts().then(posts => {
     setTimeout(utils.scrollToBottom);
     setPosts(posts);
+
+    window.api?.getNotifications().then(notifications => {
+        addNotifications(notifications);
+    });
 });
 
 const authButton = document.getElementById('login');
@@ -90,13 +94,13 @@ authButton?.addEventListener('click', e => {
 });
 
 setTimeout(async () => {
-    window.token = await window.sso!.get();
+    token.set(await window.sso!.get());
 
     if (!window.sso!.hasAccessToken || window.sso!.hasExpired) {
         const email = localStorage['auth_email'];
         if (window.sso!.hasRefreshToken && email) {
             try {
-                window.token = await window.sso!.refreshByEmail(email);
+                token.set(await window.sso!.refreshByEmail(email));
             } catch (e) { }
         }
     }
