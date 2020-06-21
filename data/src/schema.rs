@@ -15,6 +15,15 @@ table! {
 }
 
 table! {
+    notifications (id) {
+        id -> Int4,
+        post_id -> Int4,
+        user_uuid -> Bpchar,
+        read -> Bool,
+    }
+}
+
+table! {
     posts (id) {
         id -> Int4,
         name -> Varchar,
@@ -26,8 +35,10 @@ table! {
 }
 
 joinable!(files -> posts (post_id));
+joinable!(notifications -> posts (post_id));
 
 allow_tables_to_appear_in_same_query!(
     files,
+    notifications,
     posts,
 );
