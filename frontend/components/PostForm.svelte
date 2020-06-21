@@ -1,8 +1,10 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import { slide } from "svelte/transition";
+  import { scale, slide } from "svelte/transition";
   import TextBox from "./TextBox.svelte";
   import utils from "../utils";
+
+  const MAX_FILES = 5;
 
   let message = "";
   let files = [];
@@ -15,30 +17,38 @@
   let formElement;
   let messageElement;
 
-  function setFiles(e) {
-    if (inputFiles && inputFiles.length) {
-      files = [...files, ...inputFiles].slice(0, 5);
+  function updateFiles(e) {
+    if (!inputFiles || !inputFiles.length) {
+      return;
     }
 
-    updatePreviews();
-    setTimeout(updateSize);
+    if (files.length >= MAX_FILES) {
+      return;
+    }
+
+    const newFiles = [...inputFiles].slice(0, MAX_FILES - files.length);
+
+    files = [...files, ...newFiles];
+    previews = [
+      ...previews,
+      ...newFiles.map(f => ({
+        type: f.type,
+        name: f.name,
+        size: f.size,
+        src: URL.createObjectURL(f)
+      }))
+    ];
+
+    setTimeout(updateSize, 150);
   }
 
   function removeFileAt(index) {
-    files.splice(index, 1);
+    URL.revokeObjectURL(previews[index].src);
 
-    updatePreviews();
-    setTimeout(updateSize);
-  }
+    files = files.filter((f, i) => i !== index);
+    previews = previews.filter((p, i) => i !== index);
 
-  function updatePreviews(e) {
-    previews.forEach(preview => URL.revokeObjectURL(preview));
-    previews = files.map(file => ({
-      type: file.type,
-      name: file.name,
-      size: file.size,
-      src: URL.createObjectURL(file)
-    }));
+    setTimeout(updateSize, 150);
   }
 
   async function handleSubmit(e) {
@@ -66,11 +76,16 @@
         .submitPost({ name, message, files })
         .then(() => {
           message = "";
+
+          previews.forEach(p => URL.revokeObjectURL(p.src));
+
           files = [];
+          previews = [];
+
           messageElement.clear();
           messageElement.focus();
-          updatePreviews();
-          setTimeout(updateSize);
+
+          setTimeout(updateSize, 150);
         });
     } finally {
       disabled = false;
@@ -185,6 +200,7 @@
   function toggleMarkupPinned() {
     markupPinned = !markupPinned;
     localStorage["settings.markup_pinned"] = markupPinned.toString();
+    setTimeout(updateSize, 150);
   }
 
   onMount(() => {
@@ -206,35 +222,55 @@
   enctype="multipart/form-data"
   on:submit|preventDefault={handleSubmit}
   bind:this={formElement}>
-  <div class="post-form__previews-row">
-    {#each previews as preview, index (preview.src)}
-      {#if preview.type.startsWith('image/')}
-        <picture title={preview.name}>
-          <img
-            class="post-form__preview post-form__preview_image"
-            src={preview.src}
-            alt="Preview"
-            on:click|preventDefault={e => removeFileAt(index)} />
-        </picture>
-      {:else if preview.type.startsWith('audio/')}
+  {#if previews.length}
+    <div class="post-form__previews-row" transition:slide={{ duration: 150 }}>
+      {#each previews as preview, index (preview.src)}
         <div
-          class="post-form__preview post-form__preview_audio"
-          title={preview.name}
-          on:click|preventDefault={e => removeFileAt(index)} />
-      {:else if preview.type.startsWith('video/')}
-        <video
-          class="post-form__preview post-form__preview_video"
-          autoplay
-          loop
-          muted
-          disablePictureInPicture
-          title={preview.name}
+          in:scale={{ duration: 150 }}
+          out:scale={{ duration: 100 }}
+          class="post-form__preview-wrapper"
           on:click|preventDefault={e => removeFileAt(index)}>
-          <source src={preview.src} />
-        </video>
+          {#if preview.type.startsWith('image/')}
+            <picture title={preview.name}>
+              <img
+                class="post-form__preview post-form__preview_image"
+                src={preview.src}
+                alt="Preview" />
+            </picture>
+          {:else if preview.type.startsWith('audio/')}
+            <div
+              class="post-form__preview post-form__preview_audio"
+              title={preview.name} />
+          {:else if preview.type.startsWith('video/')}
+            <video
+              class="post-form__preview post-form__preview_video"
+              autoplay
+              loop
+              muted
+              disablePictureInPicture
+              title={preview.name}>
+              <source src={preview.src} />
+            </video>
+          {/if}
+        </div>
+      {/each}
+
+      {#if previews.length < MAX_FILES}
+        <label
+          class="post-form__preview-add"
+          in:scale={{ duration: 150 }}
+          out:scale={{ duration: 100 }}>
+          <input
+            type="file"
+            bind:files={inputFiles}
+            on:change={updateFiles}
+            multiple
+            hidden
+            {disabled} />
+        </label>
       {/if}
-    {/each}
-  </div>
+    </div>
+  {/if}
 
   {#if showMarkup || markupPinned}
     <div class="post-form__markup-row" transition:slide={{ duration: 150 }}>
@@ -293,7 +329,7 @@
       </button>
 
       <button
-        class="post-form__pin"
+        class="post-form__pin {markupPinned ? 'post-form__pin_pinned' : ''}"
         on:click|preventDefault={toggleMarkupPinned} />
     </div>
   {/if}
@@ -303,9 +339,8 @@
       <label class="post-form__attachment">
         <input
           type="file"
-          name="file"
           bind:files={inputFiles}
-          on:change={setFiles}
+          on:change={updateFiles}
           multiple
           hidden
           {disabled} />
