@@ -19,6 +19,7 @@
     "@types/prosemirror-state": "^1.2.4",
     "@types/prosemirror-transform": "^1.1.1",
     "@types/prosemirror-view": "^1.11.4",
+    "autoprefixer": "^9.8.2",
     "parcel-bundler": "^1.12.4",
     "parcel-plugin-svelte": "^4.0.6",
     "sass": "^1.26.8",
