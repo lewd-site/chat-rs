@@ -21,6 +21,7 @@ table! {
         tripcode -> Varchar,
         message -> Text,
         created_at -> Timestamp,
+        user_uuid -> Nullable<Bpchar>,
     }
 }
 

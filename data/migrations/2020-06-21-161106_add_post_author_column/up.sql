@@ -1,0 +1,1 @@
+ALTER TABLE posts ADD COLUMN user_uuid CHAR(36);

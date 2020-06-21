@@ -11,6 +11,7 @@ pub struct NewPost {
     pub tripcode: String,
     pub message: String,
     pub created_at: NaiveDateTime,
+    pub user_uuid: Option<String>,
 }
 
 #[derive(Identifiable, Queryable, Serialize)]
@@ -20,6 +21,7 @@ pub struct Post {
     pub tripcode: String,
     pub message: String,
     pub created_at: NaiveDateTime,
+    pub user_uuid: Option<String>,
 }
 
 impl Post {
@@ -79,7 +81,7 @@ impl Post {
         }
     }
 
-    pub fn new(name: &str, message: &str) -> NewPost {
+    pub fn new(name: &str, message: &str, user_uuid: Option<&str>) -> NewPost {
         let (name, tripcode) = Post::process_name(name);
 
         NewPost {
@@ -87,6 +89,7 @@ impl Post {
             tripcode,
             message: String::from(message),
             created_at: NaiveDateTime::from_timestamp(Utc::now().timestamp(), 0),
+            user_uuid: user_uuid.map(|str| String::from(str)),
         }
     }
 }

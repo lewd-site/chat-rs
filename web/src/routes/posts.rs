@@ -105,6 +105,7 @@ struct PostWithFiles {
     message: Vec<Segment>,
     created_at: NaiveDateTime,
     files: Vec<File>,
+    user_uuid: Option<String>,
 }
 
 impl PostWithFiles {
@@ -117,6 +118,7 @@ impl PostWithFiles {
             message: MessageParser::str_to_segments(&post.message),
             created_at: post.created_at,
             files,
+            user_uuid: post.user_uuid,
         }
     }
 }
@@ -136,8 +138,9 @@ fn create_post(
     name: &str,
     message: &str,
     files: Vec<UploadedFile>,
+    user_uuid: Option<&str>,
 ) -> PostWithFiles {
-    let new_post = Post::new(name, message);
+    let new_post = Post::new(name, message, user_uuid);
     let post = PostRepository::create(&*conn, &new_post);
     let files = files
         .into_iter()
@@ -162,12 +165,19 @@ fn send_post_created_event(ws: &Ws, data: &PostWithFiles) {
 
 #[post("/", format = "json", data = "<data>")]
 pub fn create_post_json(
-    _auth: Authenticated,
+    auth: Authenticated,
     data: Json<CreatePostJson>,
     conn: ChatDbConn,
     ws: State<Ws>,
 ) -> Created<Json<PostResponse>> {
-    let data = create_post(conn, &data.name, &data.message, Vec::new());
+    let user_uuid = auth.0.user_uuid;
+    let data = create_post(
+        conn,
+        &data.name,
+        &data.message,
+        Vec::new(),
+        Some(&user_uuid),
+    );
     send_post_created_event(&ws, &data);
 
     let location = format!("/api/v1/posts/{}", data.id);
@@ -176,12 +186,19 @@ pub fn create_post_json(
 
 #[post("/", data = "<data>", rank = 1)]
 pub fn create_post_form(
-    _auth: Authenticated,
+    auth: Authenticated,
     data: Form<CreatePostForm>,
     conn: ChatDbConn,
     ws: State<Ws>,
 ) -> Redirect {
-    let data = create_post(conn, &data.name, &data.message, Vec::new());
+    let user_uuid = auth.0.user_uuid;
+    let data = create_post(
+        conn,
+        &data.name,
+        &data.message,
+        Vec::new(),
+        Some(&user_uuid),
+    );
     send_post_created_event(&ws, &data);
 
     Redirect::found("/")
@@ -189,12 +206,19 @@ pub fn create_post_form(
 
 #[post("/", data = "<data>", rank = 2)]
 pub fn create_post_multipart(
-    _auth: Authenticated,
+    auth: Authenticated,
     data: CreatePostMultipart,
     conn: ChatDbConn,
     ws: State<Ws>,
 ) -> Redirect {
-    let data = create_post(conn, &data.name, &data.message, data.files);
+    let user_uuid = auth.0.user_uuid;
+    let data = create_post(
+        conn,
+        &data.name,
+        &data.message,
+        data.files,
+        Some(&user_uuid),
+    );
     send_post_created_event(&ws, &data);
 
     Redirect::found("/")

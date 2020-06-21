@@ -11,7 +11,7 @@ impl PostRepository {
         let mut items = posts
             .order(created_at.desc())
             .limit(100)
-            .load::<Post>(conn)
+            .load(conn)
             .unwrap();
 
         items.reverse();
@@ -25,7 +25,7 @@ impl PostRepository {
             .filter(id.lt(before_id))
             .order(created_at.desc())
             .limit(100)
-            .load::<Post>(conn)
+            .load(conn)
             .unwrap();
 
         items.reverse();
@@ -35,11 +35,7 @@ impl PostRepository {
     pub fn get_one(conn: &PgConnection, post_id: i32) -> Option<Post> {
         use crate::schema::posts::dsl::*;
 
-        let items: Vec<Post> = posts
-            .filter(id.eq(post_id))
-            .limit(1)
-            .load::<Post>(conn)
-            .unwrap();
+        let items: Vec<Post> = posts.filter(id.eq(post_id)).limit(1).load(conn).unwrap();
 
         items.into_iter().next()
     }
