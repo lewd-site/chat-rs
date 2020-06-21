@@ -1,19 +1,19 @@
 use crate::requests::{CreatePostMultipart, UploadedFile};
+use crate::routes::types::{NotificationWithPost, PostWithFiles};
 use crate::ws::Ws;
 use crate::ChatDbConn;
-use chrono::prelude::*;
 use data::models::files::File;
-use data::models::message_parser::{MessageParser, Segment};
+use data::models::notifications::Notification;
 use data::models::posts::Post;
 use data::repositories::files::FileRepository;
+use data::repositories::notifications::NotificationRepository;
 use data::repositories::posts::PostRepository;
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
 use rocket::http::Status;
 use rocket::request::{Form, FromRequest, Outcome};
 use rocket::response::status::Created;
 use rocket::response::Redirect;
-use rocket::Request;
-use rocket::State;
+use rocket::{Request, State};
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -50,16 +50,22 @@ impl<'a, 'r> FromRequest<'a, 'r> for BearerToken<'a> {
 }
 
 #[derive(Serialize, Deserialize)]
-struct Claims {
-    user_uuid: String,
-    user_name: String,
-    user_email: String,
-    iat: u64,
-    nbf: u64,
-    exp: u64,
+pub struct Claims {
+    pub user_uuid: String,
+    pub user_name: String,
+    pub user_email: String,
+    pub iat: u64,
+    pub nbf: u64,
+    pub exp: u64,
 }
 
 pub struct Authenticated(Claims);
+
+impl Authenticated {
+    pub fn get_uuid(&self) -> String {
+        self.0.user_uuid.clone()
+    }
+}
 
 impl<'a, 'r> FromRequest<'a, 'r> for Authenticated {
     type Error = ();
@@ -97,33 +103,6 @@ pub struct CreatePostForm {
 }
 
 #[derive(Serialize)]
-struct PostWithFiles {
-    id: i32,
-    name: String,
-    tripcode: String,
-    message_raw: String,
-    message: Vec<Segment>,
-    created_at: NaiveDateTime,
-    files: Vec<File>,
-    user_uuid: Option<String>,
-}
-
-impl PostWithFiles {
-    fn new(post: Post, files: Vec<File>) -> PostWithFiles {
-        PostWithFiles {
-            id: post.id,
-            name: post.name,
-            tripcode: post.tripcode,
-            message_raw: post.message.clone(),
-            message: MessageParser::str_to_segments(&post.message),
-            created_at: post.created_at,
-            files,
-            user_uuid: post.user_uuid,
-        }
-    }
-}
-
-#[derive(Serialize)]
 pub struct PostListResponse {
     items: Vec<PostWithFiles>,
 }
@@ -139,7 +118,7 @@ fn create_post(
     message: &str,
     files: Vec<UploadedFile>,
     user_uuid: Option<&str>,
-) -> PostWithFiles {
+) -> (PostWithFiles, Vec<NotificationWithPost>) {
     let new_post = Post::new(name, message, user_uuid);
     let post = PostRepository::create(&*conn, &new_post);
     let files = files
@@ -151,12 +130,46 @@ fn create_post(
         })
         .collect();
 
-    PostWithFiles::new(post, files)
+    let post = PostWithFiles::new(post, files);
+
+    // Create notifications for referenced posts.
+    let ref_links: Vec<i32> = post
+        .message
+        .iter()
+        .filter(|s| s.is_ref_link())
+        .filter_map(|s| s.get_ref_link())
+        .map(|i| i as i32)
+        .collect();
+    let ref_posts = PostRepository::get_many_by_id(&conn, ref_links);
+    let ref_files = FileRepository::get_belonging_to_posts(&conn, &ref_posts);
+    let notifications: Vec<NotificationWithPost> = ref_posts
+        .into_iter()
+        .zip(ref_files)
+        .map(|(post, files)| PostWithFiles::new(post, files))
+        .filter(|ref_post| ref_post.user_uuid.is_some())
+        .map(|ref_post| {
+            let uuid = ref_post.user_uuid.clone().unwrap();
+            let new_notification = Notification::new(post.id, &uuid, false);
+            let notification = NotificationRepository::create(&conn, &new_notification);
+            NotificationWithPost::new(notification, ref_post)
+        })
+        .collect();
+
+    (post, notifications)
 }
 
 fn send_post_created_event(ws: &Ws, data: &PostWithFiles) {
     let json = json!({
         "event": "post_created",
+        "data": { "item": data },
+    })
+    .to_string();
+    ws.send_to_all(&json);
+}
+
+fn send_notification_created_event(ws: &Ws, data: &NotificationWithPost) {
+    let json = json!({
+        "event": "notification_created",
         "data": { "item": data },
     })
     .to_string();
@@ -170,18 +183,21 @@ pub fn create_post_json(
     conn: ChatDbConn,
     ws: State<Ws>,
 ) -> Created<Json<PostResponse>> {
-    let user_uuid = auth.0.user_uuid;
-    let data = create_post(
+    let user_uuid = auth.get_uuid();
+    let (post, notifications) = create_post(
         conn,
         &data.name,
         &data.message,
         Vec::new(),
         Some(&user_uuid),
     );
-    send_post_created_event(&ws, &data);
+    send_post_created_event(&ws, &post);
+    for notification in notifications {
+        send_notification_created_event(&ws, &notification);
+    }
 
-    let location = format!("/api/v1/posts/{}", data.id);
-    Created(location, Some(Json(PostResponse { item: data })))
+    let location = format!("/api/v1/posts/{}", post.id);
+    Created(location, Some(Json(PostResponse { item: post })))
 }
 
 #[post("/", data = "<data>", rank = 1)]
@@ -191,15 +207,18 @@ pub fn create_post_form(
     conn: ChatDbConn,
     ws: State<Ws>,
 ) -> Redirect {
-    let user_uuid = auth.0.user_uuid;
-    let data = create_post(
+    let user_uuid = auth.get_uuid();
+    let (post, notifications) = create_post(
         conn,
         &data.name,
         &data.message,
         Vec::new(),
         Some(&user_uuid),
     );
-    send_post_created_event(&ws, &data);
+    send_post_created_event(&ws, &post);
+    for notification in notifications {
+        send_notification_created_event(&ws, &notification);
+    }
 
     Redirect::found("/")
 }
@@ -211,15 +230,18 @@ pub fn create_post_multipart(
     conn: ChatDbConn,
     ws: State<Ws>,
 ) -> Redirect {
-    let user_uuid = auth.0.user_uuid;
-    let data = create_post(
+    let user_uuid = auth.get_uuid();
+    let (post, notifications) = create_post(
         conn,
         &data.name,
         &data.message,
         data.files,
         Some(&user_uuid),
     );
-    send_post_created_event(&ws, &data);
+    send_post_created_event(&ws, &post);
+    for notification in notifications {
+        send_notification_created_event(&ws, &notification);
+    }
 
     Redirect::found("/")
 }

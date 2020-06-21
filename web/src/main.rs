@@ -15,8 +15,7 @@ mod ws;
 
 use diesel::pg::PgConnection;
 use rocket_contrib::serve::StaticFiles;
-use routes::posts;
-use routes::thumbnails;
+use routes::{notifications, posts, thumbnails};
 use ws::Ws;
 
 #[database("pgsql_chat")]
@@ -35,6 +34,10 @@ fn rocket() -> rocket::Rocket {
                 posts::get_post_list,
                 posts::get_post,
             ],
+        )
+        .mount(
+            "/api/v1/notifications",
+            routes![notifications::get_notifications],
         )
         .mount("/thumb", routes![thumbnails::get_thumbnail])
         .mount("/", StaticFiles::from(static_dir))

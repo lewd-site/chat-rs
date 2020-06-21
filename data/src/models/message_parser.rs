@@ -31,6 +31,13 @@ impl Tag {
         }
     }
 
+    pub fn get_ref_link(&self) -> Option<u32> {
+        match self {
+            Tag::RefLink { id } => Some(*id),
+            _ => None,
+        }
+    }
+
     pub fn opening(&self) -> &str {
         match self {
             Tag::Bold => "[b]",
@@ -82,6 +89,11 @@ pub struct Segment {
 impl Segment {
     pub fn is_ref_link(&self) -> bool {
         self.tags.iter().position(|tag| tag.is_ref_link()) != None
+    }
+
+    pub fn get_ref_link(&self) -> Option<u32> {
+        let index = self.tags.iter().position(|tag| tag.is_ref_link());
+        index.and_then(|i| self.tags[i].get_ref_link())
     }
 }
 
