@@ -1,6 +1,6 @@
 import { TokenData } from './services/sso';
 import { token } from './stores/auth';
-import { addNotification } from './stores/notifications';
+import { addNotification, setNotifications, addNewNotification } from './stores/notifications';
 import { addPost, setPosts } from './stores/posts';
 import { Post, Notification } from './types';
 import utils from './utils';
@@ -63,16 +63,19 @@ export class Ws {
         }
     };
 
-    private onOpen = async (e: Event) => {
-        // Reload latest posts after websocket connected.
-        const posts = await window.api!.getLatestPosts();
+    private onOpen = (e: Event) => {
+        // Reload latest posts and notifications after websocket connected.
+        window.api!.getLatestPosts().then(posts => {
 
-        const scroll = utils.isAtBottom();
-        if (scroll) {
-            setTimeout(utils.scrollToBottom);
-        }
+            const scroll = utils.isAtBottom();
+            if (scroll) {
+                setTimeout(utils.scrollToBottom);
+            }
 
-        setPosts(posts);
+            setPosts(posts);
+        });
+
+        window.api?.getNotifications().then(notifications => setNotifications(notifications));
     };
 
     private onClose = (e: CloseEvent) => {
@@ -103,6 +106,7 @@ export class Ws {
             case 'notification_created': {
                 if (message.data.item.user_uuid === _token?.user_uuid) {
                     addNotification(message.data.item);
+                    addNewNotification(message.data.item);
                 }
                 break;
             }

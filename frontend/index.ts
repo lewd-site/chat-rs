@@ -11,7 +11,7 @@ import EventEmitter from './event-emitter';
 import Api from './services/api';
 import Sso from './services/sso';
 import { showAuthModal, token, userUuid } from './stores/auth';
-import { notifications, addNotifications } from './stores/notifications';
+import { notifications, setNotifications } from './stores/notifications';
 import { nsfwMode, toggleNSFWMode } from './stores/files';
 import { Posts, posts, setPosts, addPosts, unloadOldPosts } from './stores/posts';
 import Ws from './ws';
@@ -94,9 +94,7 @@ userUuid.subscribe(uuid => {
         return;
     }
 
-    window.api?.getNotifications().then(notifications => {
-        addNotifications(notifications);
-    });
+    window.api?.getNotifications().then(notifications => setNotifications(notifications));
 });
 
 setTimeout(async () => {

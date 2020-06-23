@@ -181,10 +181,39 @@
         font-size: 18px;
     }
 
+    &__messages {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        z-index: 11;
+
+        padding: 16px;
+
+        pointer-events: none;
+    }
+
+    &__message {
+        background: #292B30;
+        border-radius: 5px;
+
+        padding: 8px;
+
+        pointer-events: initial;
+
+        &:not(:last-child) {
+            margin-bottom: 16px;
+        }
+    }
+
     @media screen and (min-width: 1200px) {
         &__bar {
             background: transparent;
             box-shadow: unset;
+        }
+
+        &__message {
+            width: 22%;
         }
     }
 }

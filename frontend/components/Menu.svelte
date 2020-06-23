@@ -5,7 +5,12 @@
   import { formatName } from "./post";
   import { hslide } from "../anim";
   import { mediaBoxFiles, mediaBoxFile } from "../stores/files";
-  import { notifications, readNotification } from "../stores/notifications";
+  import {
+    notifications,
+    readNotification,
+    newNotifications,
+    removeNewNotification
+  } from "../stores/notifications";
   import { utils } from "../utils";
 
   let isVisible = false;
@@ -30,6 +35,12 @@
       setTimeout(() => post.classList.remove("post_highlight"), 500);
       return false;
     }
+  }
+
+  function handleNotiticationClose(e, notification) {
+    readNotification(notification);
+    window.api.readNotification(notification.id);
+    removeNewNotification(notification);
   }
 
   function handleFileClick(post, file) {
@@ -209,5 +220,80 @@
       class="menu__show"
       type="button"
       on:click|preventDefault={e => (isVisible = true)} />
+  </div>
+
+  <div class="menu__messages">
+    {#each $newNotifications as notification (notification.id)}
+      <div
+        class="menu__message notification"
+        on:click|preventDefault={e => handleNotificationClick(e, notification.post.id)}>
+        <button
+          type="button"
+          class="notification__close"
+          on:click|preventDefault={e => handleNotiticationClose(e, notification)} />
+
+        <div class="notification__title">
+          Ответ от
+          <span class="notification__name">
+            {formatName(notification.post)}
+          </span>
+
+          <span class="notification__tripcode">
+            {notification.post.tripcode}
+          </span>
+        </div>
+
+        <div class="notification__message">
+          {@html markup(notification.post.message)}
+        </div>
+
+        {#if notification.post.files.length}
+          <div class="notification__files">
+            {#each notification.post.files as file (file.id)}
+              {#if file.mimetype.startsWith('image/')}
+                <div
+                  class="notification__file notification__file_image"
+                  title={file.name}
+                  on:click|preventDefault={e => handleFileClick(notification.post, file)}>
+                  <picture>
+                    <img
+                      class="notification__file-preview"
+                      src="/thumb/{file.md5}?max_width=360"
+                      alt="Preview" />
+                  </picture>
+                </div>
+              {:else if file.mimetype.startsWith('video/')}
+                <div
+                  class="notification__file notification__file_video"
+                  title={file.name}
+                  on:click|preventDefault={e => handleFileClick(notification.post, file)}>
+                  <picture>
+                    <img
+                      class="notification__file-preview"
+                      src="/thumb/{file.md5}?max_width=360"
+                      alt="Preview" />
+                  </picture>
+                </div>
+              {:else if file.mimetype.startsWith('audio/')}
+                <div
+                  class="notification__file notification__file_audio"
+                  title={file.name} />
+              {/if}
+            {/each}
+          </div>
+        {/if}
+
+        <div class="notification__footer">
+          {#if notification.read}
+            <span class="notification__read" />
+          {:else}
+            <span class="notification__unread" />
+          {/if}
+          <span class="notification__date">
+            {formatDateTime(notification.post.created_at)}
+          </span>
+        </div>
+      </div>
+    {/each}
   </div>
 {/if}

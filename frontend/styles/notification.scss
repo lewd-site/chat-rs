@@ -1,5 +1,34 @@
 .notification {
+    position: relative;
     cursor: pointer;
+
+    &__close {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 12px;
+        height: 12px;
+
+        display: none;
+
+        background: $icon;
+
+        mask-image: url('../images/notification-times.svg');
+        mask-position: center center;
+        mask-repeat: no-repeat;
+
+        border: 0;
+
+        cursor: pointer;
+
+        &:hover {
+            background: $icon-hover;
+        }
+    }
+
+    &:hover &__close {
+        display: block;
+    }
 
     &__title {
         display: flex;
@@ -30,6 +59,7 @@
         line-height: 19px;
 
         white-space: pre-line;
+        word-wrap: break-word;
 
         margin-bottom: 8px;
     }
