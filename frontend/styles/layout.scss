@@ -10,6 +10,8 @@
     overflow-x: hidden;
     overflow-y: scroll;
 
+    @include scrollbar($track, $thumb);
+
     &__left {
         flex-shrink: 0;
 

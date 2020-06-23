@@ -31,6 +31,8 @@
         display: block;
 
         overflow: auto;
+
+        @include scrollbar($track, $thumb);
     }
 
     &_spoiler {

@@ -156,6 +156,8 @@
 
         overflow-x: hidden;
         overflow-y: auto;
+
+        @include scrollbar($track, $thumb);
     }
 
     &__notification {

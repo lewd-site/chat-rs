@@ -262,6 +262,8 @@
 
         word-break: break-all;
         resize: none;
+
+        @include scrollbar($track, $thumb);
     }
 
     &__submit-wrapper {

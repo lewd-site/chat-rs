@@ -9,6 +9,8 @@ html, body {
     font-family: $sans-serif;
     font-size: 16px;
     line-height: 22px;
+
+    @include scrollbar($track, $thumb);
 }
 
 p {

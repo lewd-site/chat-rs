@@ -354,12 +354,16 @@
     }
 
     &__message {
+        white-space: pre-line;
+        word-wrap: break-word;
+
         &:not(:empty) {
             margin-bottom: 16px;
         }
 
-        white-space: pre-line;
-        word-wrap: break-word;
+        .markup_codeblock {
+            max-height: 50vh;
+        }
     }
 
     &__videos {
