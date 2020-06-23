@@ -11,7 +11,7 @@ import EventEmitter from './event-emitter';
 import Api from './services/api';
 import Sso from './services/sso';
 import { showAuthModal, token, userUuid } from './stores/auth';
-import { notifications, setNotifications } from './stores/notifications';
+import { setNotifications } from './stores/notifications';
 import { nsfwMode, toggleNSFWMode } from './stores/files';
 import { Posts, posts, setPosts, addPosts, unloadOldPosts } from './stores/posts';
 import Ws from './ws';
@@ -165,6 +165,19 @@ document.addEventListener('click', e => {
             setTimeout(() => post.classList.remove('post_highlight'), 500);
             return false;
         }
+    }
+});
+
+document.addEventListener('keydown', e => {
+    if (!(e.target instanceof HTMLElement) ||
+        e.target.tagName === 'INPUT' ||
+        e.target.tagName === 'TEXTAREA') {
+        return;
+    }
+
+    if (e.code === 'KeyB') {
+        e.preventDefault();
+        toggleNSFWMode();
     }
 });
 

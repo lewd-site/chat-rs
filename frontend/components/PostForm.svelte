@@ -52,7 +52,7 @@
     setTimeout(updateSize, 150);
   }
 
-  async function handleSubmit(e) {
+  async function submit() {
     if (disabled) {
       return;
     }
@@ -91,6 +91,10 @@
     } finally {
       disabled = false;
     }
+  }
+
+  function handleSubmit(e) {
+    submit();
   }
 
   function handleChange() {
@@ -204,6 +208,28 @@
     setTimeout(updateSize, 150);
   }
 
+  function handleKeyDown(e) {
+    if (e.code === "Enter" && e.ctrlKey) {
+      e.preventDefault();
+      submit();
+    } else if (e.code === "KeyB" && e.altKey) {
+      e.preventDefault();
+      insertMarkup("b");
+    } else if (e.code === "KeyI" && e.altKey) {
+      e.preventDefault();
+      insertMarkup("i");
+    } else if (e.code === "KeyT" && e.altKey) {
+      e.preventDefault();
+      insertMarkup("s");
+    } else if (e.code === "KeyP" && e.altKey) {
+      e.preventDefault();
+      insertMarkup("spoiler");
+    } else if (e.code === "KeyC" && e.altKey) {
+      e.preventDefault();
+      insertMarkup("code");
+    }
+  }
+
   onMount(() => {
     window.eventBus.subscribe("reply", handleReply);
     setTimeout(updateSize);
@@ -277,12 +303,14 @@
     <div class="post-form__markup-row" transition:slide={{ duration: 150 }}>
       <button
         class="post-form__bold"
+        title="Alt+B"
         on:click|preventDefault={e => insertMarkup('b')}>
         Tt
       </button>
 
       <button
         class="post-form__italic"
+        title="Alt+I"
         on:click|preventDefault={e => insertMarkup('i')}>
         Tt
       </button>
@@ -295,6 +323,7 @@
 
       <button
         class="post-form__strike"
+        title="Alt+T"
         on:click|preventDefault={e => insertMarkup('s')}>
         Tt
       </button>
@@ -313,6 +342,7 @@
 
       <button
         class="post-form__code"
+        title="Alt+C"
         on:click|preventDefault={e => insertMarkup('code')}>
         Code
       </button>
@@ -325,6 +355,7 @@
 
       <button
         class="post-form__spoiler"
+        title="Alt+P"
         on:click|preventDefault={e => insertMarkup('spoiler')}>
         Spoiler
       </button>
@@ -335,7 +366,7 @@
     </div>
   {/if}
 
-  <div class="post-form__message-row">
+  <div class="post-form__message-row" on:keydown={handleKeyDown}>
     <div class="post-form__attachment-wrapper">
       <label class="post-form__attachment">
         <input
@@ -358,7 +389,7 @@
       {disabled} />
 
     <div class="post-form__submit-wrapper">
-      <button class="post-form__submit" type="submit" />
+      <button class="post-form__submit" type="submit" title="Ctrl+Enter" />
     </div>
   </div>
 </form>
