@@ -33,6 +33,10 @@ export function readNotification(notification: Notification) {
     });
 }
 
+export function removeNotification(notification: Notification) {
+    notifications.update(notifications => notifications.filter(n => +n.id !== +notification.id));
+}
+
 export function addNewNotification(notification: Notification) {
     newNotifications.update(notifications => [notification, ...notifications]);
     setTimeout(() => removeNewNotification(notification), 10000);

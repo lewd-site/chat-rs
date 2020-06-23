@@ -112,6 +112,18 @@ export class Api {
         const response = await axios.post<NotificationResponse>(`/api/v1/notifications/${id}/read`, {}, config);
         return response.data.item;
     };
+
+    public deleteNotification = async (id: number): Promise<Notification> => {
+        const config: AxiosRequestConfig = { headers: {} };
+
+        const token = await this.getToken();
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await axios.delete<NotificationResponse>(`/api/v1/notifications/${id}`, config);
+        return response.data.item;
+    };
 }
 
 export default Api;

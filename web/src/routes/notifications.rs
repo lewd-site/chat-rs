@@ -18,21 +18,21 @@ pub struct NotificationJson {
 }
 
 #[derive(Responder)]
-pub enum ReadNotificationResponse {
+pub enum UpdateNotificationResponse {
     Updated(Json<NotificationJson>),
     NotFound(NotFound<Json<ErrorJson>>),
 }
 
-impl ReadNotificationResponse {
-    fn updated(notification: NotificationWithPost) -> ReadNotificationResponse {
+impl UpdateNotificationResponse {
+    fn ok(notification: NotificationWithPost) -> UpdateNotificationResponse {
         let json = Json(NotificationJson { item: notification });
-        ReadNotificationResponse::Updated(json)
+        UpdateNotificationResponse::Updated(json)
     }
 
-    fn not_found(error: &str) -> ReadNotificationResponse {
+    fn not_found(error: &str) -> UpdateNotificationResponse {
         let message = String::from(error);
         let json = Json(ErrorJson { message });
-        ReadNotificationResponse::NotFound(NotFound(json))
+        UpdateNotificationResponse::NotFound(NotFound(json))
     }
 }
 
@@ -74,7 +74,7 @@ pub fn read_notification(
     auth: Authenticated,
     conn: ChatDbConn,
     id: i32,
-) -> ReadNotificationResponse {
+) -> UpdateNotificationResponse {
     let uuid = auth.get_uuid();
     match NotificationRepository::get_one_for_user(&conn, id, &uuid) {
         Some((notification, post)) => {
@@ -82,8 +82,27 @@ pub fn read_notification(
             let files = FileRepository::get_belonging_to_post(&conn, &post);
             let post = PostWithFiles::new(post, files);
             let notification = NotificationWithPost::new(notification, post);
-            ReadNotificationResponse::updated(notification)
+            UpdateNotificationResponse::ok(notification)
         }
-        None => ReadNotificationResponse::not_found("Not found"),
+        None => UpdateNotificationResponse::not_found("Not found"),
+    }
+}
+
+#[delete("/<id>")]
+pub fn delete_notification(
+    auth: Authenticated,
+    conn: ChatDbConn,
+    id: i32,
+) -> UpdateNotificationResponse {
+    let uuid = auth.get_uuid();
+    match NotificationRepository::get_one_for_user(&conn, id, &uuid) {
+        Some((notification, post)) => {
+            let notification = NotificationRepository::delete(&conn, &notification);
+            let files = FileRepository::get_belonging_to_post(&conn, &post);
+            let post = PostWithFiles::new(post, files);
+            let notification = NotificationWithPost::new(notification, post);
+            UpdateNotificationResponse::ok(notification)
+        }
+        None => UpdateNotificationResponse::not_found("Not found"),
     }
 }

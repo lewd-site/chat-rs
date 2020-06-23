@@ -61,4 +61,11 @@ impl NotificationRepository {
             .get_result(conn)
             .unwrap()
     }
+
+    pub fn delete(conn: &PgConnection, notification: &Notification) -> Notification {
+        use crate::schema::notifications::dsl::*;
+
+        let source = notifications.filter(id.eq(notification.id));
+        diesel::delete(source).get_result(conn).unwrap()
+    }
 }

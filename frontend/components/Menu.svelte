@@ -7,7 +7,9 @@
   import { mediaBoxFiles, mediaBoxFile } from "../stores/files";
   import {
     notifications,
+    setNotifications,
     readNotification,
+    removeNotification,
     newNotifications,
     removeNewNotification
   } from "../stores/notifications";
@@ -39,8 +41,17 @@
 
   function handleNotiticationClose(e, notification) {
     readNotification(notification);
-    window.api.readNotification(notification.id);
     removeNewNotification(notification);
+
+    window.api.readNotification(notification.id);
+  }
+
+  async function handleNotiticationDelete(e, notification) {
+    removeNotification(notification);
+    removeNewNotification(notification);
+
+    await window.api.deleteNotification(notification.id);
+    setNotifications(await window.api.getNotifications());
   }
 
   function handleFileClick(post, file) {
@@ -128,6 +139,11 @@
           class="menu__notification notification"
           on:mouseover={e => handleNotificationHover(e, notification)}
           on:click|preventDefault={e => handleNotificationClick(e, notification.post.id)}>
+          <button
+            type="button"
+            class="notification__close"
+            on:click|preventDefault={e => handleNotiticationDelete(e, notification)} />
+
           <div class="notification__title">
             Ответ от
             <span class="notification__name">

@@ -102,6 +102,9 @@
 
         object-fit: cover;
 
+        opacity: 1;
+        transition: opacity 300ms ease;
+
         .nsfw &:not(:hover) {
             opacity: 0.05;
         }

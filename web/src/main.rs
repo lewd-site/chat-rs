@@ -39,7 +39,8 @@ fn rocket() -> rocket::Rocket {
             "/api/v1/notifications",
             routes![
                 notifications::get_notifications,
-                notifications::read_notification
+                notifications::read_notification,
+                notifications::delete_notification,
             ],
         )
         .mount("/thumb", routes![thumbnails::get_thumbnail])
