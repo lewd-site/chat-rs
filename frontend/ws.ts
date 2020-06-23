@@ -1,5 +1,8 @@
+import { TokenData } from './services/sso';
+import { token } from './stores/auth';
+import { addNotification } from './stores/notifications';
 import { addPost, setPosts } from './stores/posts';
-import { Post } from './types';
+import { Post, Notification } from './types';
 import utils from './utils';
 
 interface WsPostCreated {
@@ -9,11 +12,21 @@ interface WsPostCreated {
     },
 }
 
-type WsEvent = WsPostCreated;
+interface WsNotificationCreated {
+    readonly event: 'notification_created',
+    readonly data: {
+        readonly item: Notification,
+    },
+}
+
+type WsEvent = WsPostCreated | WsNotificationCreated;
 
 function isWsEvent(data: any): data is WsEvent {
     return (data as WsEvent).event !== undefined;
 }
+
+let _token: TokenData | null = null;
+token.subscribe(token => _token = token);
 
 export class Ws {
     private ws: null | WebSocket = null;
@@ -84,6 +97,13 @@ export class Ws {
                 }
 
                 addPost(message.data.item);
+                break;
+            }
+
+            case 'notification_created': {
+                if (message.data.item.user_uuid === _token?.user_uuid) {
+                    addNotification(message.data.item);
+                }
                 break;
             }
         }

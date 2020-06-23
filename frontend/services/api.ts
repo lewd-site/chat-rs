@@ -18,6 +18,10 @@ interface PostResponse {
     readonly item: Post;
 }
 
+interface NotificationResponse {
+    readonly item: Notification;
+}
+
 interface NotificationListResponse {
     readonly items: Notification[];
 }
@@ -95,6 +99,18 @@ export class Api {
 
         const response = await axios.get<NotificationListResponse>('/api/v1/notifications', config);
         return response.data.items;
+    };
+
+    public readNotification = async (id: number): Promise<Notification> => {
+        const config: AxiosRequestConfig = { headers: {} };
+
+        const token = await this.getToken();
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await axios.post<NotificationResponse>(`/api/v1/notifications/${id}/read`, {}, config);
+        return response.data.item;
     };
 }
 

@@ -37,7 +37,10 @@ fn rocket() -> rocket::Rocket {
         )
         .mount(
             "/api/v1/notifications",
-            routes![notifications::get_notifications],
+            routes![
+                notifications::get_notifications,
+                notifications::read_notification
+            ],
         )
         .mount("/thumb", routes![thumbnails::get_thumbnail])
         .mount("/", StaticFiles::from(static_dir))

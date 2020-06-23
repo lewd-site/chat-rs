@@ -80,7 +80,7 @@ pub enum Token {
     ClosingTag(Tag),
 }
 
-#[derive(Debug, PartialEq, Eq, Serialize)]
+#[derive(Debug, PartialEq, Eq, Serialize, Clone)]
 pub struct Segment {
     pub text: String,
     pub tags: Vec<Tag>,

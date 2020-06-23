@@ -4,7 +4,7 @@
   import Post from "./Post.svelte";
   import { posts } from "../stores/posts";
 
-  export const postValues = derived(posts, posts => Object.values(posts));
+  const postValues = derived(posts, posts => Object.values(posts));
 </script>
 
 {#each $postValues as post (post.id)}

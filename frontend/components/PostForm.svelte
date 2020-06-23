@@ -1,6 +1,7 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { scale, slide } from "svelte/transition";
+
   import TextBox from "./TextBox.svelte";
   import utils from "../utils";
 
@@ -108,7 +109,7 @@
     const rect = formElement.getBoundingClientRect();
     document.querySelector(
       ".layout__post-list"
-    ).style.marginBottom = `${rect.height + 46}px`;
+    ).style.marginBottom = `${rect.height + 32}px`;
 
     if (scroll) {
       setTimeout(utils.scrollToBottom);

@@ -6,9 +6,13 @@ use diesel::prelude::*;
 pub struct FileRepository();
 
 impl FileRepository {
+    pub fn get_belonging_to_post(conn: &PgConnection, post: &Post) -> Vec<File> {
+        File::belonging_to(post).load(conn).unwrap()
+    }
+
     pub fn get_belonging_to_posts(conn: &PgConnection, posts: &Vec<Post>) -> Vec<Vec<File>> {
         File::belonging_to(posts)
-            .load::<File>(conn)
+            .load(conn)
             .unwrap()
             .grouped_by(&posts)
     }
@@ -16,11 +20,7 @@ impl FileRepository {
     pub fn get_one_by_md5(conn: &PgConnection, hash: &str) -> Option<File> {
         use crate::schema::files::dsl::*;
 
-        let items: Vec<File> = files
-            .filter(md5.eq(hash))
-            .limit(1)
-            .load::<File>(conn)
-            .unwrap();
+        let items: Vec<File> = files.filter(md5.eq(hash)).limit(1).load(conn).unwrap();
 
         items.into_iter().next()
     }

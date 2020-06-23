@@ -140,18 +140,20 @@ fn create_post(
         .filter_map(|s| s.get_ref_link())
         .map(|i| i as i32)
         .collect();
-    let ref_posts = PostRepository::get_many_by_id(&conn, ref_links);
+    let ref_posts = PostRepository::get_many_by_id(&conn, ref_links)
+        .into_iter()
+        .filter(|ref_post| ref_post.user_uuid.is_some())
+        .collect();
     let ref_files = FileRepository::get_belonging_to_posts(&conn, &ref_posts);
     let notifications: Vec<NotificationWithPost> = ref_posts
         .into_iter()
         .zip(ref_files)
         .map(|(post, files)| PostWithFiles::new(post, files))
-        .filter(|ref_post| ref_post.user_uuid.is_some())
         .map(|ref_post| {
             let uuid = ref_post.user_uuid.clone().unwrap();
             let new_notification = Notification::new(post.id, &uuid, false);
             let notification = NotificationRepository::create(&conn, &new_notification);
-            NotificationWithPost::new(notification, ref_post)
+            NotificationWithPost::new(notification, post.clone())
         })
         .collect();
 

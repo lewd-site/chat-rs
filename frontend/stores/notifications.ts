@@ -2,38 +2,35 @@ import { writable } from 'svelte/store';
 
 import { Notification } from '../types';
 
-export type Notifications = { [key: number]: Notification };
-
 const MAX_NOTIFICATIONS = 20;
 
-export const notifications = writable<Notifications>({});
-
-function hashToArray(notifications: Notifications): Notification[] {
-    return Object.values(notifications);
-}
-
-function arrayToHash(notifications: Notification[]): Notifications {
-    return notifications.reduce((result, notification) => {
-        result[notification.id] = notification;
-        return result;
-    }, {} as Notifications);
-}
+export const notifications = writable<Notification[]>([]);
 
 export function addNotifications(newNotifications: Notification[]) {
     notifications.update(notifications => {
-        const values = hashToArray(notifications).concat(newNotifications);
+        const values = [...newNotifications, ...notifications].slice(0, MAX_NOTIFICATIONS);
         values.sort((a, b) => +b.id - a.id);
 
-        return arrayToHash(values.slice(0, MAX_NOTIFICATIONS));
+        return values;
     });
 }
 
 export function addNotification(newNotification: Notification) {
     notifications.update(notifications => {
-        const values = hashToArray(notifications);
-        values.push(newNotification);
+        const values = [newNotification, ...notifications].slice(0, MAX_NOTIFICATIONS);
         values.sort((a, b) => +b.id - a.id);
 
-        return arrayToHash(values.slice(0, MAX_NOTIFICATIONS));
+        return values;
+    });
+}
+
+export function readNotification(notification: Notification) {
+    notifications.update(notifications => {
+        const index = notifications.findIndex(n => +n.id === +notification.id);
+        if (index !== -1) {
+            notifications.splice(index, 1, { ...notification, read: true });
+        }
+
+        return notifications;
     });
 }

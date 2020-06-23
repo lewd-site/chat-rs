@@ -4,8 +4,14 @@
         border: 0;
         border-radius: 5px;
 
+        transition: background ease 500ms;
+
         &:not(:last-child) {
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
+    }
+
+    .post_highlight {
+        background: #51555E;
     }
 }

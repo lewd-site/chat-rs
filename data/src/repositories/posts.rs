@@ -35,14 +35,7 @@ impl PostRepository {
     pub fn get_many_by_id(conn: &PgConnection, ids: Vec<i32>) -> Vec<Post> {
         use crate::schema::posts::dsl::*;
 
-        let mut items = posts
-            .filter(id.eq_any(ids))
-            .order(created_at.desc())
-            .load(conn)
-            .unwrap();
-
-        items.reverse();
-        items
+        posts.filter(id.eq_any(ids)).load(conn).unwrap()
     }
 
     pub fn get_one(conn: &PgConnection, post_id: i32) -> Option<Post> {

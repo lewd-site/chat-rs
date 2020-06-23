@@ -5,7 +5,7 @@ use data::models::notifications::Notification;
 use data::models::posts::Post;
 use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct PostWithFiles {
     pub id: i32,
     pub name: String,

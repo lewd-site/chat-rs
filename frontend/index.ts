@@ -10,7 +10,7 @@ import config from './config';
 import EventEmitter from './event-emitter';
 import Api from './services/api';
 import Sso from './services/sso';
-import { showAuthModal, token } from './stores/auth';
+import { showAuthModal, token, userUuid } from './stores/auth';
 import { notifications, addNotifications } from './stores/notifications';
 import { nsfwMode, toggleNSFWMode } from './stores/files';
 import { Posts, posts, setPosts, addPosts, unloadOldPosts } from './stores/posts';
@@ -81,16 +81,22 @@ window.ws = new Ws(config.wsUrl);
 window.api.getLatestPosts().then(posts => {
     setTimeout(utils.scrollToBottom);
     setPosts(posts);
-
-    window.api?.getNotifications().then(notifications => {
-        addNotifications(notifications);
-    });
 });
 
 const authButton = document.getElementById('login');
 authButton?.setAttribute('hidden', '');
 authButton?.addEventListener('click', e => {
     showAuthModal.set(true);
+});
+
+userUuid.subscribe(uuid => {
+    if (!uuid) {
+        return;
+    }
+
+    window.api?.getNotifications().then(notifications => {
+        addNotifications(notifications);
+    });
 });
 
 setTimeout(async () => {
@@ -143,6 +149,25 @@ document.getElementById('scroll-to-bottom')?.addEventListener('click', e => {
 document.getElementById('toggle-nsfw')?.addEventListener('click', e => {
     e.preventDefault();
     toggleNSFWMode();
+});
+
+document.addEventListener('click', e => {
+    if (!(e.target instanceof HTMLElement)) {
+        return;
+    }
+
+    const target = e.target.closest('[data-ref-link]');
+    if (target) {
+        const id = +target.getAttribute('data-ref-link')!;
+        const post = document.getElementById(`post_${id}`);
+        if (post) {
+            e.preventDefault();
+            utils.scrollToElement(post);
+            post.classList.add('post_highlight');
+            setTimeout(() => post.classList.remove('post_highlight'), 500);
+            return false;
+        }
+    }
 });
 
 nsfwMode.subscribe(nsfwMode => {

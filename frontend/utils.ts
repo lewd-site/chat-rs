@@ -31,8 +31,14 @@ export class Utils {
             scrollingElement.scrollTop = newScrollHeight - scrollHeight;
         });
     }
+
+    public scrollToElement(element: Element) {
+        const rect = element.getBoundingClientRect();
+        const top = rect.top + window.pageYOffset;
+        const middle = top - (window.innerHeight / 2) + (rect.height / 2);
+        window.scrollTo(0, middle);
+    }
 }
 
 export const utils = new Utils();
 export default utils;
-

@@ -23,7 +23,7 @@ pub struct NewFile {
     pub length: Option<i32>,
 }
 
-#[derive(Identifiable, Queryable, Associations, Serialize)]
+#[derive(Identifiable, Queryable, Associations, Serialize, Clone)]
 #[belongs_to(Post)]
 pub struct File {
     pub id: i32,

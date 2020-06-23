@@ -1,6 +1,8 @@
 <script>
   import AudioPlayer from "./AudioPlayer.svelte";
-  import { token } from "../stores/auth";
+  import { markup } from "./markup";
+  import { formatName } from "./post";
+  import { userUuid } from "../stores/auth";
   import { mediaBoxFiles, mediaBoxFile } from "../stores/files";
   import {
     hasPopup,
@@ -15,14 +17,6 @@
   const POPUP_OPEN_TIME = 100;
 
   let _posts = $posts;
-
-  function getName(post) {
-    if (!post.name.length && !post.tripcode.length) {
-      return "Anonymous";
-    }
-
-    return post.name;
-  }
 
   function formatTime(time) {
     const date = new Date(time + "Z");
@@ -69,86 +63,6 @@
     }
 
     return classes.join(" ");
-  }
-
-  function escapeHtml(input) {
-    return input
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  function getSegmentMarkup(segment) {
-    let markup = escapeHtml(segment.text);
-    segment.tags.forEach(tag => {
-      switch (tag.type) {
-        case "Bold":
-          markup = `<strong class="markup markup_bold">${markup}</strong>`;
-          break;
-
-        case "Italic":
-          markup = `<em class="markup markup_italic">${markup}</em>`;
-          break;
-
-        case "Underline":
-          markup = `<span class="markup markup_underline">${markup}</span>`;
-          break;
-
-        case "Strike":
-          markup = `<del class="markup markup_strike">${markup}</del>`;
-          break;
-
-        case "Superscript":
-          markup = `<sup class="markup markup_superscript">${markup}</sup>`;
-          break;
-
-        case "Subscript":
-          markup = `<sub class="markup markup_subscript">${markup}</sub>`;
-          break;
-
-        case "Code":
-          markup = `<pre class="markup markup_code">${markup}</pre>`;
-          break;
-
-        case "CodeBlock":
-          markup = `<pre class="markup markup_codeblock">${markup}</pre>`;
-          break;
-
-        case "Spoiler":
-          markup = `<span class="markup markup_spoiler">${markup}</span>`;
-          break;
-
-        case "RefLink":
-          const targetPost = _posts[tag.id];
-          if (targetPost) {
-            markup +=
-              `<span class="reflink__author">` +
-              `<span class="reflink__name">${getName(targetPost)}</span>` +
-              `<span class="reflink__tripcode">${targetPost.tripcode}</span>` +
-              `</span>`;
-          }
-
-          markup = `<a class="markup markup_reflink reflink" href="#post_${tag.id}" data-show-post-popup="${tag.id}">${markup}</a>`;
-          break;
-
-        case "Quote":
-          markup = `<span class="markup markup_quote">${markup}</span>`;
-          break;
-      }
-    });
-
-    return markup;
-  }
-
-  function getMarkup(segments) {
-    const markup = [];
-    for (let segment of segments) {
-      markup.push(getSegmentMarkup(segment));
-    }
-
-    return markup.join("");
   }
 
   function handleFileClick(file) {
@@ -224,13 +138,13 @@
 </script>
 
 <div class="post__header">
-  <span class="post__name">{getName(post)}</span>
+  <span class="post__name">{formatName(post)}</span>
   <span class="post__tripcode">{post.tripcode}</span>
   <span class="post__id">{post.id}</span>
   <time class="post__date" datetime={post.created_at}>
     {formatTime(post.created_at)}
   </time>
-  {#if post.user_uuid === null || $token === null || post.user_uuid !== $token.user_uuid}
+  {#if post.user_uuid === null || post.user_uuid !== $userUuid}
     <button class="post__reply" on:click|preventDefault={handleReplyClick} />
   {/if}
 </div>
@@ -259,7 +173,7 @@
   </div>
 
   <div class="post__message">
-    {@html getMarkup(post.message)}
+    {@html markup(post.message)}
   </div>
 
   <div class="post__videos">
@@ -301,11 +215,12 @@
       <a
         class="post__footer-reflink reflink"
         href="#post_{id}"
+        data-ref-link={id}
         data-show-post-popup={id}>
         {id}
         {#if $posts[id]}
           <span class="reflink__author">
-            <span class="reflink__name">{getName($posts[id])}</span>
+            <span class="reflink__name">{formatName($posts[id])}</span>
             <span class="reflink__tripcode">{$posts[id].tripcode}</span>
           </span>
         {/if}

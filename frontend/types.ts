@@ -15,7 +15,7 @@ export interface File {
 export interface BBCode {
     readonly type:
     | 'Bold' | 'Italic' | 'Underline' | 'Strike'
-    | 'Superscript' | 'Subscript' | 'Code' | 'Spoiler';
+    | 'Superscript' | 'Subscript' | 'Code' | 'CodeBlock' | 'Spoiler';
 }
 
 export interface RefLink {
