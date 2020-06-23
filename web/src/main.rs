@@ -15,6 +15,7 @@ mod ws;
 
 use diesel::pg::PgConnection;
 use rocket_contrib::serve::StaticFiles;
+use rocket_sentry::RocketSentry;
 use routes::{notifications, posts, thumbnails};
 use ws::Ws;
 
@@ -45,6 +46,7 @@ fn rocket() -> rocket::Rocket {
         )
         .mount("/thumb", routes![thumbnails::get_thumbnail])
         .mount("/", StaticFiles::from(static_dir))
+        .attach(RocketSentry::fairing())
         .attach(ChatDbConn::fairing())
 }
 
