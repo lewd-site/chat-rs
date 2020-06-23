@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 
-import { PostPopup } from '../types';
+import { mediaBoxFile } from './files';
+import { PostPopup, File } from '../types';
 
 export type PostPopups = { [key: number]: PostPopup };
 
@@ -8,10 +9,12 @@ const POPUP_CLOSE_TIME = 200;
 
 let _id = 0;
 let _popups: PostPopups = {};
+let _file: File | null = null;
 
 export const popups = writable<PostPopups>({});
 
 popups.subscribe(popups => _popups = popups);
+mediaBoxFile.subscribe(file => _file = file);
 
 export function getPopup(link: HTMLElement) {
     return Object.values(_popups).find(popup => popup.link === link);
@@ -46,6 +49,7 @@ export function addPopup(
         rightToLeft,
         hover: true,
         fade: true,
+        pinned: false,
     };
 
     popups.update(popups => ({ ...popups, [id]: popup }));
@@ -59,6 +63,16 @@ export function setPopupHoverById(id: number, hover: boolean) {
         }
 
         return { ...popups, [id]: { ...popups[id], hover } };
+    });
+}
+
+export function setPopupPinnedById(id: number, pinned: boolean) {
+    popups.update(popups => {
+        if (!_popups[id]) {
+            return popups;
+        }
+
+        return { ...popups, [id]: { ...popups[id], pinned } };
     });
 }
 
@@ -79,26 +93,28 @@ export function setPopupHover(link: HTMLElement, hover: boolean) {
     }
 }
 
+function shouldClosePopup(popup: PostPopup): boolean {
+    if (popup.hover || popup.pinned) {
+        return false;
+    }
+
+    if (_file !== null && +_file.post_id === +popup.postId) {
+        return false;
+    }
+
+    const children = Object.values(_popups).filter(p => p.parentPopupId && +p.parentPopupId === +popup.id);
+    return children.every(p => shouldClosePopup(p));
+}
+
 function doCheckPopup(id: number) {
     const popup = _popups[id];
     if (!popup) {
         return;
     }
 
-    if (popup.hover) {
+    if (!shouldClosePopup(popup)) {
         return;
     }
-
-    const children = Object.values(_popups).filter(popup => popup.parentPopupId === +id);
-    if (children.some(popup => popup.hover)) {
-        return;
-    }
-
-    setTimeout(() => {
-        if (popup.parentPopupId) {
-            doCheckPopup(popup.parentPopupId);
-        }
-    }, POPUP_CLOSE_TIME);
 
     setPopupFadeById(popup.id, true);
 
@@ -109,6 +125,12 @@ function doCheckPopup(id: number) {
             return _popups;
         });
     }, 100);
+
+    setTimeout(() => {
+        if (popup.parentPopupId) {
+            doCheckPopup(popup.parentPopupId);
+        }
+    }, POPUP_CLOSE_TIME);
 }
 
 export function checkPopupById(id: number) {

@@ -66,18 +66,20 @@
   }
 
   function handleFileClick(file) {
-    mediaBoxFiles.update(currentFile => {
-      return currentFile !== file
-        ? post.files.filter(
-            file =>
-              file.mimetype.startsWith("image/") ||
-              file.mimetype.startsWith("video/")
-          )
-        : [];
+    mediaBoxFiles.update(currentFiles => {
+      return post.files.filter(
+        file =>
+          file.mimetype.startsWith("image/") ||
+          file.mimetype.startsWith("video/")
+      );
     });
 
     mediaBoxFile.update(currentFile => {
-      return currentFile !== file ? file : null;
+      if (!currentFile) {
+        return file;
+      }
+
+      return +currentFile.id !== +file.id ? file : null;
     });
   }
 
@@ -147,6 +149,7 @@
   {#if post.user_uuid === null || post.user_uuid !== $userUuid}
     <button class="post__reply" on:click|preventDefault={handleReplyClick} />
   {/if}
+  <slot name="after_header" />
 </div>
 
 <div

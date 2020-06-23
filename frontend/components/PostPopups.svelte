@@ -5,6 +5,7 @@
   import {
     popups,
     setPopupHoverById,
+    setPopupPinnedById,
     checkPopupById
   } from "../stores/post_popups";
   import { posts } from "../stores/posts";
@@ -76,7 +77,13 @@
     on:mouseenter={e => handleMouseEnter(e, value.popup)}
     on:mouseleave={e => handleMouseLeave(e, value.popup)}>
     {#if value.post}
-      <Post post={value.post} />
+      <Post post={value.post}>
+        <button
+          slot="after_header"
+          type="button"
+          class="post__pin {value.popup.pinned ? 'post__pin_pinned' : ''}"
+          on:click|preventDefault={e => setPopupPinnedById(value.popup.id, !value.popup.pinned)} />
+      </Post>
     {/if}
   </section>
 {/each}

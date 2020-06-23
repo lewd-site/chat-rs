@@ -36,8 +36,6 @@
 
     &__date {
         color: #A9A9A9;
-
-        margin-right: 16px;
     }
 
     &__reply {
@@ -50,6 +48,8 @@
 
         width: 35px;
         height: 30px;
+
+        margin-left: 16px;
 
         cursor: pointer;
 
@@ -71,6 +71,32 @@
 
         &:hover::after {
             background: $icon-hover;
+        }
+    }
+
+    &__pin {
+        background: $icon;
+
+        mask-image: url('../images/pin.svg');
+        mask-position: center center;
+        mask-repeat: no-repeat;
+
+        border: 0;
+
+        width: 16px;
+        height: 16px;
+
+        margin-left: 16px;
+        padding: 0;
+
+        cursor: pointer;
+
+        &:hover {
+            background: $icon-hover;
+        }
+
+        &_pinned {
+            mask-image: url('../images/pinned.svg');
         }
     }
 

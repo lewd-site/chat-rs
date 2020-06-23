@@ -81,7 +81,7 @@
   }
 
   function handleAudioOpen(_file) {
-    if (file !== _file) {
+    if (+file.id !== +_file.id) {
       close();
     }
   }

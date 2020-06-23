@@ -246,7 +246,8 @@
       return;
     }
 
-    let index = $mediaBoxFiles.findIndex(file => $mediaBoxFile === file) - 1;
+    let index =
+      $mediaBoxFiles.findIndex(file => +$mediaBoxFile.id === +file.id) - 1;
     if (index < 0) {
       index += $mediaBoxFiles.length;
     }
@@ -259,7 +260,8 @@
       return;
     }
 
-    let index = $mediaBoxFiles.findIndex(file => $mediaBoxFile === file) + 1;
+    let index =
+      $mediaBoxFiles.findIndex(file => +$mediaBoxFile.id === +file.id) + 1;
     if (index >= $mediaBoxFiles.length) {
       index -= $mediaBoxFiles.length;
     }
@@ -268,7 +270,7 @@
   }
 
   function handleFileClick(file) {
-    if ($mediaBoxFile !== file) {
+    if (!$mediaBoxFile || +$mediaBoxFile.id !== +file.id) {
       mediaBoxFile.set(file);
     }
   }
@@ -276,7 +278,7 @@
   function getGalleryFileClass(file, currentFile) {
     const classes = [
       "media-box__file",
-      file === currentFile ? "media-box__file_current" : null,
+      +file.id === +currentFile.id ? "media-box__file_current" : null,
       "media-box__file_" + file.mimetype.split("/")[0]
     ];
 

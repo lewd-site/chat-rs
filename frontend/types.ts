@@ -57,6 +57,7 @@ export interface PostPopup {
     readonly rightToLeft: boolean;
     readonly hover: boolean;
     readonly fade: boolean;
+    readonly pinned: boolean;
 }
 
 export interface Notification {
