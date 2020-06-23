@@ -133,24 +133,27 @@ fn create_post(
     let post = PostWithFiles::new(post, files);
 
     // Create notifications for referenced posts.
-    let ref_links: Vec<i32> = post
+    let mut ref_links: Vec<i32> = post
         .message
         .iter()
-        .filter(|s| s.is_ref_link())
         .filter_map(|s| s.get_ref_link())
         .map(|i| i as i32)
         .collect();
-    let ref_posts = PostRepository::get_many_by_id(&conn, ref_links)
+
+    ref_links.sort_unstable();
+    ref_links.dedup();
+
+    let mut uuids: Vec<String> = PostRepository::get_many_by_id(&conn, ref_links)
         .into_iter()
-        .filter(|ref_post| ref_post.user_uuid.is_some())
+        .filter_map(|ref_post| ref_post.user_uuid)
         .collect();
-    let ref_files = FileRepository::get_belonging_to_posts(&conn, &ref_posts);
-    let notifications: Vec<NotificationWithPost> = ref_posts
+
+    uuids.sort_unstable();
+    uuids.dedup();
+
+    let notifications = uuids
         .into_iter()
-        .zip(ref_files)
-        .map(|(post, files)| PostWithFiles::new(post, files))
-        .map(|ref_post| {
-            let uuid = ref_post.user_uuid.clone().unwrap();
+        .map(|uuid| {
             let new_notification = Notification::new(post.id, &uuid, false);
             let notification = NotificationRepository::create(&conn, &new_notification);
             NotificationWithPost::new(notification, post.clone())
