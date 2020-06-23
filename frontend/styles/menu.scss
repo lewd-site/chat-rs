@@ -36,6 +36,38 @@
         }
     }
 
+    &__show-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    &__unread-count {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+
+        transform: translate(50%, 50%);
+
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        justify-content: center;
+
+        height: 20px;
+        padding: 0 8px;
+
+        background: #E33D3D;
+
+        border: 0;
+        border-radius: 10px;
+
+        color: #ffffff;
+        line-height: 16px;
+        font-size: 12px;
+
+        pointer-events: none;
+    }
+
     &__hide {
         background: $icon;
 

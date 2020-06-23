@@ -105,6 +105,11 @@
       return `${date} ${formatTime(time)}`;
     }
   }
+
+  const unreadCount = derived(
+    notifications,
+    notifications => notifications.filter(n => !n.read).length
+  );
 </script>
 
 {#if isVisible}
@@ -216,10 +221,16 @@
   </div>
 {:else}
   <div class="menu__bar">
-    <button
-      class="menu__show"
-      type="button"
-      on:click|preventDefault={e => (isVisible = true)} />
+    <div class="menu__show-wrapper">
+      <button
+        class="menu__show"
+        type="button"
+        on:click|preventDefault={e => (isVisible = true)} />
+
+      {#if $unreadCount > 0}
+        <div class="menu__unread-count">{$unreadCount}</div>
+      {/if}
+    </div>
   </div>
 
   <div class="menu__messages">
