@@ -71,7 +71,7 @@
     &__hide {
         background: $icon;
 
-        mask-image: url('../images/close.svg');
+        mask-image: url('../images/menu-times.svg');
         mask-position: center center;
         mask-repeat: no-repeat;
 
@@ -113,11 +113,38 @@
         padding: 24px;
     }
 
+    &__header-back {
+        background: $icon;
+
+        mask-image: url('../images/menu-chevron-left.svg');
+        mask-position: center center;
+        mask-repeat: no-repeat;
+
+        border: 0;
+
+        display: block;
+
+        width: 9px;
+        height: 18px;
+
+        margin-right: 16px;
+        padding: 0;
+
+        cursor: pointer;
+
+        &:hover {
+            background: $icon-hover;
+        }
+    }
+
     &__title {
         margin: 0;
 
-        font-size: 18px;
+        flex: 1;
+
         line-height: 25px;
+        font-size: 18px;
+        font-weight: 600;
     }
 
     &__content {
@@ -140,6 +167,10 @@
     }
 
     &__footer {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+
         background: #43474F;
 
         padding: 16px 24px;
@@ -148,6 +179,10 @@
     &__footer-inputs {
         display: flex;
         flex-flow: column nowrap;
+
+        flex: 1;
+
+        margin-right: 16px;
     }
 
     &__footer-input-wrapper {
@@ -211,6 +246,64 @@
 
         color: #EEEEEE;
         font-size: 18px;
+    }
+
+    &__footer-buttons {
+        display: flex;
+        flex-flow: row nowrap;
+    }
+
+    &__footer-settings {
+        background: $icon;
+
+        mask-image: url('../images/menu-settings.svg');
+        mask-position: center center;
+        mask-repeat: no-repeat;
+
+        border: 0;
+
+        display: block;
+
+        width: 20px;
+        height: 20px;
+
+        padding: 0;
+
+        cursor: pointer;
+
+        &:hover {
+            background: $icon-hover;
+        }
+    }
+
+    &__checkbox {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: center;
+
+        margin: 0 8px 16px 16px;
+
+        cursor: pointer;
+    }
+
+    &__checkbox-mark {
+        display: block;
+        width: 22px;
+        height: 22px;
+
+        background: transparent;
+        background-image: url('../images/checkbox.svg');
+        background-position: center center;
+        background-repeat: no-repeat;
+    }
+
+    &__checkbox:hover &__checkbox-mark {
+        background-image: url('../images//checkbox-hover.svg');
+    }
+
+    input[type="checkbox"]:checked ~ &__checkbox-mark {
+        background-image: url('../images//checkbox-checked.svg');
     }
 
     &__messages {
