@@ -8,6 +8,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+const MAX_WIDTH: i32 = 8000;
+const MAX_HEIGHT: i32 = 8000;
+
 #[derive(Insertable)]
 #[table_name = "files"]
 pub struct NewFile {
@@ -183,6 +186,10 @@ impl File {
             mimetype if mimetype.starts_with("video/") => File::get_video_dimensions(&path)?,
             _ => (None, None, None),
         };
+
+        if width.unwrap_or(0) > MAX_WIDTH || height.unwrap_or(0) > MAX_HEIGHT {
+            return Err(format!("File is too large: {}", path.to_string_lossy()));
+        }
 
         let content = match fs::read(path.clone()) {
             Ok(content) => content,
