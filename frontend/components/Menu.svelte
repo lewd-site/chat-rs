@@ -132,6 +132,19 @@
     notifications => notifications.filter(n => !n.read).length
   );
 
+  let originalTitle = null;
+  unreadCount.subscribe(count => {
+    if (originalTitle === null) {
+      originalTitle = document.title;
+    }
+
+    if (count > 0) {
+      document.title = `${originalTitle} [${count}]`;
+    } else {
+      document.title = originalTitle;
+    }
+  });
+
   function getNotificationMessage(notification) {
     const replies = extractReplies(notification.post).filter(reply => {
       return (
