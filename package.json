@@ -6,8 +6,8 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "parcel watch -d www frontend/index.html",
-    "build": "parcel build -d www frontend/index.html"
+    "start": "parcel watch -d www/assets --public-url /assets frontend/index.ts",
+    "build": "parcel build -d www/assets --public-url /assets frontend/index.ts"
   },
   "devDependencies": {
     "@types/jwt-decode": "^2.2.1",

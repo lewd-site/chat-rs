@@ -334,6 +334,12 @@
       title="По размеру окна"
       on:click|preventDefault={handleZoomFit} />
 
+    <a
+      class="media-box__download"
+      title="Загрузить"
+      href={src}
+      download={$mediaBoxFile.name} />
+
     {#if $mediaBoxFiles.length > 1}
       <button
         class="media-box__prev"

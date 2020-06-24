@@ -1,7 +1,6 @@
 /.cache
 /node_modules
 /target
-/www
 /.env
 /public.pem
 /yarn-error.log

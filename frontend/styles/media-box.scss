@@ -50,7 +50,8 @@
     &__zoom-in,
     &__zoom-out,
     &__original,
-    &__fit {
+    &__fit,
+    &__download {
         background: $icon;
 
         mask-position: center center;
@@ -94,6 +95,10 @@
 
     &__fit {
         mask-image: url('../images/gallery-fit.svg');
+    }
+
+    &__download {
+        mask-image: url('../images/gallery-download.svg');
     }
 
     &__prev,
