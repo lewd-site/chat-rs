@@ -282,7 +282,8 @@
             name="name"
             autocomplete="off"
             on:change={handleNameChange}
-            bind:value={name} />
+            bind:value={name}
+            maxlength="255" />
         </div>
 
         <div class="menu__footer-input-wrapper">
@@ -293,7 +294,8 @@
             name="tripcode"
             autocomplete="off"
             on:change={handleTripcodeChange}
-            bind:value={tripcode} />
+            bind:value={tripcode}
+            maxlength="255" />
         </div>
       </form>
 

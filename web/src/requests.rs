@@ -26,8 +26,8 @@ impl FromDataSimple for CreatePostMultipart {
         let ct = ContentType::new("multipart", "form-data");
         if req_ct == &ct {
             let options = MultipartFormDataOptions::with_multipart_form_data_fields(vec![
-                MultipartFormDataField::text("name"),
-                MultipartFormDataField::text("message"),
+                MultipartFormDataField::text("name").size_limit(255),
+                MultipartFormDataField::text("message").size_limit(8000),
                 MultipartFormDataField::file("file")
                     .repetition(Repetition::fixed(5))
                     .size_limit(100 * 1024 * 1024), // 100 MB.

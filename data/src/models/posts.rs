@@ -81,16 +81,20 @@ impl Post {
         }
     }
 
-    pub fn new(name: &str, message: &str, user_uuid: Option<&str>) -> NewPost {
+    pub fn new(name: &str, message: &str, user_uuid: Option<&str>) -> Result<NewPost, String> {
         let (name, tripcode) = Post::process_name(name);
 
-        NewPost {
+        if message.len() >= 8000 {
+            return Err(String::from("Message is too long"));
+        }
+
+        Ok(NewPost {
             name,
             tripcode,
             message: String::from(message),
             created_at: NaiveDateTime::from_timestamp(Utc::now().timestamp(), 0),
             user_uuid: user_uuid.map(|str| String::from(str)),
-        }
+        })
     }
 }
 

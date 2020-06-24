@@ -80,4 +80,5 @@
   on:input={handleInput}
   on:mouseup={handleMouseUp}
   on:keyup={handleKeyUp}
-  {disabled} />
+  {disabled}
+  maxlength="8000" />

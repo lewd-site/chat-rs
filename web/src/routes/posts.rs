@@ -119,7 +119,7 @@ fn create_post(
     files: Vec<UploadedFile>,
     user_uuid: Option<&str>,
 ) -> (PostWithFiles, Vec<NotificationWithPost>) {
-    let new_post = Post::new(name, message, user_uuid);
+    let new_post = Post::new(name, message, user_uuid).unwrap();
     let post = PostRepository::create(&*conn, &new_post);
     let files = files
         .into_iter()
