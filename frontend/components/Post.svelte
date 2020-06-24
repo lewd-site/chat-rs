@@ -1,5 +1,6 @@
 <script>
   import AudioPlayer from "./AudioPlayer.svelte";
+  import { gallery } from "./gallery";
   import { markup } from "./markup";
   import { formatName } from "./post";
   import { userUuid } from "../stores/auth";
@@ -44,25 +45,6 @@
       .padStart(2, "0");
 
     return `${hours}:${minutes}:${seconds} ${day}.${month}.${year}`;
-  }
-
-  function getFilesClass(files) {
-    const classes = ["post__files", `post__files_layout-${files.length}`];
-    if (files.length === 2) {
-      if (files[0].width + files[1].width < files[0].height + files[1].height) {
-        classes.push("post__files_vertical");
-      } else {
-        classes.push("post__files_horizontal");
-      }
-    } else if (files.length > 0) {
-      if (post.files[0].width < post.files[0].height) {
-        classes.push("post__files_vertical");
-      } else {
-        classes.push("post__files_horizontal");
-      }
-    }
-
-    return classes.join(" ");
   }
 
   function handleFileClick(file) {
@@ -134,9 +116,11 @@
     window.eventBus.dispatch("reply", post.id);
   }
 
-  function getImageFiles(files) {
-    return files.filter(file => file.mimetype.startsWith("image/"));
-  }
+  $: imageFiles = post.files.filter(file => file.mimetype.startsWith("image/"));
+  $: audioFiles = post.files.filter(file => file.mimetype.startsWith("audio/"));
+  $: videoFiles = post.files.filter(file => file.mimetype.startsWith("video/"));
+
+  $: imageGallery = gallery(imageFiles);
 </script>
 
 <div class="post__header">
@@ -156,18 +140,22 @@
   class="post__content"
   on:mouseover={handleMouseOver}
   on:mouseout={handleMouseOut}>
-  <div class={getFilesClass(getImageFiles(post.files))}>
-    {#each getImageFiles(post.files) as file (file.id)}
-      <div class="post__file">
+  <div
+    class="post__files"
+    style={`width: ${imageGallery.width}px; height: ${imageGallery.height}px`}>
+    {#each imageGallery.entries as entry (entry.file.id)}
+      <div
+        class="post__file"
+        style={`top: ${entry.top}px; left: ${entry.left}px; width: ${entry.width}px; height: ${entry.height}px;`}>
         <a
-          href="/src/{file.md5}.{file.extension}"
+          href="/src/{entry.file.md5}.{entry.file.extension}"
           target="_blank"
-          title={file.name}
-          on:click|preventDefault={e => handleFileClick(file)}>
+          title={entry.file.name}
+          on:click|preventDefault={e => handleFileClick(entry.file)}>
           <picture>
             <img
               class="post__file-preview"
-              src="/thumb/{file.md5}?max_width=360"
+              src="/thumb/{entry.file.md5}?max_width=360"
               alt="Preview" />
           </picture>
         </a>
@@ -180,9 +168,7 @@
   </div>
 
   <div class="post__videos">
-    {#each post.files.filter(file =>
-      file.mimetype.startsWith('video/')
-    ) as file (file.id)}
+    {#each videoFiles as file (file.id)}
       <div class="post__video">
         <a
           href="/src/{file.md5}.{file.extension}"
@@ -201,9 +187,7 @@
   </div>
 
   <div class="post__audios">
-    {#each post.files.filter(file =>
-      file.mimetype.startsWith('audio/')
-    ) as file (file.id)}
+    {#each audioFiles as file (file.id)}
       <AudioPlayer className="post__audio" {file} />
     {/each}
   </div>

@@ -73,21 +73,20 @@
 
     try {
       disabled = true;
-      const post = await window.api
-        .submitPost({ name, message, files })
-        .then(() => {
-          message = "";
 
-          previews.forEach(p => URL.revokeObjectURL(p.src));
+      const post = await window.api.submitPost({ name, message, files });
 
-          files = [];
-          previews = [];
+      message = "";
 
-          messageElement.clear();
-          messageElement.focus();
+      previews.forEach(p => URL.revokeObjectURL(p.src));
 
-          setTimeout(updateSize, 150);
-        });
+      files = [];
+      previews = [];
+
+      messageElement.clear();
+      messageElement.focus();
+
+      setTimeout(updateSize, 150);
     } finally {
       disabled = false;
     }
