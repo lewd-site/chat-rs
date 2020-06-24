@@ -18,17 +18,12 @@
   let formElement;
   let messageElement;
 
-  function updateFiles(e) {
-    if (!inputFiles || !inputFiles.length) {
-      return;
-    }
-
+  function addFiles(newFiles) {
     if (files.length >= MAX_FILES) {
       return;
     }
 
-    const newFiles = [...inputFiles].slice(0, MAX_FILES - files.length);
-
+    newFiles = [...newFiles].slice(0, MAX_FILES - files.length);
     files = [...files, ...newFiles];
     previews = [
       ...previews,
@@ -41,6 +36,14 @@
     ];
 
     setTimeout(updateSize, 150);
+  }
+
+  function handleFilesChange(e) {
+    if (!inputFiles || !inputFiles.length) {
+      return;
+    }
+
+    addFiles(inputFiles);
   }
 
   function removeFileAt(index) {
@@ -228,6 +231,26 @@
     }
   }
 
+  function handlePaste(e) {
+    const data = e.clipboardData || e.originalEvent.clipboardData;
+    if (!data || !data.items) {
+      return;
+    }
+
+    const files = [...data.items]
+      .filter(
+        item =>
+          item.type.startsWith("image/") ||
+          item.type.startsWith("audio/") ||
+          item.type.startsWith("video/")
+      )
+      .map(item => item.getAsFile());
+
+    if (files.length > 0) {
+      addFiles(files);
+    }
+  }
+
   onMount(() => {
     window.eventBus.subscribe("reply", handleReply);
     setTimeout(updateSize);
@@ -288,7 +311,7 @@
           <input
             type="file"
             bind:files={inputFiles}
-            on:change={updateFiles}
+            on:change={handleFilesChange}
             multiple
             hidden
             {disabled} />
@@ -364,13 +387,16 @@
     </div>
   {/if}
 
-  <div class="post-form__message-row" on:keydown={handleKeyDown}>
+  <div
+    class="post-form__message-row"
+    on:keydown={handleKeyDown}
+    on:paste={handlePaste}>
     <div class="post-form__attachment-wrapper">
       <label class="post-form__attachment">
         <input
           type="file"
           bind:files={inputFiles}
-          on:change={updateFiles}
+          on:change={handleFilesChange}
           multiple
           hidden
           {disabled} />
