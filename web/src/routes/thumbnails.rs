@@ -2,10 +2,15 @@ use crate::ChatDbConn;
 use data::repositories::files::FileRepository;
 use image::imageops::FilterType;
 use image::io::Reader;
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
 use rocket::response::{self, NamedFile, Responder};
 use rocket::{Request, Response};
+use std::env;
 use std::error::Error;
+use std::fs;
 use std::path::Path;
+use std::path::PathBuf;
 use std::process::Command;
 
 pub struct CachedFile {
@@ -40,16 +45,30 @@ fn get_thumb_extension(file_extension: &str) -> &str {
     }
 }
 
+fn create_temp_path() -> PathBuf {
+    let temp_name: String = thread_rng().sample_iter(&Alphanumeric).take(32).collect();
+    let mut temp_path = env::temp_dir();
+    temp_path.push(temp_name);
+    temp_path
+}
+
 fn create_image_thumbnail(src: &Path, dst: &Path, max_size: u32) -> Result<(), Box<dyn Error>> {
+    let temp_path = create_temp_path().with_extension(dst.extension().unwrap());
+
     let image = Reader::open(src)?.with_guessed_format()?.decode()?;
     image
         .resize(max_size, max_size, FilterType::Lanczos3)
-        .save(dst)?;
+        .save(&temp_path)?;
+
+    fs::copy(&temp_path, dst)?;
+    fs::remove_file(temp_path)?;
 
     Ok(())
 }
 
 fn create_video_thumbnail(src: &Path, dst: &Path, max_size: u32) -> Result<(), Box<dyn Error>> {
+    let temp_path = create_temp_path().with_extension(dst.extension().unwrap());
+
     Command::new("ffmpeg")
         .arg("-ss")
         .arg("1")
@@ -62,11 +81,14 @@ fn create_video_thumbnail(src: &Path, dst: &Path, max_size: u32) -> Result<(), B
             "scale={}:{}:force_original_aspect_ratio=decrease",
             max_size, max_size
         ))
-        .arg(dst)
+        .arg(&temp_path)
         .arg("-v")
         .arg("quiet")
         .arg("-y")
         .output()?;
+
+    fs::copy(&temp_path, dst)?;
+    fs::remove_file(temp_path)?;
 
     Ok(())
 }

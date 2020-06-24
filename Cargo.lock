@@ -393,6 +393,7 @@ dependencies = [
  "mime_guess 2.0.3",
  "nom",
  "pwhash",
+ "rand 0.7.3",
  "serde",
 ]
 
@@ -2759,6 +2760,7 @@ dependencies = [
  "jsonwebtoken",
  "lazy_static",
  "mime 0.3.16",
+ "rand 0.7.3",
  "rocket",
  "rocket-multipart-form-data",
  "rocket-sentry",

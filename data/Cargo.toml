@@ -7,11 +7,12 @@ edition = "2018"
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
 diesel = { version = "1.4.4", features = ["chrono", "postgres"] }
+encoding_rs = { version = "0.8.23", features = ["fast-kanji-encode"] }
 image = { git = "https://github.com/image-rs/image.git", rev = "260f929" }
 md5 = "0.7"
 mime = "0.3.16"
 mime_guess = "2.0.3"
 nom = "5.1.1"
-encoding_rs = { version = "0.8.23", features = ["fast-kanji-encode"] }
 pwhash = "0.3"
+rand = "0.7.3"
 serde = { version = "1.0", features = ["derive"] }
