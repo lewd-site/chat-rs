@@ -42,6 +42,7 @@ export interface Post {
     readonly message: Markup[];
     readonly created_at: string;
     readonly files: File[];
+    readonly user_uuid: string | null;
 
     reply_from?: number[];
 }

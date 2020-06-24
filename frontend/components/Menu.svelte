@@ -2,8 +2,9 @@
   import { derived } from "svelte/store";
 
   import { markup } from "./markup";
-  import { formatName } from "./post";
+  import { formatName, trimStart, extractReplies } from "./post";
   import { hslide } from "../anim";
+  import { userUuid } from "../stores/auth";
   import {
     mediaBoxFiles,
     mediaBoxFile,
@@ -18,6 +19,7 @@
     newNotifications,
     removeNewNotification
   } from "../stores/notifications";
+  import { posts } from "../stores/posts";
   import { utils } from "../utils";
 
   let isVisible = false;
@@ -129,6 +131,21 @@
     notifications,
     notifications => notifications.filter(n => !n.read).length
   );
+
+  function getNotificationMessage(notification) {
+    const replies = extractReplies(notification.post).filter(reply => {
+      return (
+        $posts[reply.postId] && $posts[reply.postId].user_uuid === $userUuid
+      );
+    });
+
+    if (replies.length) {
+      const reply = replies[0];
+      return reply.message.map((m, i) => (i === 0 ? trimStart(m) : m));
+    }
+
+    return [];
+  }
 </script>
 
 {#if isVisible}
@@ -167,7 +184,7 @@
             </div>
 
             <div class="notification__message">
-              {@html markup(notification.post.message)}
+              {@html markup(getNotificationMessage(notification))}
             </div>
 
             {#if notification.post.files.length}
@@ -312,7 +329,7 @@
         </div>
 
         <div class="notification__message">
-          {@html markup(notification.post.message)}
+          {@html markup(getNotificationMessage(notification))}
         </div>
 
         {#if notification.post.files.length}
