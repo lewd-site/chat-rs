@@ -84,8 +84,7 @@
       previews = [];
 
       messageElement.clear();
-      messageElement.focus();
-
+      setTimeout(() => messageElement.focus());
       setTimeout(updateSize, 150);
     } finally {
       disabled = false;

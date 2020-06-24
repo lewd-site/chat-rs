@@ -147,12 +147,13 @@
         {#each $notifications as notification (notification.id)}
           <div
             class="menu__notification notification"
+            transition:hslide={{ duration: 150 }}
             on:mouseover={e => handleNotificationHover(e, notification)}
             on:click|preventDefault={e => handleNotificationClick(e, notification.post.id)}>
             <button
               type="button"
               class="notification__close"
-              on:click|preventDefault={e => handleNotiticationDelete(e, notification)} />
+              on:click|preventDefault|stopPropagation={e => handleNotiticationDelete(e, notification)} />
 
             <div class="notification__title">
               Ответ от
@@ -292,6 +293,7 @@
     {#each $newNotifications as notification (notification.id)}
       <div
         class="menu__message notification"
+        transition:hslide={{ duration: 150 }}
         on:click|preventDefault={e => handleNotificationClick(e, notification.post.id)}>
         <button
           type="button"

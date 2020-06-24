@@ -17,6 +17,7 @@ export function hslide(node: Element, {
     const style = getComputedStyle(node);
     const opacity = +style.opacity;
     const width = parseFloat(style.width);
+    const height = parseFloat(style.height);
     const padding_left = parseFloat(style.paddingLeft);
     const padding_right = parseFloat(style.paddingRight);
     const margin_left = parseFloat(style.marginLeft);
@@ -32,6 +33,7 @@ export function hslide(node: Element, {
             `overflow: hidden;` +
             `opacity: ${Math.min(t * 20, 1) * opacity};` +
             `width: ${t * width}px;` +
+            `height: ${height}px;` +
             `padding-left: ${t * padding_left}px;` +
             `padding-right: ${t * padding_right}px;` +
             `margin-left: ${t * margin_left}px;` +
