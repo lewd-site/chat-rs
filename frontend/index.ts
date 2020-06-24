@@ -32,7 +32,11 @@ declare global {
 }
 
 if (typeof config.sentryDsn !== 'undefined') {
-    window.Sentry.init({ dsn: config.sentryDsn });
+    try {
+        window.Sentry.init({ dsn: config.sentryDsn });
+    } catch (e) {
+        console.log("Can't init Sentry: ", e);
+    }
 }
 
 window.eventBus = new EventEmitter();
