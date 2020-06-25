@@ -26,6 +26,7 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
+    "@simonwep/pickr": "^1.7.1",
     "axios": "^0.19.2",
     "jwt-decode": "^2.2.0",
     "normalize.css": "^8.0.1",

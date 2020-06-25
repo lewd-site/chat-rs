@@ -1,4 +1,5 @@
 <script>
+  import Pickr from "@simonwep/pickr";
   import { onMount, onDestroy } from "svelte";
   import { scale, slide } from "svelte/transition";
 
@@ -17,6 +18,7 @@
   let inputFiles = null;
   let formElement;
   let messageElement;
+  let pickr;
 
   function addFiles(newFiles) {
     if (files.length >= MAX_FILES) {
@@ -176,17 +178,18 @@
     });
   }
 
-  function insertMarkup(tag) {
+  function insertMarkup(tag, arg) {
     const range = messageElement.getSelectionRange();
     const textBefore = message.substr(0, range.start);
     const selectedText = message.substr(range.start, range.end - range.start);
     const textAfter = message.substr(range.end);
-    const selectionStart = textBefore.length + tag.length + 2;
+    const selectionStart =
+      textBefore.length + tag.length + (arg ? `${arg}`.length + 1 : 0) + 2;
     const selectionEnd = selectionStart + selectedText.length;
 
     message = [
       textBefore,
-      `[${tag}]`,
+      arg ? `[${tag}=${arg}]` : `[${tag}]`,
       selectedText,
       `[/${tag}]`,
       textAfter
@@ -201,6 +204,10 @@
       });
       setTimeout(updateSize);
     });
+  }
+
+  function insertColor() {
+    pickr.show();
   }
 
   function toggleMarkupPinned() {
@@ -254,6 +261,39 @@
   onMount(() => {
     window.eventBus.subscribe("reply", handleReply);
     setTimeout(updateSize);
+
+    pickr = Pickr.create({
+      el: ".post-form__color-picker",
+      theme: "nano",
+      useAsButton: true,
+      default: "#ffffff",
+      defaultRepresentation: "HEX",
+      position: "top-middle",
+      components: {
+        preview: true,
+        opacity: true,
+        hue: true,
+        interaction: {
+          cancel: true,
+          save: true
+        }
+      },
+      i18n: {
+        "btn:save": "Вставить",
+        "btn:cancel": "Отмена",
+        "aria:btn:save": "Вставить",
+        "aria:btn:cancel": "Отмена"
+      }
+    });
+
+    pickr.on("save", () => {
+      pickr.hide();
+      insertMarkup("color", pickr.getColor().toHEXA());
+    });
+
+    pickr.on("cancel", () => {
+      pickr.hide();
+    });
   });
 
   onDestroy(() => {
@@ -382,10 +422,18 @@
       </button>
 
       <button
+        class="post-form__color"
+        on:click|preventDefault={e => insertColor()}>
+        Color
+      </button>
+
+      <button
         class="post-form__pin {markupPinned ? 'post-form__pin_pinned' : ''}"
         on:click|preventDefault={toggleMarkupPinned} />
     </div>
   {/if}
+
+  <div class="post-form__color-picker" />
 
   <div
     class="post-form__message-row"

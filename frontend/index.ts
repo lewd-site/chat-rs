@@ -19,6 +19,7 @@ import utils from './utils';
 
 import './styles/index.scss';
 import 'prosemirror-view/style/prosemirror.css';
+import '@simonwep/pickr/dist/themes/nano.min.css';
 
 declare global {
     interface Window {

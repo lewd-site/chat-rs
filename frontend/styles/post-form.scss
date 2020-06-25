@@ -113,7 +113,8 @@
     &__sup,
     &__code,
     &__codeblock,
-    &__spoiler {
+    &__spoiler,
+    &__color {
         background: #43474F;
         color: #9DA2B2;
 
@@ -165,7 +166,8 @@
 
     &__code,
     &__codeblock,
-    &__spoiler {
+    &__spoiler,
+    &__color {
         font-size: 0.8em;
     }
 

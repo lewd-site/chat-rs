@@ -20,7 +20,9 @@ export function markup(m: Markup | Markup[]): string {
     }
 
     let html = escapeHtml(m.text);
-    m.tags.forEach(tag => {
+    const tags = [...m.tags];
+    tags.reverse();
+    tags.forEach(tag => {
         switch (tag.type) {
             case 'Bold':
                 html = `<strong class="markup markup_bold">${html}</strong>`;
