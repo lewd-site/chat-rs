@@ -16,9 +16,10 @@
   let disabled = false;
 
   let inputFiles = null;
-  let formElement;
-  let messageElement;
-  let pickr;
+  let formElement = null;
+  let messageElement = null;
+  let fileElement = null;
+  let pickr = null;
 
   function addFiles(newFiles) {
     if (files.length >= MAX_FILES) {
@@ -102,12 +103,6 @@
 
   function handleChange() {
     setTimeout(updateSize);
-  }
-
-  function handleSelectionChange(e) {
-    const length = e.detail.end - e.detail.start;
-    showMarkup = length > 0;
-    setTimeout(updateSize, 150);
   }
 
   function updateSize() {
@@ -220,6 +215,9 @@
     if (e.code === "Enter" && e.ctrlKey) {
       e.preventDefault();
       submit();
+    } else if (e.code === "KeyB" && e.ctrlKey) {
+      e.preventDefault();
+      fileElement.click();
     } else if (e.code === "KeyB" && e.altKey) {
       e.preventDefault();
       insertMarkup("b");
@@ -258,6 +256,27 @@
     }
   }
 
+  let hideMarkupTimeout = null;
+
+  function handleFocusIn(e) {
+    showMarkup = true;
+    setTimeout(updateSize, 150);
+
+    if (hideMarkupTimeout) {
+      clearTimeout(hideMarkupTimeout);
+      hideMarkupTimeout = null;
+    }
+  }
+
+  function handleFocusOut(e) {
+    if (!hideMarkupTimeout) {
+      hideMarkupTimeout = setTimeout(() => {
+        showMarkup = false;
+        setTimeout(updateSize, 150);
+      }, 150);
+    }
+  }
+
   onMount(() => {
     window.eventBus.subscribe("reply", handleReply);
     setTimeout(updateSize);
@@ -289,15 +308,18 @@
     pickr.on("save", () => {
       pickr.hide();
       insertMarkup("color", pickr.getColor().toHEXA());
+      setTimeout(messageElement.focus());
     });
 
     pickr.on("cancel", () => {
       pickr.hide();
+      setTimeout(messageElement.focus());
     });
   });
 
   onDestroy(() => {
     window.eventBus.unsubscribe("reply", handleReply);
+    pickr.destroy();
   });
 </script>
 
@@ -309,7 +331,10 @@
   action="/api/v1/posts"
   enctype="multipart/form-data"
   on:submit|preventDefault={handleSubmit}
-  bind:this={formElement}>
+  on:focusin={handleFocusIn}
+  on:focusout={handleFocusOut}
+  bind:this={formElement}
+  tabindex="-1">
   {#if previews.length}
     <div class="post-form__previews-row" transition:slide={{ duration: 150 }}>
       {#each previews as preview, index (preview.src)}
@@ -442,12 +467,14 @@
     <div class="post-form__attachment-wrapper">
       <label class="post-form__attachment">
         <input
+          bind:this={fileElement}
           type="file"
           bind:files={inputFiles}
           on:change={handleFilesChange}
           multiple
           hidden
-          {disabled} />
+          {disabled}
+          title="Ctrl+B" />
       </label>
     </div>
 
@@ -457,7 +484,6 @@
       bind:value={message}
       bind:this={messageElement}
       on:change={handleChange}
-      on:selectionChange={handleSelectionChange}
       {disabled} />
 
     <div class="post-form__submit-wrapper">
