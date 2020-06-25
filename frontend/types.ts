@@ -18,6 +18,11 @@ export interface BBCode {
     | 'Superscript' | 'Subscript' | 'Code' | 'CodeBlock' | 'Spoiler';
 }
 
+export interface Color {
+    readonly type: 'Color';
+    readonly color: string;
+}
+
 export interface RefLink {
     readonly type: 'RefLink';
     readonly id: number;
@@ -27,7 +32,7 @@ export interface Quote {
     readonly type: 'Quote';
 }
 
-export type Tag = BBCode | RefLink | Quote;
+export type Tag = BBCode | Color | RefLink | Quote;
 
 export interface Markup {
     readonly text: string;

@@ -58,6 +58,10 @@ export function markup(m: Markup | Markup[]): string {
                 html = `<span class="markup markup_spoiler">${html}</span>`;
                 break;
 
+            case 'Color':
+                html = `<span style="color: ${tag.color};">${html}</span>`;
+                break;
+
             case 'RefLink':
                 const targetPost = _posts[tag.id];
                 if (targetPost) {
