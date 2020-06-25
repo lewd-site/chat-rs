@@ -66,6 +66,26 @@ fn create_image_thumbnail(src: &Path, dst: &Path, max_size: u32) -> Result<(), B
     Ok(())
 }
 
+fn create_image_webp_thumbnail(
+    src: &Path,
+    dst: &Path,
+    max_size: u32,
+) -> Result<(), Box<dyn Error>> {
+    let png_temp_path = create_temp_path().with_extension("png");
+
+    Command::new("dwebp")
+        .arg(src)
+        .arg("-mt")
+        .arg("-quiet")
+        .arg("-o")
+        .arg(&png_temp_path)
+        .output()?;
+
+    let result = create_image_thumbnail(&png_temp_path, dst, max_size);
+    fs::remove_file(png_temp_path)?;
+    result
+}
+
 fn create_video_thumbnail(src: &Path, dst: &Path, max_size: u32) -> Result<(), Box<dyn Error>> {
     let temp_path = create_temp_path().with_extension(dst.extension().unwrap());
 
@@ -113,6 +133,9 @@ pub fn get_thumbnail(conn: ChatDbConn, hash: String, max_width: Option<i32>) -> 
             let src_path = Path::new(src_dir).join(src_filename);
 
             match file.mimetype.clone() {
+                mimetype if mimetype.starts_with("image/webp") => {
+                    create_image_webp_thumbnail(&src_path, &thumb_path, max_width as u32).unwrap();
+                }
                 mimetype if mimetype.starts_with("image/") => {
                     create_image_thumbnail(&src_path, &thumb_path, max_width as u32).unwrap();
                 }
