@@ -388,6 +388,7 @@ dependencies = [
  "diesel",
  "encoding_rs",
  "image",
+ "infer",
  "md5",
  "mime 0.3.16",
  "mime_guess 2.0.3",
@@ -928,6 +929,12 @@ checksum = "c398b2b113b55809ceb9ee3e753fcbac793f1956663f3c36549c1346015c2afe"
 dependencies = [
  "autocfg 1.0.0",
 ]
+
+[[package]]
+name = "infer"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e07d3b55167d27ac3ad2cec473b98f7ed314175646225b31b14d4d561bdc218c"
 
 [[package]]
 name = "inotify"

@@ -9,6 +9,7 @@ chrono = { version = "0.4", features = ["serde"] }
 diesel = { version = "1.4.4", features = ["chrono", "postgres"] }
 encoding_rs = { version = "0.8.23", features = ["fast-kanji-encode"] }
 image = { git = "https://github.com/image-rs/image.git", rev = "260f929" }
+infer = "0.2.0"
 md5 = "0.7"
 mime = "0.3.16"
 mime_guess = "2.0.3"

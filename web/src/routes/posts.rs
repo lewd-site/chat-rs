@@ -124,8 +124,7 @@ fn create_post(
     let files = files
         .into_iter()
         .map(|file| {
-            let new_file =
-                File::new(file.content_type, file.file_name, file.path, post.id).unwrap();
+            let new_file = File::new(file.file_name, file.path, post.id).unwrap();
             FileRepository::create(&*conn, &new_file)
         })
         .collect();

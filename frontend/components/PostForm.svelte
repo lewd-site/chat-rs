@@ -343,14 +343,7 @@
           out:scale={{ duration: 100 }}
           class="post-form__preview-wrapper"
           on:click|preventDefault={e => removeFileAt(index)}>
-          {#if preview.type.startsWith('image/')}
-            <picture title={preview.name}>
-              <img
-                class="post-form__preview post-form__preview_image"
-                src={preview.src}
-                alt="Preview" />
-            </picture>
-          {:else if preview.type.startsWith('audio/')}
+          {#if preview.type.startsWith('audio/')}
             <div
               class="post-form__preview post-form__preview_audio"
               title={preview.name} />
@@ -364,6 +357,13 @@
               title={preview.name}>
               <source src={preview.src} />
             </video>
+          {:else}
+            <picture title={preview.name}>
+              <img
+                class="post-form__preview post-form__preview_image"
+                src={preview.src}
+                alt="Preview" />
+            </picture>
           {/if}
         </div>
       {/each}

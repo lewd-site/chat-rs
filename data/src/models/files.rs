@@ -2,7 +2,7 @@ use super::posts::Post;
 use crate::schema::files;
 use chrono::prelude::*;
 use image::io::Reader;
-use mime::Mime;
+use infer::Infer;
 use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -43,38 +43,6 @@ pub struct File {
 }
 
 impl File {
-    fn get_extension_by_mime_type(mimetype: &str) -> Result<&str, String> {
-        match mimetype {
-            "image/jpeg" => Ok("jpg"),
-            "image/pjpeg" => Ok("jpg"),
-            "image/png" => Ok("png"),
-            "image/x-png" => Ok("png"),
-            "image/gif" => Ok("gif"),
-            "image/webp" => Ok("webp"),
-
-            "audio/mp3" => Ok("mp3"),
-            "audio/mpeg" => Ok("mp3"),
-            "audio/mpeg3" => Ok("mp3"),
-            "audio/mpeg-3" => Ok("mp3"),
-            "audio/mpg" => Ok("mp3"),
-            "audio/x-mp3" => Ok("mp3"),
-            "audio/x-mpeg" => Ok("mp3"),
-            "audio/x-mpeg3" => Ok("mp3"),
-            "audio/x-mpeg-3" => Ok("mp3"),
-            "audio/x-mpg" => Ok("mp3"),
-            "audio/mp4" => Ok("mp4"),
-            "audio/m4a" => Ok("mp4"),
-            "audio/x-m4a" => Ok("mp4"),
-            "audio/webm" => Ok("webm"),
-
-            "video/mp4" => Ok("mp4"),
-            "video/mpeg4" => Ok("mp4"),
-            "video/x-m4v" => Ok("mp4"),
-            "video/webm" => Ok("webm"),
-            _ => Err(format!("Unknown mimetype: {}", mimetype)),
-        }
-    }
-
     fn get_image_dimensions(
         path: &PathBuf,
     ) -> Result<(Option<i32>, Option<i32>, Option<i32>), String> {
@@ -166,21 +134,22 @@ impl File {
         }
     }
 
-    pub fn new(
-        content_type: Option<Mime>,
-        file_name: Option<String>,
-        path: PathBuf,
-        post_id: i32,
-    ) -> Result<NewFile, String> {
+    pub fn new(file_name: Option<String>, path: PathBuf, post_id: i32) -> Result<NewFile, String> {
         let name = file_name.unwrap_or(String::from(""));
 
-        let content_type = content_type.unwrap_or(mime::APPLICATION_OCTET_STREAM);
-        let mimetype = String::from(content_type.to_string());
-        let extension = String::from(File::get_extension_by_mime_type(&mimetype)?);
+        let info = Infer::new();
+        let file_type = match info.get_from_path(&path) {
+            Ok(Some(file_type)) => file_type,
+            Ok(None) => return Err(format!("Can't determine file type")),
+            Err(e) => return Err(format!("Can't determine file type: {}", e)),
+        };
+
+        let extension = file_type.ext;
+        let mime_type = file_type.mime;
 
         let created_at = NaiveDateTime::from_timestamp(Utc::now().timestamp(), 0);
 
-        let (width, height, length) = match mimetype.clone() {
+        let (width, height, length) = match mime_type.clone() {
             mimetype if mimetype.starts_with("image/") => File::get_image_dimensions(&path)?,
             mimetype if mimetype.starts_with("audio/") => File::get_audio_dimensions(&path)?,
             mimetype if mimetype.starts_with("video/") => File::get_video_dimensions(&path)?,
@@ -210,7 +179,7 @@ impl File {
             size,
             md5: hash,
             name,
-            mimetype,
+            mimetype: mime_type,
             extension,
             created_at,
             post_id,
