@@ -1,6 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
-import Sso from './sso';
 import { token } from '../stores/auth';
 import { Post, Notification } from '../types';
 
@@ -27,9 +26,7 @@ interface NotificationListResponse {
 }
 
 export class Api {
-    public constructor(private readonly sso: Sso) { }
-
-    private getToken = async (): Promise<string | null> => {
+    public getToken = async (): Promise<string | null> => {
         const authButton = document.getElementById('login');
         try {
             await window.sso!.get();
@@ -98,8 +95,10 @@ export class Api {
         const config: AxiosRequestConfig = { headers: {} };
 
         const token = await this.getToken();
-        if (token) {
+        if (window.sso!.hasAccessToken && !window.sso!.hasExpired) {
             config.headers['Authorization'] = `Bearer ${token}`;
+        } else {
+            return [];
         }
 
         const response = await axios.get<NotificationListResponse>('/api/v1/notifications', config);

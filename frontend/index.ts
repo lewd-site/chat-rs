@@ -85,29 +85,8 @@ authButton?.addEventListener('click', e => {
     showAuthModal.set(true);
 });
 
-window.sso = new Sso(async () => {
-    try {
-        await window.sso!.get();
-        if (window.sso!.hasAccessToken && !window.sso!.hasExpired) {
-            token.set(window.sso!.accessTokenData);
-            authButton?.setAttribute('hidden', '');
-        } else {
-            const email = localStorage['auth_email'];
-            if (window.sso!.hasRefreshToken && email) {
-                await window.sso!.refreshByEmail(email);
-                token.set(window.sso!.accessTokenData);
-                authButton?.setAttribute('hidden', '');
-            } else {
-                token.set(null);
-                authButton?.removeAttribute('hidden');
-            }
-        }
-    } catch (e) {
-        token.set(null);
-        authButton?.removeAttribute('hidden');
-    }
-});
-window.api = new Api(window.sso);
+window.api = new Api();
+window.sso = new Sso(() => window.api!.getToken());
 window.ws = new Ws(config.wsUrl);
 
 window.api.getLatestPosts().then(posts => {
@@ -120,7 +99,9 @@ userUuid.subscribe(uuid => {
         return;
     }
 
-    window.api?.getNotifications().then(notifications => setNotifications(notifications));
+    window.api?.getNotifications().then(notifications => {
+        setNotifications(notifications);
+    });
 });
 
 let _posts: Posts = {};

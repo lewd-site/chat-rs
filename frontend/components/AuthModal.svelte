@@ -12,6 +12,7 @@
   function handleCancel(e) {
     showAuthModal.set(false);
     error = "";
+    window.eventBus.dispatch('authmodal_canceled');
   }
 
   async function handleSubmit(e) {
@@ -23,6 +24,7 @@
       error = "";
 
       authButton.setAttribute("hidden", "");
+      window.eventBus.dispatch('authmodal_submitted');
     } catch (e) {
       error = e;
 

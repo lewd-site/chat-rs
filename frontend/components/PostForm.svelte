@@ -4,6 +4,7 @@
   import { scale, slide } from "svelte/transition";
 
   import TextBox from "./TextBox.svelte";
+  import { showAuthModal } from "../stores/auth";
   import utils from "../utils";
 
   const MAX_FILES = 5;
@@ -80,6 +81,49 @@
 
     try {
       disabled = true;
+
+      await window.api.getToken();
+      if (!window.sso.hasAccessToken || window.sso.hasExpired) {
+        showAuthModal.set(true);
+
+        const handleAuthModalCanceled = () => {
+          window.eventBus.unsubscribe(
+            "authmodal_canceled",
+            handleAuthModalCanceled
+          );
+
+          window.eventBus.unsubscribe(
+            "authmodal_submitted",
+            handleAuthModalSubmitted
+          );
+        };
+
+        const handleAuthModalSubmitted = () => {
+          window.eventBus.unsubscribe(
+            "authmodal_canceled",
+            handleAuthModalCanceled
+          );
+
+          window.eventBus.unsubscribe(
+            "authmodal_submitted",
+            handleAuthModalSubmitted
+          );
+
+          submit();
+        };
+
+        window.eventBus.subscribe(
+          "authmodal_canceled",
+          handleAuthModalCanceled
+        );
+
+        window.eventBus.subscribe(
+          "authmodal_submitted",
+          handleAuthModalSubmitted
+        );
+
+        return;
+      }
 
       const post = await window.api.submitPost({ name, message, files });
 
