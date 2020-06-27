@@ -7,6 +7,7 @@
   import utils from "../utils";
 
   const MAX_FILES = 5;
+  const RESIZE_DELAY = 200;
 
   let message = "";
   let files = [];
@@ -38,7 +39,7 @@
       }))
     ];
 
-    setTimeout(updateSize, 150);
+    setTimeout(updateSize, RESIZE_DELAY);
   }
 
   function handleFilesChange(e) {
@@ -55,7 +56,7 @@
     files = files.filter((f, i) => i !== index);
     previews = previews.filter((p, i) => i !== index);
 
-    setTimeout(updateSize, 150);
+    setTimeout(updateSize, RESIZE_DELAY);
   }
 
   async function submit() {
@@ -91,7 +92,7 @@
 
       messageElement.clear();
       setTimeout(() => messageElement.focus());
-      setTimeout(updateSize, 150);
+      setTimeout(updateSize, RESIZE_DELAY);
     } finally {
       disabled = false;
     }
@@ -208,7 +209,7 @@
   function toggleMarkupPinned() {
     markupPinned = !markupPinned;
     localStorage["settings.markup_pinned"] = markupPinned.toString();
-    setTimeout(updateSize, 150);
+    setTimeout(updateSize, RESIZE_DELAY);
   }
 
   function handleKeyDown(e) {
@@ -260,7 +261,7 @@
 
   function handleFocusIn(e) {
     showMarkup = true;
-    setTimeout(updateSize, 150);
+    setTimeout(updateSize, RESIZE_DELAY);
 
     if (hideMarkupTimeout) {
       clearTimeout(hideMarkupTimeout);
@@ -272,7 +273,7 @@
     if (!hideMarkupTimeout) {
       hideMarkupTimeout = setTimeout(() => {
         showMarkup = false;
-        setTimeout(updateSize, 150);
+        setTimeout(updateSize, RESIZE_DELAY);
       }, 150);
     }
   }
