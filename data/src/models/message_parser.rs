@@ -1,15 +1,16 @@
 use nom::branch::alt;
-use nom::bytes::complete::{is_not, tag, tag_no_case};
-use nom::character::complete::{char, digit1, one_of};
+use nom::bytes::complete::{is_a, is_not, tag, tag_no_case};
+use nom::character::complete::{char, one_of};
+use nom::combinator::not;
 use nom::combinator::{map, recognize};
 use nom::multi::{many0, many_m_n};
+use nom::sequence::pair;
 use nom::sequence::{delimited, preceded, tuple};
 use nom::IResult;
 use serde::Serialize;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-#[serde(tag = "type")]
-pub enum Tag {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum OpeningTag {
     Bold,
     Italic,
     Underline,
@@ -19,42 +20,43 @@ pub enum Tag {
     Code,
     CodeBlock,
     Spoiler,
-    Color { color: String },
-    RefLink { id: u32 },
     Quote,
+    Color { color: String },
 }
 
-impl Tag {
-    pub fn is_ref_link(&self) -> bool {
-        match self {
-            Tag::RefLink { id: _ } => true,
+impl OpeningTag {
+    pub fn is_pair(self: &OpeningTag, closing: &ClosingTag) -> bool {
+        match (self, closing) {
+            (OpeningTag::Bold, ClosingTag::Bold) => true,
+            (OpeningTag::Italic, ClosingTag::Italic) => true,
+            (OpeningTag::Underline, ClosingTag::Underline) => true,
+            (OpeningTag::Strike, ClosingTag::Strike) => true,
+            (OpeningTag::Superscript, ClosingTag::Superscript) => true,
+            (OpeningTag::Subscript, ClosingTag::Subscript) => true,
+            (OpeningTag::Code, ClosingTag::Code) => true,
+            (OpeningTag::CodeBlock, ClosingTag::CodeBlock) => true,
+            (OpeningTag::Spoiler, ClosingTag::Spoiler) => true,
+            (OpeningTag::Color { color: _ }, ClosingTag::Color) => true,
+            (OpeningTag::Quote, ClosingTag::Quote) => true,
             _ => false,
         }
     }
-
-    pub fn get_ref_link(&self) -> Option<u32> {
-        match self {
-            Tag::RefLink { id } => Some(*id),
-            _ => None,
-        }
-    }
 }
 
-impl std::fmt::Display for Tag {
+impl std::fmt::Display for OpeningTag {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         let s = match self {
-            Tag::Bold => String::from("[b]"),
-            Tag::Italic => String::from("[i]"),
-            Tag::Underline => String::from("[u]"),
-            Tag::Strike => String::from("[s]"),
-            Tag::Superscript => String::from("[sup]"),
-            Tag::Subscript => String::from("[sub]"),
-            Tag::Code => String::from("[code]"),
-            Tag::CodeBlock => String::from("[codeblock]"),
-            Tag::Spoiler => String::from("[spoiler]"),
-            Tag::Color { color } => format!("[color={}]", color),
-            Tag::RefLink { id: _ } => String::from(">>"),
-            Tag::Quote => String::from(">"),
+            OpeningTag::Bold => String::from("[b]"),
+            OpeningTag::Italic => String::from("[i]"),
+            OpeningTag::Underline => String::from("[u]"),
+            OpeningTag::Strike => String::from("[s]"),
+            OpeningTag::Superscript => String::from("[sup]"),
+            OpeningTag::Subscript => String::from("[sub]"),
+            OpeningTag::Code => String::from("[code]"),
+            OpeningTag::CodeBlock => String::from("[codeblock]"),
+            OpeningTag::Spoiler => String::from("[spoiler]"),
+            OpeningTag::Color { color } => format!("[color={}]", color),
+            OpeningTag::Quote => String::from(">"),
         };
 
         fmt.write_str(&s)?;
@@ -75,24 +77,7 @@ pub enum ClosingTag {
     CodeBlock,
     Spoiler,
     Color,
-}
-
-impl ClosingTag {
-    pub fn is_closing_for(&self, tag: &Tag) -> bool {
-        match (tag, self) {
-            (Tag::Bold, ClosingTag::Bold) => true,
-            (Tag::Italic, ClosingTag::Italic) => true,
-            (Tag::Underline, ClosingTag::Underline) => true,
-            (Tag::Strike, ClosingTag::Strike) => true,
-            (Tag::Superscript, ClosingTag::Superscript) => true,
-            (Tag::Subscript, ClosingTag::Subscript) => true,
-            (Tag::Code, ClosingTag::Code) => true,
-            (Tag::CodeBlock, ClosingTag::CodeBlock) => true,
-            (Tag::Spoiler, ClosingTag::Spoiler) => true,
-            (Tag::Color { color: _ }, ClosingTag::Color) => true,
-            _ => false,
-        }
-    }
+    Quote,
 }
 
 impl std::fmt::Display for ClosingTag {
@@ -108,29 +93,97 @@ impl std::fmt::Display for ClosingTag {
             ClosingTag::CodeBlock => "[/codeblock]",
             ClosingTag::Spoiler => "[/spoiler]",
             ClosingTag::Color => "[/color]",
+            ClosingTag::Quote => "",
         })?;
 
         Ok(())
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Token {
     Text(String),
     RefLink(u32),
-    Quote(String),
-    OpeningTag(Tag),
+    OpeningTag(OpeningTag),
     ClosingTag(ClosingTag),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(tag = "type")]
+pub enum SegmentStyle {
+    Bold,
+    Italic,
+    Underline,
+    Strike,
+    Superscript,
+    Subscript,
+    Code,
+    CodeBlock,
+    Spoiler,
+    Color { color: String },
+    RefLink { id: u32 },
+    Quote,
+}
+
+impl SegmentStyle {
+    pub fn from_opening_tag(tag: &OpeningTag) -> SegmentStyle {
+        match tag {
+            OpeningTag::Bold => SegmentStyle::Bold,
+            OpeningTag::Italic => SegmentStyle::Italic,
+            OpeningTag::Underline => SegmentStyle::Underline,
+            OpeningTag::Strike => SegmentStyle::Strike,
+            OpeningTag::Superscript => SegmentStyle::Superscript,
+            OpeningTag::Subscript => SegmentStyle::Subscript,
+            OpeningTag::Code => SegmentStyle::Code,
+            OpeningTag::CodeBlock => SegmentStyle::CodeBlock,
+            OpeningTag::Spoiler => SegmentStyle::Spoiler,
+            OpeningTag::Color { color } => SegmentStyle::Color {
+                color: color.to_string(),
+            },
+            OpeningTag::Quote => SegmentStyle::Quote,
+        }
+    }
+
+    pub fn is_pair(self: &SegmentStyle, closing: &ClosingTag) -> bool {
+        match (self, closing) {
+            (SegmentStyle::Bold, ClosingTag::Bold) => true,
+            (SegmentStyle::Italic, ClosingTag::Italic) => true,
+            (SegmentStyle::Underline, ClosingTag::Underline) => true,
+            (SegmentStyle::Strike, ClosingTag::Strike) => true,
+            (SegmentStyle::Superscript, ClosingTag::Superscript) => true,
+            (SegmentStyle::Subscript, ClosingTag::Subscript) => true,
+            (SegmentStyle::Code, ClosingTag::Code) => true,
+            (SegmentStyle::CodeBlock, ClosingTag::CodeBlock) => true,
+            (SegmentStyle::Spoiler, ClosingTag::Spoiler) => true,
+            (SegmentStyle::Color { color: _ }, ClosingTag::Color) => true,
+            (SegmentStyle::Quote, ClosingTag::Quote) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_ref_link(&self) -> bool {
+        match self {
+            SegmentStyle::RefLink { id: _ } => true,
+            _ => false,
+        }
+    }
+
+    pub fn get_ref_link(&self) -> Option<u32> {
+        match self {
+            SegmentStyle::RefLink { id } => Some(*id),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Serialize, Clone)]
 pub struct Segment {
     pub text: String,
-    pub tags: Vec<Tag>,
+    pub tags: Vec<SegmentStyle>,
 }
 
 impl Segment {
-    pub fn is_ref_link(&self) -> bool {
+    pub fn has_ref_link(&self) -> bool {
         self.tags.iter().position(|tag| tag.is_ref_link()) != None
     }
 
@@ -143,20 +196,6 @@ impl Segment {
 pub struct MessageParser();
 
 impl MessageParser {
-    fn text(input: &str) -> IResult<&str, Token> {
-        alt((
-            map(preceded(tag(">>"), digit1), |s: &str| {
-                Token::RefLink(s.parse().unwrap())
-            }),
-            map(preceded(char('>'), is_not("\r\n")), |s: &str| {
-                Token::Quote(String::from(s))
-            }),
-            map(is_not("[>"), |s: &str| Token::Text(String::from(s))),
-            // Parse incomplete tags as text.
-            map(one_of("[>"), |ch: char| Token::Text(ch.to_string())),
-        ))(input)
-    }
-
     fn color(input: &str) -> IResult<&str, &str> {
         alt((
             // CSS Color Module Level 4.
@@ -344,7 +383,7 @@ impl MessageParser {
         delimited(
             char('['),
             alt((
-                map(tag("spoiler"), |_| Token::OpeningTag(Tag::Spoiler)),
+                map(tag("spoiler"), |_| Token::OpeningTag(OpeningTag::Spoiler)),
                 map(
                     tuple((
                         tag("color="),
@@ -354,20 +393,21 @@ impl MessageParser {
                         )),
                     )),
                     |(_, color)| {
-                        Token::OpeningTag(Tag::Color {
+                        Token::OpeningTag(OpeningTag::Color {
                             color: String::from(color),
                         })
                     },
                 ),
-                map(tag("codeblock"), |_| Token::OpeningTag(Tag::CodeBlock)),
-                map(tag("code"), |_| Token::OpeningTag(Tag::Code)),
-                map(tag("sup"), |_| Token::OpeningTag(Tag::Superscript)),
-                map(tag("sub"), |_| Token::OpeningTag(Tag::Subscript)),
-                map(tag("b"), |_| Token::OpeningTag(Tag::Bold)),
-                map(tag("i"), |_| Token::OpeningTag(Tag::Italic)),
-                map(tag("u"), |_| Token::OpeningTag(Tag::Underline)),
-                map(tag("s"), |_| Token::OpeningTag(Tag::Strike)),
-                map(is_not("]"), |s| Token::Text(format!("[{}]", s))),
+                map(tag("codeblock"), |_| {
+                    Token::OpeningTag(OpeningTag::CodeBlock)
+                }),
+                map(tag("code"), |_| Token::OpeningTag(OpeningTag::Code)),
+                map(tag("sup"), |_| Token::OpeningTag(OpeningTag::Superscript)),
+                map(tag("sub"), |_| Token::OpeningTag(OpeningTag::Subscript)),
+                map(tag("b"), |_| Token::OpeningTag(OpeningTag::Bold)),
+                map(tag("i"), |_| Token::OpeningTag(OpeningTag::Italic)),
+                map(tag("u"), |_| Token::OpeningTag(OpeningTag::Underline)),
+                map(tag("s"), |_| Token::OpeningTag(OpeningTag::Strike)),
             )),
             char(']'),
         )(input)
@@ -391,19 +431,66 @@ impl MessageParser {
                     map(tag("i"), |_| Token::ClosingTag(ClosingTag::Italic)),
                     map(tag("u"), |_| Token::ClosingTag(ClosingTag::Underline)),
                     map(tag("s"), |_| Token::ClosingTag(ClosingTag::Strike)),
-                    map(is_not("]"), |s| Token::Text(format!("[/{}]", s))),
                 )),
             ),
             char(']'),
         )(input)
     }
 
-    pub fn tokenize(i: &str) -> IResult<&str, Vec<Token>> {
+    fn text(input: &str) -> IResult<&str, Token> {
+        map(is_not("[>"), |s: &str| Token::Text(s.to_string()))(input)
+    }
+
+    fn ref_link(input: &str) -> IResult<&str, Token> {
+        map(preceded(tag(">>"), is_a("0123456789")), |s: &str| {
+            Token::RefLink(s.parse().unwrap())
+        })(input)
+    }
+
+    fn inline(input: &str) -> IResult<&str, Vec<Token>> {
         many0(alt((
             MessageParser::closing_tag,
             MessageParser::opening_tag,
+            MessageParser::ref_link,
             MessageParser::text,
-        )))(i)
+            map(is_a("[>"), |s: &str| Token::Text(s.to_string())),
+        )))(input)
+    }
+
+    fn quote(input: &str) -> IResult<&str, Vec<Token>> {
+        preceded(
+            pair(char('>'), not(char('>'))),
+            map(MessageParser::inline, |tokens| {
+                let mut result = vec![Token::OpeningTag(OpeningTag::Quote)];
+                result.append(&mut tokens.clone());
+                result.push(Token::ClosingTag(ClosingTag::Quote));
+                result
+            }),
+        )(input)
+    }
+
+    fn block(input: &str) -> IResult<&str, Vec<Token>> {
+        alt((MessageParser::quote, MessageParser::inline))(input)
+    }
+
+    pub fn tokenize(input: &str) -> Result<Vec<Token>, &str> {
+        let mut input = input.to_string();
+        input = input.replace("\r\n", "\n");
+
+        let lines: Vec<Vec<Token>> = input
+            .split("\n")
+            .map(|s| match MessageParser::block(s) {
+                Ok((_, o)) => o,
+                _ => Vec::new(),
+            })
+            .map(|mut tokens| {
+                tokens.push(Token::Text("\n".to_string()));
+                tokens
+            })
+            .collect();
+
+        let lines: Vec<Token> = lines.into_iter().flatten().collect();
+        Ok(lines)
     }
 
     fn optimize_segments(segments: Vec<Segment>) -> Vec<Segment> {
@@ -413,7 +500,7 @@ impl MessageParser {
                 let last = segments.pop();
                 match last {
                     Some(last) => {
-                        if last.tags == segment.tags && !last.is_ref_link() {
+                        if last.tags == segment.tags && !last.has_ref_link() {
                             segments.push(Segment {
                                 text: format!("{}{}", last.text, segment.text),
                                 tags: last.tags,
@@ -434,95 +521,80 @@ impl MessageParser {
 
     pub fn to_segments(tokens: Vec<Token>) -> Vec<Segment> {
         let mut result = Vec::new();
-        let mut active_tags = Vec::new();
+        let mut active_styles = Vec::new();
         for token in tokens.into_iter() {
             match token {
                 Token::Text(text) => {
-                    if active_tags.contains(&Tag::CodeBlock) {
+                    if active_styles.contains(&SegmentStyle::CodeBlock) {
                         result.push(Segment {
                             text,
-                            tags: vec![Tag::CodeBlock],
+                            tags: vec![SegmentStyle::CodeBlock],
                         });
-                    } else if active_tags.contains(&Tag::Code) {
+                    } else if active_styles.contains(&SegmentStyle::Code) {
                         result.push(Segment {
                             text,
-                            tags: vec![Tag::Code],
+                            tags: vec![SegmentStyle::Code],
                         });
                     } else {
                         result.push(Segment {
                             text,
-                            tags: active_tags.clone(),
+                            tags: active_styles.clone(),
                         });
                     }
                 }
                 Token::RefLink(id) => {
                     let text = id.to_string();
 
-                    if active_tags.contains(&Tag::CodeBlock) {
+                    if active_styles.contains(&SegmentStyle::CodeBlock) {
                         result.push(Segment {
                             text: format!(">>{}", text),
-                            tags: vec![Tag::CodeBlock],
+                            tags: vec![SegmentStyle::CodeBlock],
                         });
-                    } else if active_tags.contains(&Tag::Code) {
+                    } else if active_styles.contains(&SegmentStyle::Code) {
                         result.push(Segment {
                             text: format!(">>{}", text),
-                            tags: vec![Tag::Code],
+                            tags: vec![SegmentStyle::Code],
                         });
                     } else {
-                        let mut tags = active_tags.clone();
-                        tags.push(Tag::RefLink { id });
-                        result.push(Segment { text, tags });
-                    }
-                }
-                Token::Quote(text) => {
-                    if active_tags.contains(&Tag::CodeBlock) {
-                        result.push(Segment {
-                            text: format!(">{}", text),
-                            tags: vec![Tag::CodeBlock],
-                        });
-                    } else if active_tags.contains(&Tag::Code) {
-                        result.push(Segment {
-                            text: format!(">{}", text),
-                            tags: vec![Tag::Code],
-                        });
-                    } else {
-                        let mut tags = active_tags.clone();
-                        tags.push(Tag::Quote);
+                        let mut tags = active_styles.clone();
+                        tags.push(SegmentStyle::RefLink { id });
                         result.push(Segment { text, tags });
                     }
                 }
                 Token::OpeningTag(tag) => {
-                    if active_tags.contains(&Tag::CodeBlock) {
+                    if active_styles.contains(&SegmentStyle::CodeBlock) {
                         result.push(Segment {
-                            text: String::from(Tag::to_string(&tag)),
-                            tags: vec![Tag::CodeBlock],
+                            text: String::from(OpeningTag::to_string(&tag)),
+                            tags: vec![SegmentStyle::CodeBlock],
                         });
-                    } else if active_tags.contains(&Tag::Code) {
+                    } else if active_styles.contains(&SegmentStyle::Code) {
                         result.push(Segment {
-                            text: String::from(Tag::to_string(&tag)),
-                            tags: vec![Tag::Code],
+                            text: String::from(OpeningTag::to_string(&tag)),
+                            tags: vec![SegmentStyle::Code],
                         });
                     } else {
-                        active_tags.push(tag);
+                        active_styles.push(SegmentStyle::from_opening_tag(&tag));
                     }
                 }
                 Token::ClosingTag(tag) => {
-                    if active_tags.contains(&Tag::CodeBlock) && tag != ClosingTag::CodeBlock {
+                    if active_styles.contains(&SegmentStyle::CodeBlock)
+                        && tag != ClosingTag::CodeBlock
+                    {
                         result.push(Segment {
                             text: String::from(ClosingTag::to_string(&tag)),
-                            tags: vec![Tag::CodeBlock],
+                            tags: vec![SegmentStyle::CodeBlock],
                         });
-                    } else if active_tags.contains(&Tag::Code) && tag != ClosingTag::Code {
+                    } else if active_styles.contains(&SegmentStyle::Code) && tag != ClosingTag::Code
+                    {
                         result.push(Segment {
                             text: String::from(ClosingTag::to_string(&tag)),
-                            tags: vec![Tag::Code],
+                            tags: vec![SegmentStyle::Code],
                         });
                     } else {
-                        if let Some(index) = active_tags
-                            .iter()
-                            .rposition(|item| tag.is_closing_for(item))
+                        if let Some(index) =
+                            active_styles.iter().rposition(|item| item.is_pair(&tag))
                         {
-                            active_tags.remove(index);
+                            active_styles.remove(index);
                         }
                     }
                 }
@@ -535,7 +607,7 @@ impl MessageParser {
     pub fn str_to_segments(input: &str) -> Vec<Segment> {
         let tokens = MessageParser::tokenize(input);
         match tokens {
-            Ok((_, tokens)) => MessageParser::to_segments(tokens),
+            Ok(tokens) => MessageParser::to_segments(tokens),
             Err(_) => Vec::new(),
         }
     }
@@ -543,14 +615,14 @@ impl MessageParser {
 
 #[cfg(test)]
 mod tests {
-    use super::{ClosingTag, MessageParser, Tag, Token};
+    use super::{ClosingTag, MessageParser, OpeningTag, SegmentStyle, Token};
     use crate::models::message_parser::Segment;
 
     #[test]
     fn tokenize_empty_string() {
         let input = "";
         let tokens = MessageParser::tokenize(input);
-        assert_eq!(Ok(("", Vec::new())), tokens);
+        assert_eq!(Ok(vec!(Token::Text("\n".to_string()))), tokens);
     }
 
     #[test]
@@ -558,9 +630,62 @@ mod tests {
         let input = "Lorem ipsum dolor sit amet";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok((
-                "",
-                vec!(Token::Text(String::from("Lorem ipsum dolor sit amet")))
+            Ok(vec!(
+                Token::Text("Lorem ipsum dolor sit amet".to_string()),
+                Token::Text("\n".to_string())
+            )),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_quote() {
+        let input = "> lorem ipsum";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(
+                Token::OpeningTag(OpeningTag::Quote),
+                Token::Text(" lorem ipsum".to_string()),
+                Token::ClosingTag(ClosingTag::Quote),
+                Token::Text("\n".to_string())
+            )),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_ref_link() {
+        let input = ">>12345";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(Token::RefLink(12345), Token::Text("\n".to_string()))),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_adjacent_ref_links() {
+        let input = ">>123>>456";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(
+                Token::RefLink(123),
+                Token::RefLink(456),
+                Token::Text("\n".to_string()),
+            )),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_adjacent_ref_link_and_text() {
+        let input = ">>123 456";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(
+                Token::RefLink(123),
+                Token::Text(" 456".to_string()),
+                Token::Text("\n".to_string())
             )),
             tokens
         );
@@ -570,14 +695,26 @@ mod tests {
     fn tokenize_opening_tag() {
         let input = "[spoiler]";
         let tokens = MessageParser::tokenize(input);
-        assert_eq!(Ok(("", vec!(Token::OpeningTag(Tag::Spoiler)))), tokens);
+        assert_eq!(
+            Ok(vec!(
+                Token::OpeningTag(OpeningTag::Spoiler),
+                Token::Text("\n".to_string())
+            )),
+            tokens
+        );
     }
 
     #[test]
     fn tokenize_closing_tag() {
         let input = "[/code]";
         let tokens = MessageParser::tokenize(input);
-        assert_eq!(Ok(("", vec!(Token::ClosingTag(ClosingTag::Code)))), tokens);
+        assert_eq!(
+            Ok(vec!(
+                Token::ClosingTag(ClosingTag::Code),
+                Token::Text("\n".to_string())
+            )),
+            tokens
+        );
     }
 
     #[test]
@@ -585,12 +722,10 @@ mod tests {
         let input = "[b][/b]";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok((
-                "",
-                vec!(
-                    Token::OpeningTag(Tag::Bold),
-                    Token::ClosingTag(ClosingTag::Bold)
-                )
+            Ok(vec!(
+                Token::OpeningTag(OpeningTag::Bold),
+                Token::ClosingTag(ClosingTag::Bold),
+                Token::Text("\n".to_string()),
             )),
             tokens
         );
@@ -601,13 +736,11 @@ mod tests {
         let input = "[i]Lorem ipsum dolor sit amet[/i]";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok((
-                "",
-                vec!(
-                    Token::OpeningTag(Tag::Italic),
-                    Token::Text(String::from("Lorem ipsum dolor sit amet")),
-                    Token::ClosingTag(ClosingTag::Italic)
-                )
+            Ok(vec!(
+                Token::OpeningTag(OpeningTag::Italic),
+                Token::Text("Lorem ipsum dolor sit amet".to_string()),
+                Token::ClosingTag(ClosingTag::Italic),
+                Token::Text("\n".to_string()),
             )),
             tokens
         );
@@ -615,17 +748,16 @@ mod tests {
 
     #[test]
     fn tokenize_adjacent_tags() {
-        let input = "[spoiler][code][/code][/spoiler]";
+        let input = "[spoiler][code]Lorem ipsum[/code][/spoiler]";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok((
-                "",
-                vec!(
-                    Token::OpeningTag(Tag::Spoiler),
-                    Token::OpeningTag(Tag::Code),
-                    Token::ClosingTag(ClosingTag::Code),
-                    Token::ClosingTag(ClosingTag::Spoiler),
-                )
+            Ok(vec!(
+                Token::OpeningTag(OpeningTag::Spoiler),
+                Token::OpeningTag(OpeningTag::Code),
+                Token::Text("Lorem ipsum".to_string()),
+                Token::ClosingTag(ClosingTag::Code),
+                Token::ClosingTag(ClosingTag::Spoiler),
+                Token::Text("\n".to_string()),
             )),
             tokens
         );
@@ -636,11 +768,11 @@ mod tests {
         let input = "[color=#ABC]";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok((
-                "",
-                vec!(Token::OpeningTag(Tag::Color {
-                    color: String::from("#ABC")
-                }))
+            Ok(vec!(
+                Token::OpeningTag(OpeningTag::Color {
+                    color: "#ABC".to_string()
+                }),
+                Token::Text("\n".to_string())
             )),
             tokens
         );
@@ -651,11 +783,11 @@ mod tests {
         let input = "[color=#ABCD]";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok((
-                "",
-                vec!(Token::OpeningTag(Tag::Color {
-                    color: String::from("#ABCD")
-                }))
+            Ok(vec!(
+                Token::OpeningTag(OpeningTag::Color {
+                    color: "#ABCD".to_string()
+                }),
+                Token::Text("\n".to_string())
             )),
             tokens
         );
@@ -666,11 +798,11 @@ mod tests {
         let input = "[color=#ABCDEF]";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok((
-                "",
-                vec!(Token::OpeningTag(Tag::Color {
-                    color: String::from("#ABCDEF")
-                }))
+            Ok(vec!(
+                Token::OpeningTag(OpeningTag::Color {
+                    color: "#ABCDEF".to_string()
+                }),
+                Token::Text("\n".to_string())
             )),
             tokens
         );
@@ -681,11 +813,11 @@ mod tests {
         let input = "[color=#ABCDEFAB]";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok((
-                "",
-                vec!(Token::OpeningTag(Tag::Color {
-                    color: String::from("#ABCDEFAB")
-                }))
+            Ok(vec!(
+                Token::OpeningTag(OpeningTag::Color {
+                    color: "#ABCDEFAB".to_string()
+                }),
+                Token::Text("\n".to_string())
             )),
             tokens
         );
@@ -696,12 +828,10 @@ mod tests {
         let input = "[color=#ABCDEFG]";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok((
-                "",
-                vec!(
-                    Token::Text(String::from("[")),
-                    Token::Text(String::from("color=#ABCDEFG]"))
-                )
+            Ok(vec!(
+                Token::Text("[".to_string()),
+                Token::Text("color=#ABCDEFG]".to_string()),
+                Token::Text("\n".to_string()),
             )),
             tokens
         );
@@ -711,7 +841,14 @@ mod tests {
     fn tokenize_unknown_opening_tag() {
         let input = "[lorem]";
         let tokens = MessageParser::tokenize(input);
-        assert_eq!(Ok(("", vec!(Token::Text(String::from("[lorem]"))))), tokens);
+        assert_eq!(
+            Ok(vec!(
+                Token::Text("[".to_string()),
+                Token::Text("lorem]".to_string()),
+                Token::Text("\n".to_string()),
+            )),
+            tokens
+        );
     }
 
     #[test]
@@ -719,7 +856,11 @@ mod tests {
         let input = "[/lorem]";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok(("", vec!(Token::Text(String::from("[/lorem]"))))),
+            Ok(vec!(
+                Token::Text("[".to_string()),
+                Token::Text("/lorem]".to_string()),
+                Token::Text("\n".to_string()),
+            )),
             tokens
         );
     }
@@ -729,7 +870,10 @@ mod tests {
         let input = "spoiler]";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok(("", vec!(Token::Text(String::from("spoiler]"))))),
+            Ok(vec!(
+                Token::Text("spoiler]".to_string()),
+                Token::Text("\n".to_string())
+            )),
             tokens
         );
     }
@@ -739,12 +883,76 @@ mod tests {
         let input = "[spoiler";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok((
-                "",
-                vec!(
-                    Token::Text(String::from("[")),
-                    Token::Text(String::from("spoiler"))
-                )
+            Ok(vec!(
+                Token::Text("[".to_string()),
+                Token::Text("spoiler".to_string()),
+                Token::Text("\n".to_string()),
+            )),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_multiple_strings() {
+        let input = "Lorem ipsum\ndolor sit amet";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(
+                Token::Text("Lorem ipsum".to_string()),
+                Token::Text("\n".to_string()),
+                Token::Text("dolor sit amet".to_string()),
+                Token::Text("\n".to_string()),
+            )),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_multiple_strings_with_quote() {
+        let input = "> Lorem ipsum\ndolor sit amet";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(
+                Token::OpeningTag(OpeningTag::Quote),
+                Token::Text(" Lorem ipsum".to_string()),
+                Token::ClosingTag(ClosingTag::Quote),
+                Token::Text("\n".to_string()),
+                Token::Text("dolor sit amet".to_string()),
+                Token::Text("\n".to_string()),
+            )),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_multiple_strings_with_quote_and_ref_link() {
+        let input = ">>12345\n> Lorem ipsum\ndolor sit amet";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(
+                Token::RefLink(12345),
+                Token::Text("\n".to_string()),
+                Token::OpeningTag(OpeningTag::Quote),
+                Token::Text(" Lorem ipsum".to_string()),
+                Token::ClosingTag(ClosingTag::Quote),
+                Token::Text("\n".to_string()),
+                Token::Text("dolor sit amet".to_string()),
+                Token::Text("\n".to_string()),
+            )),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_multiple_strings_with_ref_link() {
+        let input = ">>12345\n12345";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(
+                Token::RefLink(12345),
+                Token::Text("\n".to_string()),
+                Token::Text("12345".to_string()),
+                Token::Text("\n".to_string()),
             )),
             tokens
         );
@@ -756,7 +964,7 @@ mod tests {
         let tokens = MessageParser::str_to_segments(input);
         assert_eq!(
             vec!(Segment {
-                text: String::from("Lorem ipsum dolor sit amet"),
+                text: "Lorem ipsum dolor sit amet\n".to_string(),
                 tags: Vec::new(),
             }),
             tokens
@@ -770,15 +978,15 @@ mod tests {
         assert_eq!(
             vec!(
                 Segment {
-                    text: String::from("Lorem ip"),
+                    text: "Lorem ip".to_string(),
                     tags: Vec::new(),
                 },
                 Segment {
-                    text: String::from("sum dolor "),
-                    tags: vec!(Tag::Bold),
+                    text: "sum dolor ".to_string(),
+                    tags: vec!(SegmentStyle::Bold),
                 },
                 Segment {
-                    text: String::from("sit amet"),
+                    text: "sit amet\n".to_string(),
                     tags: Vec::new(),
                 }
             ),
@@ -793,23 +1001,23 @@ mod tests {
         assert_eq!(
             vec!(
                 Segment {
-                    text: String::from("Lorem ip"),
+                    text: "Lorem ip".to_string(),
                     tags: Vec::new(),
                 },
                 Segment {
-                    text: String::from("sum "),
-                    tags: vec!(Tag::Bold),
+                    text: "sum ".to_string(),
+                    tags: vec!(SegmentStyle::Bold),
                 },
                 Segment {
-                    text: String::from("dolor"),
-                    tags: vec!(Tag::Bold, Tag::Italic),
+                    text: "dolor".to_string(),
+                    tags: vec!(SegmentStyle::Bold, SegmentStyle::Italic),
                 },
                 Segment {
-                    text: String::from(" sit"),
-                    tags: vec!(Tag::Bold),
+                    text: " sit".to_string(),
+                    tags: vec!(SegmentStyle::Bold),
                 },
                 Segment {
-                    text: String::from(" amet"),
+                    text: " amet\n".to_string(),
                     tags: Vec::new(),
                 },
             ),
@@ -824,23 +1032,23 @@ mod tests {
         assert_eq!(
             vec!(
                 Segment {
-                    text: String::from("Lorem ip"),
+                    text: "Lorem ip".to_string(),
                     tags: Vec::new(),
                 },
                 Segment {
-                    text: String::from("sum "),
-                    tags: vec!(Tag::Bold),
+                    text: "sum ".to_string(),
+                    tags: vec!(SegmentStyle::Bold),
                 },
                 Segment {
-                    text: String::from("dolor"),
-                    tags: vec!(Tag::Bold, Tag::Italic),
+                    text: "dolor".to_string(),
+                    tags: vec!(SegmentStyle::Bold, SegmentStyle::Italic),
                 },
                 Segment {
-                    text: String::from(" sit"),
-                    tags: vec!(Tag::Italic),
+                    text: " sit".to_string(),
+                    tags: vec!(SegmentStyle::Italic),
                 },
                 Segment {
-                    text: String::from(" amet"),
+                    text: " amet\n".to_string(),
                     tags: Vec::new(),
                 },
             ),
@@ -855,13 +1063,78 @@ mod tests {
         assert_eq!(
             vec!(
                 Segment {
-                    text: String::from("Lorem ip"),
+                    text: "Lorem ip".to_string(),
                     tags: Vec::new(),
                 },
                 Segment {
-                    text: String::from("sum dolor sit amet"),
-                    tags: vec!(Tag::Bold),
+                    text: "sum dolor sit amet\n".to_string(),
+                    tags: vec!(SegmentStyle::Bold),
                 },
+            ),
+            tokens
+        );
+    }
+
+    #[test]
+    fn str_to_segments_text_with_quote() {
+        let input = ">Lorem ipsum\ndolor sit amet";
+        let tokens = MessageParser::str_to_segments(input);
+        assert_eq!(
+            vec!(
+                Segment {
+                    text: "Lorem ipsum".to_string(),
+                    tags: vec!(SegmentStyle::Quote),
+                },
+                Segment {
+                    text: "\ndolor sit amet\n".to_string(),
+                    tags: Vec::new(),
+                }
+            ),
+            tokens
+        );
+    }
+
+    #[test]
+    fn str_to_segments_text_with_ref_link() {
+        let input = ">>12345\nLorem ipsum dolor sit amet";
+        let tokens = MessageParser::str_to_segments(input);
+        assert_eq!(
+            vec!(
+                Segment {
+                    text: "12345".to_string(),
+                    tags: vec!(SegmentStyle::RefLink { id: 12345 }),
+                },
+                Segment {
+                    text: "\nLorem ipsum dolor sit amet\n".to_string(),
+                    tags: Vec::new(),
+                }
+            ),
+            tokens
+        );
+    }
+
+    #[test]
+    fn str_to_segments_text_with_quote_and_ref_link() {
+        let input = ">>12345\n>Lorem ipsum\ndolor sit amet";
+        let tokens = MessageParser::str_to_segments(input);
+        assert_eq!(
+            vec!(
+                Segment {
+                    text: "12345".to_string(),
+                    tags: vec!(SegmentStyle::RefLink { id: 12345 }),
+                },
+                Segment {
+                    text: "\n".to_string(),
+                    tags: Vec::new(),
+                },
+                Segment {
+                    text: "Lorem ipsum".to_string(),
+                    tags: vec!(SegmentStyle::Quote),
+                },
+                Segment {
+                    text: "\ndolor sit amet\n".to_string(),
+                    tags: Vec::new(),
+                }
             ),
             tokens
         );
