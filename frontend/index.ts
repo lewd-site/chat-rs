@@ -79,19 +79,40 @@ const postList = new PostList({ target: postListContainer });
 const mediaBox = new MediaBox({ target: mediaBoxContainer });
 const postpopUps = new PostPopups({ target: postPopupsContainer });
 
-window.sso = new Sso();
+const authButton = document.getElementById('login');
+authButton?.setAttribute('hidden', '');
+authButton?.addEventListener('click', e => {
+    showAuthModal.set(true);
+});
+
+window.sso = new Sso(async () => {
+    try {
+        await window.sso!.get();
+        if (window.sso!.hasAccessToken && !window.sso!.hasExpired) {
+            token.set(window.sso!.accessTokenData);
+            authButton?.setAttribute('hidden', '');
+        } else {
+            const email = localStorage['auth_email'];
+            if (window.sso!.hasRefreshToken && email) {
+                await window.sso!.refreshByEmail(email);
+                token.set(window.sso!.accessTokenData);
+                authButton?.setAttribute('hidden', '');
+            } else {
+                token.set(null);
+                authButton?.removeAttribute('hidden');
+            }
+        }
+    } catch (e) {
+        token.set(null);
+        authButton?.removeAttribute('hidden');
+    }
+});
 window.api = new Api(window.sso);
 window.ws = new Ws(config.wsUrl);
 
 window.api.getLatestPosts().then(posts => {
     setTimeout(utils.scrollToBottom);
     setPosts(posts);
-});
-
-const authButton = document.getElementById('login');
-authButton?.setAttribute('hidden', '');
-authButton?.addEventListener('click', e => {
-    showAuthModal.set(true);
 });
 
 userUuid.subscribe(uuid => {
@@ -101,25 +122,6 @@ userUuid.subscribe(uuid => {
 
     window.api?.getNotifications().then(notifications => setNotifications(notifications));
 });
-
-setTimeout(async () => {
-    token.set(await window.sso!.get());
-
-    if (!window.sso!.hasAccessToken || window.sso!.hasExpired) {
-        const email = localStorage['auth_email'];
-        if (window.sso!.hasRefreshToken && email) {
-            try {
-                token.set(await window.sso!.refreshByEmail(email));
-            } catch (e) { }
-        }
-    }
-
-    if (window.sso!.hasAccessToken && !window.sso!.hasExpired) {
-        authButton?.setAttribute('hidden', '');
-    } else {
-        authButton?.removeAttribute('hidden');
-    }
-}, 1000);
 
 let _posts: Posts = {};
 posts.subscribe(posts => _posts = posts);

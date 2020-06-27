@@ -68,13 +68,24 @@ export class Sso {
         return exp <= now;
     }
 
-    public constructor() {
+    public constructor(private readonly loadCallback?: () => void) {
         this.element = document.createElement('iframe');
         this.element.setAttribute('hidden', '');
         this.element.src = config.ssoOrigin;
         document.body.appendChild(this.element);
 
         this.bind();
+        this.element.addEventListener('load', this.handleLoad);
+    }
+
+    private handleLoad = () => {
+        this.element.removeEventListener('load', this.handleLoad);
+
+        setTimeout(() => {
+            if (this.loadCallback) {
+                this.loadCallback();
+            }
+        });
     }
 
     public bind = () => {

@@ -30,24 +30,29 @@ export class Api {
     public constructor(private readonly sso: Sso) { }
 
     private getToken = async (): Promise<string | null> => {
-        token.set(await this.sso.get());
-
-        if (this.sso.hasAccessToken && !this.sso.hasExpired) {
-            return this.sso.accessToken;
-        }
-
-        if (this.sso.hasRefreshToken) {
-            const email = localStorage['auth_email'];
-            if (email) {
-                try {
-                    token.set(await this.sso.refreshByEmail(email));
-
-                    return this.sso.accessToken;
-                } catch (e) { }
+        const authButton = document.getElementById('login');
+        try {
+            await window.sso!.get();
+            if (window.sso!.hasAccessToken && !window.sso!.hasExpired) {
+                token.set(window.sso!.accessTokenData);
+                authButton?.setAttribute('hidden', '');
+            } else {
+                const email = localStorage['auth_email'];
+                if (window.sso!.hasRefreshToken && email) {
+                    await window.sso!.refreshByEmail(email);
+                    token.set(window.sso!.accessTokenData);
+                    authButton?.setAttribute('hidden', '');
+                } else {
+                    token.set(null);
+                    authButton?.removeAttribute('hidden');
+                }
             }
+        } catch (e) {
+            token.set(null);
+            authButton?.removeAttribute('hidden');
         }
 
-        return null;
+        return window.sso!.accessToken;
     };
 
     public submitPost = async (data: SubmitPostRequest): Promise<Post> => {
