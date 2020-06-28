@@ -66,6 +66,37 @@ function processPost(post: Post, allPosts: Post[]) {
                 } else {
                     post.embeds.push(embed);
                 }
+            } else if (tag.url.match(/^(?:https?:\/\/)?(?:www\.)?coub\.com\/view\//)) {
+                const url = encodeURIComponent(tag.url.replace(/^https?:\/\//, ''));
+                const data = await window.coub!.getCoubInfo(url);
+
+                const text = data.title;
+                const tags = [...segment.tags];
+                tags.splice(tagIndex, 1, { ...tag, icon: 'coub' });
+
+                post.message[segmentIndex] = { ...post.message[segmentIndex], text, tags };
+
+                const html = data.html.replace('muted=true', 'muted=false')
+                    .replace(/width="\d+"/i, 'width="100%"')
+                    .replace(/height="\d+"/i, 'height="100%"');
+
+                const embed: Embed = {
+                    id: tag.url,
+                    name: data.title,
+                    mimetype: 'video/x-coub',
+                    thumbnail_width: +data.thumbnail_width,
+                    thumbnail_height: +data.thumbnail_height,
+                    thumbnail_url: data.thumbnail_url,
+                    width: +data.width,
+                    height: +data.height + 24,
+                    html,
+                };
+
+                if (post.embeds === undefined) {
+                    post.embeds = [embed];
+                } else {
+                    post.embeds.push(embed);
+                }
             }
         });
     });

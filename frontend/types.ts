@@ -49,7 +49,7 @@ export interface Markup {
 export interface Embed {
     readonly id: string;
     readonly name: string;
-    readonly mimetype: 'video/x-youtube';
+    readonly mimetype: 'video/x-youtube' | 'video/x-coub';
     readonly thumbnail_width: number;
     readonly thumbnail_height: number;
     readonly thumbnail_url: string;

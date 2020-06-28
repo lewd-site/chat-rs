@@ -63,7 +63,8 @@
         color: #3DE389;
     }
 
-    &_icon_youtube {
+    &_icon_youtube,
+    &_icon_coub {
         &::before {
             content: '';
 
@@ -78,10 +79,21 @@
 
             background: #E3833D;
 
-            mask-image: url('../images/youtube.svg');
             mask-position: center center;
             mask-repeat: no-repeat;
             mask-size: 100% 100%;
+        }
+    }
+
+    &_icon_youtube {
+        &::before {
+            mask-image: url('../images/youtube.svg');
+        }
+    }
+
+    &_icon_coub {
+        &::before {
+            mask-image: url('../images/coub.svg');
         }
     }
 }

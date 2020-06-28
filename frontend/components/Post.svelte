@@ -194,7 +194,7 @@
 
   {#if post.embeds}
     <div class="post__embeds">
-      {#each post.embeds as embed (embed.id)}
+      {#each post.embeds as embed}
         <div class="post__embed">
           <a
             href={embed.id}

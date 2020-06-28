@@ -344,11 +344,11 @@
         on:click|preventDefault={handlePrevious} />
 
       <div class="media-box__files">
-        {#each $mediaBoxFiles as file (file.id)}
+        {#each $mediaBoxFiles as file}
           <div
             class={getGalleryFileClass(file, $mediaBoxFile)}
             on:click|preventDefault={e => handleFileClick(file)}>
-            {#if file.mimetype === 'video/x-youtube'}
+            {#if file.mimetype === 'video/x-youtube' || file.mimetype === 'video/x-coub'}
               <picture>
                 <img
                   class="media-box__preview"
@@ -383,7 +383,7 @@
       <picture>
         <img class="media-box__media media-box__media_image" {src} alt="" />
       </picture>
-    {:else if $mediaBoxFile.mimetype === 'video/x-youtube' && src}
+    {:else if ($mediaBoxFile.mimetype === 'video/x-youtube' || $mediaBoxFile.mimetype === 'video/x-coub') && src}
       <div class="media-box__handle">
         <span class="media-box__title">{$mediaBoxFile.name}</span>
       </div>

@@ -9,6 +9,7 @@ import PostPopups from './components/PostPopups.svelte';
 import config from './config';
 import EventEmitter from './event-emitter';
 import Api from './services/api';
+import Coub from './services/coub';
 import Sso from './services/sso';
 import YouTube from './services/youtube';
 import { showAuthModal, userUuid } from './stores/auth';
@@ -27,6 +28,7 @@ declare global {
         readonly Sentry?: any;
 
         api?: Api;
+        coub?: Coub;
         eventBus?: EventEmitter;
         sso?: Sso;
         ws?: Ws;
@@ -88,6 +90,7 @@ authButton?.addEventListener('click', e => {
 });
 
 window.api = new Api();
+window.coub = new Coub();
 window.sso = new Sso(() => window.api!.getToken());
 window.ws = new Ws(config.wsUrl);
 window.youtube = new YouTube();
