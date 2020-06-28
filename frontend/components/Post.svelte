@@ -49,7 +49,13 @@
 
   function handleFileClick(file) {
     mediaBoxFiles.update(currentFiles => {
-      return post.files.filter(
+      let { files } = post;
+
+      if (typeof post.embeds !== "undefined") {
+        files = files.concat(post.embeds);
+      }
+
+      return files.filter(
         file =>
           file.mimetype.startsWith("image/") ||
           file.mimetype.startsWith("video/")
@@ -61,7 +67,7 @@
         return file;
       }
 
-      return +currentFile.id !== +file.id ? file : null;
+      return currentFile.id != file.id ? file : null;
     });
   }
 
@@ -185,6 +191,27 @@
       </div>
     {/each}
   </div>
+
+  {#if post.embeds}
+    <div class="post__embeds">
+      {#each post.embeds as embed (embed.id)}
+        <div class="post__embed">
+          <a
+            href={embed.id}
+            target="_blank"
+            title={embed.name}
+            on:click|preventDefault={e => handleFileClick(embed)}>
+            <picture>
+              <img
+                class="post__embed-preview"
+                src={embed.thumbnail_url}
+                alt="Preview" />
+            </picture>
+          </a>
+        </div>
+      {/each}
+    </div>
+  {/if}
 
   <div class="post__audios">
     {#each audioFiles as file (file.id)}

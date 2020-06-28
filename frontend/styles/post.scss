@@ -162,7 +162,8 @@
         }
     }
 
-    &__videos {
+    &__videos,
+    &__embeds {
         display: flex;
         flex-flow: row wrap;
 
@@ -171,7 +172,8 @@
         }
     }
 
-    &__video {
+    &__video,
+    &__embed {
         display: block;
 
         border: 2px dashed #9DA2B2;
@@ -186,7 +188,8 @@
         margin-bottom: 8px;
     }
 
-    &__video-preview {
+    &__video-preview,
+    &__embed-preview {
         display: block;
 
         border: 0;

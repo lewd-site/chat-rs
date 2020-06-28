@@ -10,10 +10,11 @@ import config from './config';
 import EventEmitter from './event-emitter';
 import Api from './services/api';
 import Sso from './services/sso';
-import { showAuthModal, token, userUuid } from './stores/auth';
+import YouTube from './services/youtube';
+import { showAuthModal, userUuid } from './stores/auth';
 import { setNotifications } from './stores/notifications';
 import { nsfwMode, toggleNSFWMode } from './stores/files';
-import { Posts, posts, setPosts, addPosts, unloadOldPosts } from './stores/posts';
+import { Posts, posts, addPosts, unloadOldPosts } from './stores/posts';
 import Ws from './ws';
 import utils from './utils';
 
@@ -25,10 +26,11 @@ declare global {
     interface Window {
         readonly Sentry?: any;
 
-        sso?: Sso;
         api?: Api;
-        ws?: Ws;
         eventBus?: EventEmitter;
+        sso?: Sso;
+        ws?: Ws;
+        youtube?: YouTube;
     }
 }
 
@@ -88,11 +90,7 @@ authButton?.addEventListener('click', e => {
 window.api = new Api();
 window.sso = new Sso(() => window.api!.getToken());
 window.ws = new Ws(config.wsUrl);
-
-window.api.getLatestPosts().then(posts => {
-    setTimeout(utils.scrollToBottom);
-    setPosts(posts);
-});
+window.youtube = new YouTube();
 
 userUuid.subscribe(uuid => {
     if (!uuid) {

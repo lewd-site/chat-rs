@@ -31,6 +31,8 @@ export interface RefLink {
 export interface Link {
     readonly type: 'Link';
     readonly url: string;
+
+    icon?: string;
 }
 
 export interface Quote {
@@ -44,6 +46,20 @@ export interface Markup {
     readonly tags: Tag[];
 }
 
+export interface Embed {
+    readonly id: string;
+    readonly name: string;
+    readonly mimetype: 'video/x-youtube';
+    readonly thumbnail_width: number;
+    readonly thumbnail_height: number;
+    readonly thumbnail_url: string;
+    readonly width: number;
+    readonly height: number;
+    readonly html: string;
+}
+
+export type Media = File | Embed;
+
 export interface Post {
     readonly id: number;
     readonly name: string;
@@ -55,6 +71,7 @@ export interface Post {
     readonly user_uuid: string | null;
 
     reply_from?: number[];
+    embeds?: Embed[];
 }
 
 export interface PostPopup {

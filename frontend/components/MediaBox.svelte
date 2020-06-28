@@ -247,7 +247,7 @@
     }
 
     let index =
-      $mediaBoxFiles.findIndex(file => +$mediaBoxFile.id === +file.id) - 1;
+      $mediaBoxFiles.findIndex(file => $mediaBoxFile.id == file.id) - 1;
     if (index < 0) {
       index += $mediaBoxFiles.length;
     }
@@ -261,7 +261,7 @@
     }
 
     let index =
-      $mediaBoxFiles.findIndex(file => +$mediaBoxFile.id === +file.id) + 1;
+      $mediaBoxFiles.findIndex(file => $mediaBoxFile.id == file.id) + 1;
     if (index >= $mediaBoxFiles.length) {
       index -= $mediaBoxFiles.length;
     }
@@ -270,7 +270,7 @@
   }
 
   function handleFileClick(file) {
-    if (!$mediaBoxFile || +$mediaBoxFile.id !== +file.id) {
+    if (!$mediaBoxFile || $mediaBoxFile.id != file.id) {
       mediaBoxFile.set(file);
     }
   }
@@ -278,7 +278,7 @@
   function getGalleryFileClass(file, currentFile) {
     const classes = [
       "media-box__file",
-      +file.id === +currentFile.id ? "media-box__file_current" : null,
+      file.id == currentFile.id ? "media-box__file_current" : null,
       "media-box__file_" + file.mimetype.split("/")[0]
     ];
 
@@ -334,11 +334,9 @@
       title="По размеру окна"
       on:click|preventDefault={handleZoomFit} />
 
-    <a
-      class="media-box__download"
-      title="Загрузить"
-      href={src}
-      download={$mediaBoxFile.name} />
+    <a title="Загрузить" href={src} download={$mediaBoxFile.name}>
+      <span class="media-box__download" />
+    </a>
 
     {#if $mediaBoxFiles.length > 1}
       <button
@@ -350,12 +348,21 @@
           <div
             class={getGalleryFileClass(file, $mediaBoxFile)}
             on:click|preventDefault={e => handleFileClick(file)}>
-            <picture>
-              <img
-                class="media-box__preview"
-                src="/thumb/{file.md5}?max_width=360"
-                alt="Preview" />
-            </picture>
+            {#if file.mimetype === 'video/x-youtube'}
+              <picture>
+                <img
+                  class="media-box__preview"
+                  src={file.thumbnail_url}
+                  alt="Preview" />
+              </picture>
+            {:else}
+              <picture>
+                <img
+                  class="media-box__preview"
+                  src="/thumb/{file.md5}?max_width=360"
+                  alt="Preview" />
+              </picture>
+            {/if}
           </div>
         {/each}
       </div>
@@ -365,7 +372,8 @@
   </div>
 
   <div
-    class="media-box__content media-box__content_{$mediaBoxFile.mimetype.split('/')[0]}"
+    class="media-box__content media-box__content_{$mediaBoxFile.mimetype.split('/')[0]}
+    {isDragging ? 'media-box__content_dragging' : ''}"
     style="left: {offsetX}px; top: {offsetY}px; width: {width}px; height: {height}px"
     bind:this={content}
     on:pointerdown={handlePointerDown}
@@ -375,6 +383,14 @@
       <picture>
         <img class="media-box__media media-box__media_image" {src} alt="" />
       </picture>
+    {:else if $mediaBoxFile.mimetype === 'video/x-youtube' && src}
+      <div class="media-box__handle">
+        <span class="media-box__title">{$mediaBoxFile.name}</span>
+      </div>
+
+      <div class="media-box__media media-box__media_embed">
+        {@html $mediaBoxFile.html}
+      </div>
     {:else if $mediaBoxFile.mimetype.startsWith('video/') && src}
       <VideoPlayer
         className="media-box__media media-box__media_video"

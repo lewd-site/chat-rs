@@ -64,7 +64,13 @@
 
   function handleFileClick(post, file) {
     mediaBoxFiles.update(currentFiles => {
-      return post.files.filter(
+      let { files } = post;
+
+      if (typeof post.embeds !== "undefined") {
+        files = files.concat(post.embeds);
+      }
+
+      return files.filter(
         file =>
           file.mimetype.startsWith("image/") ||
           file.mimetype.startsWith("video/")

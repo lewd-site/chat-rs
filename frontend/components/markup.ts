@@ -80,7 +80,12 @@ export function markup(m: Markup | Markup[]): string {
                 break;
 
             case 'Link':
-                html = `<a class="markup markup_link" href="${tag.url}" target="_blank">${html}</a>`;
+                const className = [
+                    'markup',
+                    'markup_link',
+                    tag.icon ? 'markup_icon_' + tag.icon : null,
+                ].filter(c => c).join(' ');
+                html = `<a class="${className}" href="${tag.url}" target="_blank">${html}</a>`;
                 break;
 
             case 'Quote':

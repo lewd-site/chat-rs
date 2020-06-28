@@ -1,9 +1,9 @@
 import { writable } from 'svelte/store';
 
-import { File } from '../types';
+import { Media } from '../types';
 
-export const mediaBoxFiles = writable<File[]>([]);
-export const mediaBoxFile = writable<null | File>(null);
+export const mediaBoxFiles = writable<Media[]>([]);
+export const mediaBoxFile = writable<null | Media>(null);
 
 const _nsfwMode = localStorage.getItem('settings.nsfw') === 'true';
 

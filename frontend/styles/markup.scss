@@ -62,4 +62,26 @@
     &_quote {
         color: #3DE389;
     }
+
+    &_icon_youtube {
+        &::before {
+            content: '';
+
+            display: inline-block;
+
+            width: 1em;
+            height: 1em;
+
+            margin-right: 0.25em;
+
+            vertical-align: middle;
+
+            background: #E3833D;
+
+            mask-image: url('../images/youtube.svg');
+            mask-position: center center;
+            mask-repeat: no-repeat;
+            mask-size: 100% 100%;
+        }
+    }
 }
