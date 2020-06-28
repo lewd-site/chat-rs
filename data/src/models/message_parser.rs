@@ -1,11 +1,10 @@
 use nom::branch::alt;
 use nom::bytes::complete::{is_a, is_not, tag, tag_no_case};
-use nom::character::complete::{char, one_of};
-use nom::combinator::not;
-use nom::combinator::{map, recognize};
+use nom::character::complete::{char, digit1, one_of};
+use nom::combinator::opt;
+use nom::combinator::{map, not, peek, recognize, value};
 use nom::multi::{many0, many_m_n};
-use nom::sequence::pair;
-use nom::sequence::{delimited, preceded, tuple};
+use nom::sequence::{delimited, pair, preceded, tuple};
 use nom::IResult;
 use serde::Serialize;
 
@@ -20,8 +19,8 @@ pub enum OpeningTag {
     Code,
     CodeBlock,
     Spoiler,
-    Quote,
     Color { color: String },
+    Quote,
 }
 
 impl OpeningTag {
@@ -56,7 +55,7 @@ impl std::fmt::Display for OpeningTag {
             OpeningTag::CodeBlock => String::from("[codeblock]"),
             OpeningTag::Spoiler => String::from("[spoiler]"),
             OpeningTag::Color { color } => format!("[color={}]", color),
-            OpeningTag::Quote => String::from(">"),
+            OpeningTag::Quote => String::from(""),
         };
 
         fmt.write_str(&s)?;
@@ -104,6 +103,7 @@ impl std::fmt::Display for ClosingTag {
 pub enum Token {
     Text(String),
     RefLink(u32),
+    Link(String),
     OpeningTag(OpeningTag),
     ClosingTag(ClosingTag),
 }
@@ -122,6 +122,7 @@ pub enum SegmentStyle {
     Spoiler,
     Color { color: String },
     RefLink { id: u32 },
+    Link { url: String },
     Quote,
 }
 
@@ -437,8 +438,35 @@ impl MessageParser {
         )(input)
     }
 
+    fn link(input: &str) -> IResult<&str, Token> {
+        map(
+            tuple((
+                alt((tag("http://"), tag("https://"))),
+                is_not("/?# "),
+                is_not("[?# "),
+                opt(preceded(char('?'), is_not("[# "))),
+                opt(preceded(char('#'), is_not("[ "))),
+            )),
+            |(scheme, host, path, query, fragment)| {
+                let mut url: String = format!("{}{}{}", scheme, host, path);
+
+                if let Some(query) = query {
+                    url.push('?');
+                    url.push_str(query);
+                }
+
+                if let Some(fragment) = fragment {
+                    url.push('#');
+                    url.push_str(fragment);
+                }
+
+                Token::Link(url)
+            },
+        )(input)
+    }
+
     fn text(input: &str) -> IResult<&str, Token> {
-        map(is_not("[>"), |s: &str| Token::Text(s.to_string()))(input)
+        map(is_not("[> "), |s: &str| Token::Text(s.to_string()))(input)
     }
 
     fn ref_link(input: &str) -> IResult<&str, Token> {
@@ -452,14 +480,18 @@ impl MessageParser {
             MessageParser::closing_tag,
             MessageParser::opening_tag,
             MessageParser::ref_link,
+            MessageParser::link,
             MessageParser::text,
-            map(is_a("[>"), |s: &str| Token::Text(s.to_string())),
+            map(one_of("[> "), |c: char| Token::Text(c.to_string())),
         )))(input)
     }
 
     fn quote(input: &str) -> IResult<&str, Vec<Token>> {
         preceded(
-            pair(char('>'), not(char('>'))),
+            peek(alt((
+                value((), pair(tag(">>"), not(digit1))),
+                value((), pair(char('>'), not(char('>')))),
+            ))),
             map(MessageParser::inline, |tokens| {
                 let mut result = vec![Token::OpeningTag(OpeningTag::Quote)];
                 result.append(&mut tokens.clone());
@@ -474,7 +506,7 @@ impl MessageParser {
     }
 
     pub fn tokenize(input: &str) -> Result<Vec<Token>, &str> {
-        let mut input = input.to_string();
+        let mut input = input.trim().to_string();
         input = input.replace("\r\n", "\n");
 
         let lines: Vec<Vec<Token>> = input
@@ -561,6 +593,23 @@ impl MessageParser {
                         result.push(Segment { text, tags });
                     }
                 }
+                Token::Link(url) => {
+                    if active_styles.contains(&SegmentStyle::CodeBlock) {
+                        result.push(Segment {
+                            text: url,
+                            tags: vec![SegmentStyle::CodeBlock],
+                        });
+                    } else if active_styles.contains(&SegmentStyle::Code) {
+                        result.push(Segment {
+                            text: url,
+                            tags: vec![SegmentStyle::Code],
+                        });
+                    } else {
+                        let mut tags = active_styles.clone();
+                        tags.push(SegmentStyle::Link { url: url.clone() });
+                        result.push(Segment { text: url, tags });
+                    }
+                }
                 Token::OpeningTag(tag) => {
                     if active_styles.contains(&SegmentStyle::CodeBlock) {
                         result.push(Segment {
@@ -631,7 +680,15 @@ mod tests {
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
             Ok(vec!(
-                Token::Text("Lorem ipsum dolor sit amet".to_string()),
+                Token::Text("Lorem".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("ipsum".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("dolor".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("sit".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("amet".to_string()),
                 Token::Text("\n".to_string())
             )),
             tokens
@@ -645,7 +702,11 @@ mod tests {
         assert_eq!(
             Ok(vec!(
                 Token::OpeningTag(OpeningTag::Quote),
-                Token::Text(" lorem ipsum".to_string()),
+                Token::Text(">".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("lorem".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("ipsum".to_string()),
                 Token::ClosingTag(ClosingTag::Quote),
                 Token::Text("\n".to_string())
             )),
@@ -684,7 +745,112 @@ mod tests {
         assert_eq!(
             Ok(vec!(
                 Token::RefLink(123),
-                Token::Text(" 456".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("456".to_string()),
+                Token::Text("\n".to_string())
+            )),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_link() {
+        let input = "http://localhost/";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(
+                Token::Link("http://localhost/".to_string()),
+                Token::Text("\n".to_string())
+            )),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_link_with_path() {
+        let input = "http://localhost/path";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(
+                Token::Link("http://localhost/path".to_string()),
+                Token::Text("\n".to_string())
+            )),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_link_with_query() {
+        let input = "http://localhost/?query";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(
+                Token::Link("http://localhost/?query".to_string()),
+                Token::Text("\n".to_string())
+            )),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_link_with_fragment() {
+        let input = "http://localhost/#fragment";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(
+                Token::Link("http://localhost/#fragment".to_string()),
+                Token::Text("\n".to_string())
+            )),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_link_with_path_and_query() {
+        let input = "http://localhost/path?query";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(
+                Token::Link("http://localhost/path?query".to_string()),
+                Token::Text("\n".to_string())
+            )),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_link_with_path_and_fragment() {
+        let input = "http://localhost/path#fragment";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(
+                Token::Link("http://localhost/path#fragment".to_string()),
+                Token::Text("\n".to_string())
+            )),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_link_with_query_and_fragment() {
+        let input = "http://localhost/?query#fragment";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(
+                Token::Link("http://localhost/?query#fragment".to_string()),
+                Token::Text("\n".to_string())
+            )),
+            tokens
+        );
+    }
+
+    #[test]
+    fn tokenize_link_with_path_query_and_fragment() {
+        let input = "http://localhost/path?query#fragment";
+        let tokens = MessageParser::tokenize(input);
+        assert_eq!(
+            Ok(vec!(
+                Token::Link("http://localhost/path?query#fragment".to_string()),
                 Token::Text("\n".to_string())
             )),
             tokens
@@ -738,7 +904,15 @@ mod tests {
         assert_eq!(
             Ok(vec!(
                 Token::OpeningTag(OpeningTag::Italic),
-                Token::Text("Lorem ipsum dolor sit amet".to_string()),
+                Token::Text("Lorem".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("ipsum".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("dolor".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("sit".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("amet".to_string()),
                 Token::ClosingTag(ClosingTag::Italic),
                 Token::Text("\n".to_string()),
             )),
@@ -754,7 +928,9 @@ mod tests {
             Ok(vec!(
                 Token::OpeningTag(OpeningTag::Spoiler),
                 Token::OpeningTag(OpeningTag::Code),
-                Token::Text("Lorem ipsum".to_string()),
+                Token::Text("Lorem".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("ipsum".to_string()),
                 Token::ClosingTag(ClosingTag::Code),
                 Token::ClosingTag(ClosingTag::Spoiler),
                 Token::Text("\n".to_string()),
@@ -898,9 +1074,15 @@ mod tests {
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
             Ok(vec!(
-                Token::Text("Lorem ipsum".to_string()),
+                Token::Text("Lorem".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("ipsum".to_string()),
                 Token::Text("\n".to_string()),
-                Token::Text("dolor sit amet".to_string()),
+                Token::Text("dolor".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("sit".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("amet".to_string()),
                 Token::Text("\n".to_string()),
             )),
             tokens
@@ -914,10 +1096,18 @@ mod tests {
         assert_eq!(
             Ok(vec!(
                 Token::OpeningTag(OpeningTag::Quote),
-                Token::Text(" Lorem ipsum".to_string()),
+                Token::Text(">".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("Lorem".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("ipsum".to_string()),
                 Token::ClosingTag(ClosingTag::Quote),
                 Token::Text("\n".to_string()),
-                Token::Text("dolor sit amet".to_string()),
+                Token::Text("dolor".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("sit".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("amet".to_string()),
                 Token::Text("\n".to_string()),
             )),
             tokens
@@ -933,10 +1123,18 @@ mod tests {
                 Token::RefLink(12345),
                 Token::Text("\n".to_string()),
                 Token::OpeningTag(OpeningTag::Quote),
-                Token::Text(" Lorem ipsum".to_string()),
+                Token::Text(">".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("Lorem".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("ipsum".to_string()),
                 Token::ClosingTag(ClosingTag::Quote),
                 Token::Text("\n".to_string()),
-                Token::Text("dolor sit amet".to_string()),
+                Token::Text("dolor".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("sit".to_string()),
+                Token::Text(" ".to_string()),
+                Token::Text("amet".to_string()),
                 Token::Text("\n".to_string()),
             )),
             tokens
@@ -1082,7 +1280,7 @@ mod tests {
         assert_eq!(
             vec!(
                 Segment {
-                    text: "Lorem ipsum".to_string(),
+                    text: ">Lorem ipsum".to_string(),
                     tags: vec!(SegmentStyle::Quote),
                 },
                 Segment {
@@ -1128,7 +1326,7 @@ mod tests {
                     tags: Vec::new(),
                 },
                 Segment {
-                    text: "Lorem ipsum".to_string(),
+                    text: ">Lorem ipsum".to_string(),
                     tags: vec!(SegmentStyle::Quote),
                 },
                 Segment {

@@ -79,6 +79,10 @@ export function markup(m: Markup | Markup[]): string {
                     `data-show-post-popup="${tag.id}">${html}</a>`;
                 break;
 
+            case 'Link':
+                html = `<a class="markup markup_link" href="${tag.url}" target="_blank">${html}</a>`;
+                break;
+
             case 'Quote':
                 html = `<span class="markup markup_quote">${html}</span>`;
                 break;

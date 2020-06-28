@@ -55,15 +55,11 @@
         }
     }
 
+    &_link {
+        color: #E3833D;
+    }
+
     &_quote {
         color: #3DE389;
-
-        &::before {
-            content: '>';
-        }
-
-        & + &::before {
-            content: '';
-        }
     }
 }

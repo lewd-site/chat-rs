@@ -28,11 +28,16 @@ export interface RefLink {
     readonly id: number;
 }
 
+export interface Link {
+    readonly type: 'Link';
+    readonly url: string;
+}
+
 export interface Quote {
     readonly type: 'Quote';
 }
 
-export type Tag = BBCode | Color | RefLink | Quote;
+export type Tag = BBCode | Color | RefLink | Link | Quote;
 
 export interface Markup {
     readonly text: string;
