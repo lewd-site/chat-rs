@@ -1,3 +1,4 @@
+pub mod files;
 pub mod notifications;
 pub mod posts;
 pub mod thumbnails;

@@ -1,6 +1,7 @@
 import 'regenerator-runtime/runtime';
 
 import AuthModal from './components/AuthModal.svelte';
+import Gallery from './components/Gallery.svelte';
 import MediaBox from './components/MediaBox.svelte';
 import Menu from './components/Menu.svelte';
 import PostForm from './components/PostForm.svelte';
@@ -46,42 +47,25 @@ if (typeof config.sentryDsn !== 'undefined') {
 
 window.eventBus = new EventEmitter();
 
-const menuContainer = document.getElementById('menu');
-if (!menuContainer) {
-    throw new Error('#menu not found');
-}
+const components: { [key: string]: any } = {
+    '#auth-modal': AuthModal,
+    '#gallery': Gallery,
+    '#media-box': MediaBox,
+    '#menu': Menu,
+    '#post-form': PostForm,
+    '#post-list': PostList,
+    '#post-popups': PostPopups,
+};
 
-const authModalContainer = document.getElementById('auth-modal');
-if (!authModalContainer) {
-    throw new Error('#auth-modal not found');
-}
+for (let key in components) {
+    const container = document.querySelector(key);
+    if (container === null) {
+        throw new Error(`${key} not found`);
+    }
 
-const postFormContainer = document.getElementById('post-form');
-if (!postFormContainer) {
-    throw new Error('#post-form not found');
+    const Component = components[key];
+    const instance = new Component({ target: container });
 }
-
-const postListContainer = document.getElementById('post-list');
-if (!postListContainer) {
-    throw new Error('#post-list not found');
-}
-
-const mediaBoxContainer = document.getElementById('media-box');
-if (!mediaBoxContainer) {
-    throw new Error('#media-box not found');
-}
-
-const postPopupsContainer = document.getElementById('post-popups');
-if (!postPopupsContainer) {
-    throw new Error('#post-popups not found');
-}
-
-const menu = new Menu({ target: menuContainer });
-const authModal = new AuthModal({ target: authModalContainer });
-const postFrom = new PostForm({ target: postFormContainer });
-const postList = new PostList({ target: postListContainer });
-const mediaBox = new MediaBox({ target: mediaBoxContainer });
-const postpopUps = new PostPopups({ target: postPopupsContainer });
 
 const authButton = document.getElementById('login');
 authButton?.setAttribute('hidden', '');

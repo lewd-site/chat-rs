@@ -1,5 +1,4 @@
-use crate::routes::posts::Authenticated;
-use crate::routes::types::{NotificationWithPost, PostWithFiles};
+use crate::routes::types::{Authenticated, NotificationWithPost, PostWithFiles};
 use crate::ChatDbConn;
 use data::repositories::files::FileRepository;
 use data::repositories::notifications::NotificationRepository;

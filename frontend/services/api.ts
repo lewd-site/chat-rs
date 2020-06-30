@@ -25,6 +25,10 @@ interface NotificationListResponse {
     readonly items: Notification[];
 }
 
+interface FileListResponse {
+    readonly items: File[];
+}
+
 export class Api {
     public getToken = async (): Promise<string | null> => {
         const authButton = document.getElementById('login');
@@ -127,6 +131,18 @@ export class Api {
 
         const response = await axios.delete<NotificationResponse>(`/api/v1/notifications/${id}`, config);
         return response.data.item;
+    };
+
+    public getLatestFiles = async (): Promise<File[]> => {
+        const config: AxiosRequestConfig = { headers: {} };
+
+        const token = await this.getToken();
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await axios.get<FileListResponse>('/api/v1/files', config);
+        return response.data.items;
     };
 }
 

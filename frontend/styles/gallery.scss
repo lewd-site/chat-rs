@@ -1,0 +1,147 @@
+.gallery {
+    &__inner {
+        position: absolute;
+        top: 0;
+        right: 0;
+
+        display: flex;
+        flex-flow: column nowrap;
+
+        width: 100%;
+        height: 100%;
+
+        pointer-events: initial;
+    }
+
+    &__header {
+        background: #36393F;
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        align-items: center;
+
+        padding: 24px 24px 24px 48px;
+
+        z-index: 1;
+    }
+
+    &__title {
+        margin: 0;
+
+        flex: 1;
+
+        line-height: 25px;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    &__hide {
+        background: $icon;
+
+        mask-image: url('../images/menu-times.svg');
+        mask-position: center center;
+        mask-repeat: no-repeat;
+
+        border: 0;
+
+        display: block;
+
+        width: 13px;
+        height: 13px;
+
+        padding: 0;
+
+        cursor: pointer;
+
+        &:hover {
+            background: $icon-hover;
+        }
+    }
+
+    &__content {
+        background: #2F3136;
+
+        flex: 1;
+
+        padding: 16px 0 8px 16px;
+
+        overflow-x: hidden;
+        overflow-y: auto;
+
+        @include scrollbar($track, $thumb);
+    }
+
+    &__content-title {
+        color: #8C8C8C;
+        line-height: 22px;
+        font-size: 16px;
+        font-weight: 600;
+
+        margin: 0 0 12px 0;
+    }
+
+    &__files {
+        display: flex;
+        flex-flow: row wrap;
+
+        list-style: none;
+
+        margin: 0;
+        padding: 0;
+    }
+
+    &__file {
+        position: relative;
+
+        display: block;
+
+        border: 0;
+        border-radius: 2px;
+
+        list-style: none;
+
+        width: 67px;
+        height: 67px;
+
+        padding: 0;
+        margin: 0 8px 8px 0;
+
+        &:hover {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+
+            top: -4px;
+            left: -4px;
+            width: 75px;
+            height: 75px;
+
+            margin: 0;
+        }
+    }
+
+    &__file-preview {
+        display: block;
+
+        border: 0;
+        border-radius: 2px;
+
+        width: 100%;
+        height: 100%;
+
+        object-fit: cover;
+    }
+
+    &__file_audio &__file-preview {
+        background: transparent;
+        background-image: url('../images/play.svg');
+        background-position: center center;
+        background-repeat: no-repeat;
+
+        border: 2px dashed #9DA2B2;
+    }
+
+    &__file_video &__file-preview {
+        border: 2px dashed #9DA2B2;
+    }
+}

@@ -20,3 +20,26 @@ export function toggleNSFWMode() {
         return !value;
     });
 }
+
+export const galleryVisible = writable<boolean>(false);
+
+export function showGallery() {
+    galleryVisible.set(true);
+}
+
+export function hideGallery() {
+    galleryVisible.set(false);
+}
+
+export function toggleGallery() {
+    galleryVisible.update(value => !value);
+}
+
+const MAX_FILES = 100;
+
+export const galleryFiles = writable<File[]>([]);
+
+export function setGalleryFiles(newFiles: File[]) {
+    const files = newFiles.slice(0, MAX_FILES);
+    galleryFiles.set(files);
+}

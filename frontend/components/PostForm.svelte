@@ -5,6 +5,7 @@
 
   import TextBox from "./TextBox.svelte";
   import { showAuthModal } from "../stores/auth";
+  import { galleryVisible, toggleGallery } from "../stores/files";
   import utils from "../utils";
 
   const MAX_FILES = 5;
@@ -41,6 +42,10 @@
     ];
 
     setTimeout(updateSize, RESIZE_DELAY);
+  }
+
+  function addFile(newFile) {
+    addFiles([newFile]);
   }
 
   function handleFilesChange(e) {
@@ -151,16 +156,10 @@
   }
 
   function updateSize() {
-    const scroll = utils.isAtBottom();
-
     const rect = formElement.getBoundingClientRect();
     document.querySelector(
       ".layout__post-list"
     ).style.marginBottom = `${rect.height + 32}px`;
-
-    if (scroll) {
-      setTimeout(utils.scrollToBottom);
-    }
   }
 
   function handleReply(postId) {
@@ -324,6 +323,8 @@
 
   onMount(() => {
     window.eventBus.subscribe("reply", handleReply);
+    window.eventBus.subscribe("gallery_upload", addFile);
+
     setTimeout(updateSize);
 
     pickr = Pickr.create({
@@ -364,6 +365,7 @@
 
   onDestroy(() => {
     window.eventBus.unsubscribe("reply", handleReply);
+    window.eventBus.unsubscribe("gallery_upload", addFile);
     pickr.destroy();
   });
 </script>
@@ -432,74 +434,82 @@
 
   {#if showMarkup || markupPinned}
     <div class="post-form__markup-row" transition:slide={{ duration: 150 }}>
-      <button
-        class="post-form__bold"
-        title="Alt+B"
-        on:click|preventDefault={e => insertMarkup('b')}>
-        Tt
-      </button>
+      <div class="post-form__markup-row-left">
+        <button
+          class="post-form__bold"
+          title="Alt+B"
+          on:click|preventDefault={e => insertMarkup('b')}>
+          Tt
+        </button>
 
-      <button
-        class="post-form__italic"
-        title="Alt+I"
-        on:click|preventDefault={e => insertMarkup('i')}>
-        Tt
-      </button>
+        <button
+          class="post-form__italic"
+          title="Alt+I"
+          on:click|preventDefault={e => insertMarkup('i')}>
+          Tt
+        </button>
 
-      <button
-        class="post-form__underline"
-        on:click|preventDefault={e => insertMarkup('u')}>
-        Tt
-      </button>
+        <button
+          class="post-form__underline"
+          on:click|preventDefault={e => insertMarkup('u')}>
+          Tt
+        </button>
 
-      <button
-        class="post-form__strike"
-        title="Alt+T"
-        on:click|preventDefault={e => insertMarkup('s')}>
-        Tt
-      </button>
+        <button
+          class="post-form__strike"
+          title="Alt+T"
+          on:click|preventDefault={e => insertMarkup('s')}>
+          Tt
+        </button>
 
-      <button
-        class="post-form__sup"
-        on:click|preventDefault={e => insertMarkup('sup')}>
-        <span>Tt</span>
-      </button>
+        <button
+          class="post-form__sup"
+          on:click|preventDefault={e => insertMarkup('sup')}>
+          <span>Tt</span>
+        </button>
 
-      <button
-        class="post-form__sub"
-        on:click|preventDefault={e => insertMarkup('sub')}>
-        <span>Tt</span>
-      </button>
+        <button
+          class="post-form__sub"
+          on:click|preventDefault={e => insertMarkup('sub')}>
+          <span>Tt</span>
+        </button>
 
-      <button
-        class="post-form__code"
-        title="Alt+C"
-        on:click|preventDefault={e => insertMarkup('code')}>
-        Code
-      </button>
+        <button
+          class="post-form__code"
+          title="Alt+C"
+          on:click|preventDefault={e => insertMarkup('code')}>
+          Code
+        </button>
 
-      <button
-        class="post-form__codeblock"
-        on:click|preventDefault={e => insertMarkup('codeblock')}>
-        Code Block
-      </button>
+        <button
+          class="post-form__codeblock"
+          on:click|preventDefault={e => insertMarkup('codeblock')}>
+          Code Block
+        </button>
 
-      <button
-        class="post-form__spoiler"
-        title="Alt+P"
-        on:click|preventDefault={e => insertMarkup('spoiler')}>
-        Spoiler
-      </button>
+        <button
+          class="post-form__spoiler"
+          title="Alt+P"
+          on:click|preventDefault={e => insertMarkup('spoiler')}>
+          Spoiler
+        </button>
 
-      <button
-        class="post-form__color"
-        on:click|preventDefault={e => insertColor()}>
-        Color
-      </button>
+        <button
+          class="post-form__color"
+          on:click|preventDefault={e => insertColor()}>
+          Color
+        </button>
 
-      <button
-        class="post-form__pin {markupPinned ? 'post-form__pin_pinned' : ''}"
-        on:click|preventDefault={toggleMarkupPinned} />
+        <button
+          class="post-form__pin {markupPinned ? 'post-form__pin_pinned' : ''}"
+          on:click|preventDefault={toggleMarkupPinned} />
+      </div>
+
+      <div class="post-form__markup-row-right">
+        <button
+          class="post-form__gallery {$galleryVisible ? 'post-form__gallery_active' : ''}"
+          on:click|preventDefault={toggleGallery} />
+      </div>
     </div>
   {/if}
 
@@ -510,7 +520,7 @@
     on:keydown={handleKeyDown}
     on:paste={handlePaste}>
     <div class="post-form__attachment-wrapper">
-      <label class="post-form__attachment">
+      <label class="post-form__attachment" title="Ctrl+B">
         <input
           bind:this={fileElement}
           type="file"
@@ -518,8 +528,7 @@
           on:change={handleFilesChange}
           multiple
           hidden
-          {disabled}
-          title="Ctrl+B" />
+          {disabled} />
       </label>
     </div>
 

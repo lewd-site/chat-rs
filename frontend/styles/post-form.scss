@@ -98,11 +98,18 @@
     &__markup-row {
         display: flex;
         flex-flow: row nowrap;
+        justify-content: space-between;
 
         width: 100%;
         height: 40px;
 
         padding-bottom: 16px;
+    }
+
+    &__markup-row-left,
+    &__markup-row-right {
+        display: flex;
+        flex-flow:  row  nowrap;
     }
 
     &__bold,
@@ -129,9 +136,7 @@
         white-space: pre;
         cursor: pointer;
 
-        &:not(:last-child) {
-            margin-right: 8px;
-        }
+        margin-right: 8px;
 
         &:hover {
             background: #292B30;
@@ -176,6 +181,10 @@
         font-family: $monospace;
     }
 
+    &__color {
+        margin-right: 12px;
+    }
+
     &__pin {
         background: $icon;
 
@@ -197,6 +206,34 @@
 
         &_pinned {
             mask-image: url('../images/pinned.svg');
+        }
+    }
+
+    &__gallery {
+        background: $icon;
+
+        mask-image: url('../images/gallery.svg');
+        mask-position: center center;
+        mask-repeat: no-repeat;
+
+        border: 0;
+
+        width: 30px;
+        height: 24px;
+
+        margin-right: 20px;
+
+        padding: 0;
+
+        cursor: pointer;
+
+        &:hover {
+            background: $icon-hover;
+        }
+
+        &_active,
+        &_active:hover {
+            background: #9631CD;
         }
     }
 

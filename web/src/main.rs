@@ -16,7 +16,7 @@ mod ws;
 use diesel::pg::PgConnection;
 use rocket_contrib::serve::StaticFiles;
 use rocket_sentry::RocketSentry;
-use routes::{notifications, posts, thumbnails};
+use routes::{files, notifications, posts, thumbnails};
 use ws::Ws;
 
 #[database("pgsql_chat")]
@@ -26,6 +26,7 @@ fn rocket() -> rocket::Rocket {
     let static_dir = concat!(env!("CARGO_MANIFEST_DIR"), "/../www");
 
     rocket::ignite()
+        .mount("/api/v1/files", routes![files::get_file_list,])
         .mount(
             "/api/v1/posts",
             routes![

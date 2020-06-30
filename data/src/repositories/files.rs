@@ -25,6 +25,20 @@ impl FileRepository {
         items.into_iter().next()
     }
 
+    pub fn get_latest_for_user(conn: &PgConnection, uuid: &str) -> Vec<File> {
+        use crate::schema::files::dsl::*;
+        use crate::schema::posts;
+
+        files
+            .inner_join(posts::table)
+            .select(files::all_columns())
+            .filter(posts::user_uuid.eq(uuid))
+            .order(posts::created_at.desc())
+            .limit(100)
+            .load(conn)
+            .unwrap()
+    }
+
     pub fn create(conn: &PgConnection, file: &NewFile) -> File {
         use crate::schema::files::dsl::*;
 
