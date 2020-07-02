@@ -28,12 +28,17 @@ impl FileRepository {
     pub fn get_latest_for_user(conn: &PgConnection, uuid: &str) -> Vec<File> {
         use crate::schema::files::dsl::*;
         use crate::schema::posts;
+        use diesel::dsl::*;
+
+        let subquery = files
+            .inner_join(posts::table)
+            .select(max(id))
+            .filter(posts::user_uuid.eq(uuid))
+            .group_by(md5);
 
         files
-            .inner_join(posts::table)
-            .select(files::all_columns())
-            .filter(posts::user_uuid.eq(uuid))
-            .order(posts::created_at.desc())
+            .filter(id.nullable().eq_any(subquery))
+            .order(id.desc())
             .limit(100)
             .load(conn)
             .unwrap()
