@@ -34,11 +34,21 @@ table! {
     }
 }
 
+table! {
+    user_favorite_files (id) {
+        id -> Int4,
+        file_id -> Int4,
+        user_uuid -> Bpchar,
+    }
+}
+
 joinable!(files -> posts (post_id));
 joinable!(notifications -> posts (post_id));
+joinable!(user_favorite_files -> files (file_id));
 
 allow_tables_to_appear_in_same_query!(
     files,
     notifications,
     posts,
+    user_favorite_files,
 );

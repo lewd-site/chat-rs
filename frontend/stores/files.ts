@@ -37,9 +37,16 @@ export function toggleGallery() {
 
 const MAX_FILES = 100;
 
-export const galleryFiles = writable<File[]>([]);
+export const favoriteFiles = writable<File[]>([]);
 
-export function setGalleryFiles(newFiles: File[]) {
+export function setFavoriteFiles(newFiles: File[]) {
     const files = newFiles.slice(0, MAX_FILES);
-    galleryFiles.set(files);
+    favoriteFiles.set(files);
+}
+
+export const recentFiles = writable<File[]>([]);
+
+export function setRecentFiles(newFiles: File[]) {
+    const files = newFiles.slice(0, MAX_FILES);
+    recentFiles.set(files);
 }

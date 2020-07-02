@@ -28,6 +28,14 @@ fn rocket() -> rocket::Rocket {
     rocket::ignite()
         .mount("/api/v1/files", routes![files::get_file_list,])
         .mount(
+            "/api/v1/favorites",
+            routes![
+                files::get_favorite_file_list,
+                files::create_favorite_file,
+                files::delete_favorite_file,
+            ],
+        )
+        .mount(
             "/api/v1/posts",
             routes![
                 posts::create_post_json,

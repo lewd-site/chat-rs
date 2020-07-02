@@ -1,10 +1,13 @@
 <script>
+  import GalleryFile from "./GalleryFile.svelte";
   import { hslide } from "../anim";
   import {
     galleryVisible,
     hideGallery,
-    galleryFiles,
-    setGalleryFiles
+    favoriteFiles,
+    setFavoriteFiles,
+    recentFiles,
+    setRecentFiles
   } from "../stores/files";
 
   galleryVisible.subscribe(async value => {
@@ -12,7 +15,8 @@
       return;
     }
 
-    setGalleryFiles(await window.api.getLatestFiles());
+    setFavoriteFiles(await window.api.getFavoriteFiles());
+    setRecentFiles(await window.api.getLatestFiles());
   });
 
   function handleFileClick(file) {
@@ -35,6 +39,18 @@
 
     xhr.send();
   }
+
+  async function handleAddFavClick(file) {
+    await window.api.createFavoriteFile(file.md5);
+    setFavoriteFiles(await window.api.getFavoriteFiles());
+    setRecentFiles(await window.api.getLatestFiles());
+  }
+
+  async function handleRemoveFavClick(file) {
+    await window.api.deleteFavoriteFile(file.md5);
+    setFavoriteFiles(await window.api.getFavoriteFiles());
+    setRecentFiles(await window.api.getLatestFiles());
+  }
 </script>
 
 {#if $galleryVisible}
@@ -49,56 +65,31 @@
     </header>
 
     <section class="gallery__content">
-      <h3 class="gallery__content-title">Недавно использованные</h3>
+      {#if $favoriteFiles.length}
+        <h3 class="gallery__content-title">Избранное</h3>
 
-      <ul class="gallery__files">
-        {#each $galleryFiles as file (file.id)}
-          {#if file.mimetype.startsWith('image/')}
-            <li class="gallery__file gallery__file_image">
-              <a
-                class="gallery__file-link"
-                href="/src/{file.md5}.{file.extension}"
-                target="_blank"
-                title={file.name}
-                on:click|preventDefault={e => handleFileClick(file)}>
-                <picture>
-                  <img
-                    class="gallery__file-preview"
-                    src="/thumb/{file.md5}?max_width=360"
-                    alt="Preview" />
-                </picture>
-              </a>
-            </li>
-          {:else if file.mimetype.startsWith('audio/')}
-            <li class="gallery__file gallery__file_audio">
-              <a
-                class="gallery__file-link"
-                href="/src/{file.md5}.{file.extension}"
-                target="_blank"
-                title={file.name}
-                on:click|preventDefault={e => handleFileClick(file)}>
-                <div class="gallery__file-preview" />
-              </a>
-            </li>
-          {:else if file.mimetype.startsWith('video/')}
-            <li class="gallery__file gallery__file_video">
-              <a
-                class="gallery__file-link"
-                href="/src/{file.md5}.{file.extension}"
-                target="_blank"
-                title={file.name}
-                on:click|preventDefault={e => handleFileClick(file)}>
-                <picture>
-                  <img
-                    class="gallery__file-preview"
-                    src="/thumb/{file.md5}?max_width=360"
-                    alt="Preview" />
-                </picture>
-              </a>
-            </li>
-          {/if}
-        {/each}
-      </ul>
+        <ul class="gallery__files gallery__files_favorite">
+          {#each $favoriteFiles as file}
+            <GalleryFile
+              {file}
+              on:fileClick={e => handleFileClick(e.detail)}
+              on:favoriteClick={e => handleRemoveFavClick(e.detail)} />
+          {/each}
+        </ul>
+      {/if}
+
+      {#if $recentFiles.length}
+        <h3 class="gallery__content-title">Недавно использованные</h3>
+
+        <ul class="gallery__files gallery__files_recent">
+          {#each $recentFiles as file (file.id)}
+            <GalleryFile
+              {file}
+              on:fileClick={e => handleFileClick(e.detail)}
+              on:favoriteClick={e => handleAddFavClick(e.detail)} />
+          {/each}
+        </ul>
+      {/if}
     </section>
   </div>
 {/if}

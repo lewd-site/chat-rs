@@ -144,4 +144,40 @@
     &__file_video &__file-preview {
         border: 2px dashed #9DA2B2;
     }
+
+    &__favorite {
+        position: absolute;
+        bottom: 4px;
+        right: 4px;
+        width: 16px;
+        height: 16px;
+
+        display: none;
+
+        background: transparent;
+        background-image: url('../images/favorite.svg');
+        background-position: center center;
+        background-repeat: no-repeat;
+
+        border: 0;
+        border-radius: 0;
+
+        cursor: pointer;
+    }
+
+    &__file:hover &__favorite {
+        display: block;
+    }
+
+    &__favorite:hover {
+        background-image: url('../images/favorite-active.svg');
+    }
+
+    &__files_favorite &__favorite {
+        background-image: url('../images/favorite-active.svg');
+    }
+
+    &__files_favorite &__favorite:hover {
+        background-image: url('../images/favorite.svg');
+    }
 }

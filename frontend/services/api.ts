@@ -25,6 +25,10 @@ interface NotificationListResponse {
     readonly items: Notification[];
 }
 
+interface FileResponse {
+    readonly item: File;
+}
+
 interface FileListResponse {
     readonly items: File[];
 }
@@ -139,9 +143,50 @@ export class Api {
         const token = await this.getToken();
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
+        } else {
+            return [];
         }
 
         const response = await axios.get<FileListResponse>('/api/v1/files', config);
+        return response.data.items;
+    };
+
+    public createFavoriteFile = async (md5: string): Promise<File> => {
+        const request = { md5 };
+        const config: AxiosRequestConfig = { headers: {} };
+
+        const token = await this.getToken();
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await axios.post<FileResponse>(`/api/v1/favorites`, request, config);
+        return response.data.item;
+    };
+
+    public deleteFavoriteFile = async (md5: string): Promise<File> => {
+        const config: AxiosRequestConfig = { headers: {} };
+
+        const token = await this.getToken();
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await axios.delete<FileResponse>(`/api/v1/favorites/${md5}`, config);
+        return response.data.item;
+    };
+
+    public getFavoriteFiles = async (): Promise<File[]> => {
+        const config: AxiosRequestConfig = { headers: {} };
+
+        const token = await this.getToken();
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        } else {
+            return [];
+        }
+
+        const response = await axios.get<FileListResponse>('/api/v1/favorites', config);
         return response.data.items;
     };
 }

@@ -1,5 +1,5 @@
 use super::posts::Post;
-use crate::schema::files;
+use crate::schema::{files, user_favorite_files};
 use chrono::prelude::*;
 use image::io::Reader;
 use infer::Infer;
@@ -189,5 +189,29 @@ impl File {
         };
 
         Ok(result)
+    }
+}
+
+#[derive(Insertable)]
+#[table_name = "user_favorite_files"]
+pub struct NewUserFavoriteFile {
+    pub file_id: i32,
+    pub user_uuid: String,
+}
+
+#[derive(Identifiable, Queryable, Associations, Serialize, Clone)]
+#[belongs_to(File)]
+pub struct UserFavoriteFile {
+    pub id: i32,
+    pub file_id: i32,
+    pub user_uuid: String,
+}
+
+impl UserFavoriteFile {
+    pub fn new(file_id: i32, user_uuid: &str) -> NewUserFavoriteFile {
+        NewUserFavoriteFile {
+            file_id,
+            user_uuid: String::from(user_uuid),
+        }
     }
 }
