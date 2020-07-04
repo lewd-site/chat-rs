@@ -1,4 +1,6 @@
 .gallery {
+    pointer-events: none;
+
     &__inner {
         position: absolute;
         top: 0;
