@@ -12,6 +12,22 @@ export interface File {
     readonly length: null | number;
 }
 
+export type EmbedMimeType = 'video/x-coub' | 'video/x-youtube';
+
+export interface Embed {
+    readonly id: string;
+    readonly name: string;
+    readonly mimetype: EmbedMimeType;
+    readonly thumbnail_width: number;
+    readonly thumbnail_height: number;
+    readonly thumbnail_url: string;
+    readonly width: number;
+    readonly height: number;
+    readonly html: string;
+}
+
+export type Media = File | Embed;
+
 export interface BBCode {
     readonly type:
     | 'Bold' | 'Italic' | 'Underline' | 'Strike'
@@ -39,26 +55,17 @@ export interface Quote {
     readonly type: 'Quote';
 }
 
-export type Tag = BBCode | Color | RefLink | Link | Quote;
+export interface HTML {
+    readonly type: 'HTML';
+    readonly content: string;
+}
+
+export type Tag = BBCode | Color | RefLink | Link | Quote | HTML;
 
 export interface Markup {
     readonly text: string;
     readonly tags: Tag[];
 }
-
-export interface Embed {
-    readonly id: string;
-    readonly name: string;
-    readonly mimetype: 'video/x-youtube' | 'video/x-coub';
-    readonly thumbnail_width: number;
-    readonly thumbnail_height: number;
-    readonly thumbnail_url: string;
-    readonly width: number;
-    readonly height: number;
-    readonly html: string;
-}
-
-export type Media = File | Embed;
 
 export interface Post {
     readonly id: number;

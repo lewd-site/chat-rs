@@ -383,7 +383,7 @@
       <picture>
         <img class="media-box__media media-box__media_image" {src} alt="" />
       </picture>
-    {:else if ($mediaBoxFile.mimetype === 'video/x-youtube' || $mediaBoxFile.mimetype === 'video/x-coub') && src}
+    {:else if ['video/x-coub', 'video/x-youtube'].indexOf($mediaBoxFile.mimetype) !== -1 && src}
       <div class="media-box__handle">
         <span class="media-box__title">{$mediaBoxFile.name}</span>
       </div>

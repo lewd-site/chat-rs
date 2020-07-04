@@ -6,6 +6,7 @@ import utils from '../utils';
 export type Posts = { [key: number]: Post };
 
 const MAX_POSTS = 100;
+const POPUP_HEADER_PADDIGN = 24;
 
 export const posts = writable<Posts>({});
 
@@ -42,7 +43,13 @@ function processPost(post: Post, allPosts: Post[]) {
 
         const linkTags = segment.tags.filter(tag => tag.type === 'Link') as Link[];
         linkTags.forEach(async (tag, tagIndex) => {
-            if (tag.url.match(/^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch|embed|v)|youtu\.be\/)/)) {
+            if (tag.url.match(/^(?:https?:\/\/)?(?:www\.)?(?:voca\.ro|vocaroo\.com)\/([A-Za-z0-9]+)$/)) {
+                const matches = tag.url.match(/^(?:https?:\/\/)?(?:www\.)?(?:voca\.ro|vocaroo\.com)\/([A-Za-z0-9]+)$/);
+                const html = `<iframe class="markup_vocaroo" width="300" height="60" src="https://vocaroo.com/embed/${matches![1]}" frameborder="0"></iframe>`;
+                post.message[segmentIndex] = { tags: [{ type: 'HTML', content: html }], text: '' };
+
+                updatePost(post);
+            } else if (tag.url.match(/^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch|embed|v)|youtu\.be\/)/)) {
                 const url = encodeURIComponent(tag.url.replace(/^https?:\/\//, ''));
                 const data = await window.youtube!.getVideoInfo(url);
 
@@ -64,7 +71,7 @@ function processPost(post: Post, allPosts: Post[]) {
                     thumbnail_height: +data.thumbnail_height,
                     thumbnail_url: data.thumbnail_url,
                     width: +data.width,
-                    height: +data.height + 24,
+                    height: +data.height + POPUP_HEADER_PADDIGN,
                     html,
                 };
 
@@ -97,7 +104,7 @@ function processPost(post: Post, allPosts: Post[]) {
                     thumbnail_height: +data.thumbnail_height,
                     thumbnail_url: data.thumbnail_url,
                     width: +data.width,
-                    height: +data.height + 24,
+                    height: +data.height + POPUP_HEADER_PADDIGN,
                     html,
                 };
 

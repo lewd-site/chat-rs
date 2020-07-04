@@ -91,6 +91,10 @@ export function markup(m: Markup | Markup[]): string {
             case 'Quote':
                 html = `<span class="markup markup_quote">${html}</span>`;
                 break;
+
+            case 'HTML':
+                html = tag.content;
+                break;
         }
     });
 
