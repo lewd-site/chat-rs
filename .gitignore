@@ -1,4 +1,5 @@
 /.cache
+/frontend/config.ts
 /node_modules
 /target
 /.env

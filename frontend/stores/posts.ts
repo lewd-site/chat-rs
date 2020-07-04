@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 
 import { RefLink, Post, Link, Embed } from '../types';
+import utils from '../utils';
 
 export type Posts = { [key: number]: Post };
 
@@ -17,6 +18,12 @@ function arrayToHash(posts: Post[]): Posts {
         result[post.id] = post;
         return result;
     }, {} as Posts);
+}
+
+function updatePost(post: Post) {
+    posts.update(posts => {
+        return { ...posts, [post.id]: post };
+    });
 }
 
 function processPost(post: Post, allPosts: Post[]) {
@@ -66,6 +73,8 @@ function processPost(post: Post, allPosts: Post[]) {
                 } else {
                     post.embeds.push(embed);
                 }
+
+                updatePost(post);
             } else if (tag.url.match(/^(?:https?:\/\/)?(?:www\.)?coub\.com\/view\//)) {
                 const url = encodeURIComponent(tag.url.replace(/^https?:\/\//, ''));
                 const data = await window.coub!.getCoubInfo(url);
@@ -97,6 +106,8 @@ function processPost(post: Post, allPosts: Post[]) {
                 } else {
                     post.embeds.push(embed);
                 }
+
+                updatePost(post);
             }
         });
     });

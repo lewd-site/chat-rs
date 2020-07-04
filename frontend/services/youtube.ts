@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const youtubeProxyUrl = '/api/v1/oembed/youtube/';
+import config from '../config';
 
 export interface YouTubeOEmbedResponse {
     readonly type: string;
@@ -26,7 +25,7 @@ export class YouTube {
             return this.cache[videoId];
         }
 
-        const response = await axios.get<YouTubeOEmbedResponse>(`${youtubeProxyUrl}${videoId}`);
+        const response = await axios.get<YouTubeOEmbedResponse>(`${config.youtubeProxyUrl}${videoId}`);
         return this.cache[videoId] = response.data;
     }
 }

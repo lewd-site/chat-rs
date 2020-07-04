@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const coubProxyUrl = '/api/v1/oembed/coub/';
+import config from '../config';
 
 export interface CoubOEmbedResponse {
     readonly type: string;
@@ -26,7 +25,7 @@ export class Coub {
             return this.cache[coubId];
         }
 
-        const response = await axios.get<CoubOEmbedResponse>(`${coubProxyUrl}${coubId}`);
+        const response = await axios.get<CoubOEmbedResponse>(`${config.coubProxyUrl}${coubId}`);
         return this.cache[coubId] = response.data;
     }
 }
