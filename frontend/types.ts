@@ -12,7 +12,7 @@ export interface File {
     readonly length: null | number;
 }
 
-export type EmbedMimeType = 'video/x-coub' | 'video/x-youtube';
+export type EmbedMimeType = 'video/x-coub' | 'video/x-tiktok' | 'video/x-youtube';
 
 export interface Embed {
     readonly id: string;
@@ -24,6 +24,8 @@ export interface Embed {
     readonly width: number;
     readonly height: number;
     readonly html: string;
+    readonly min_width?: number;
+    readonly max_width?: number;
 }
 
 export type Media = File | Embed;

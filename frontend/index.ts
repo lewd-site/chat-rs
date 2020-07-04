@@ -12,6 +12,7 @@ import EventEmitter from './event-emitter';
 import Api from './services/api';
 import Coub from './services/coub';
 import Sso from './services/sso';
+import TikTok from './services/tiktok';
 import YouTube from './services/youtube';
 import { showAuthModal, userUuid } from './stores/auth';
 import { setNotifications } from './stores/notifications';
@@ -33,6 +34,7 @@ declare global {
         eventBus?: EventEmitter;
         sso?: Sso;
         ws?: Ws;
+        tiktok?: TikTok;
         youtube?: YouTube;
     }
 }
@@ -76,6 +78,7 @@ authButton?.addEventListener('click', e => {
 window.api = new Api();
 window.coub = new Coub();
 window.sso = new Sso(() => window.api!.getToken());
+window.tiktok = new TikTok();
 window.ws = new Ws(config.wsUrl);
 window.youtube = new YouTube();
 

@@ -103,6 +103,19 @@
     setTimeout(() => {
       src = `/src/${file.md5}.${file.extension}`;
     });
+
+    if (file.mimetype === "video/x-tiktok") {
+      const existingScript = document.getElementById("tiktok-loader");
+      if (existingScript) {
+        existingScript.remove();
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://www.tiktok.com/embed.js";
+      script.async = true;
+      script.id = "tiktok-loader";
+      document.head.appendChild(script);
+    }
   });
 
   const WHEEL_SCALE_STEP = 1.1;
@@ -120,7 +133,17 @@
     const newWidth = width * scale;
     const newHeight = height * scale;
 
-    if (newWidth < $mediaBoxFile.width && newWidth < MIN_WIDTH) {
+    const minWidth =
+      typeof $mediaBoxFile.min_width !== "undefined"
+        ? Math.max($mediaBoxFile.min_width, MIN_WIDTH)
+        : MIN_WIDTH;
+
+    const maxWidth =
+      typeof $mediaBoxFile.max_width !== "undefined"
+        ? Math.min($mediaBoxFile.max_width, MAX_WIDTH)
+        : MAX_WIDTH;
+
+    if (newWidth < $mediaBoxFile.width && newWidth < minWidth) {
       return;
     }
 
@@ -128,7 +151,7 @@
       return;
     }
 
-    if (newWidth > $mediaBoxFile.width && newWidth > MAX_WIDTH) {
+    if (newWidth > $mediaBoxFile.width && newWidth > maxWidth) {
       return;
     }
 
@@ -383,7 +406,7 @@
       <picture>
         <img class="media-box__media media-box__media_image" {src} alt="" />
       </picture>
-    {:else if ['video/x-coub', 'video/x-youtube'].indexOf($mediaBoxFile.mimetype) !== -1 && src}
+    {:else if ['video/x-coub', 'video/x-tiktok', 'video/x-youtube'].indexOf($mediaBoxFile.mimetype) !== -1 && src}
       <div class="media-box__handle">
         <span class="media-box__title">{$mediaBoxFile.name}</span>
       </div>
