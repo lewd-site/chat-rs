@@ -66,10 +66,6 @@
     mediaBoxFiles.update(currentFiles => {
       let { files } = post;
 
-      if (typeof post.embeds !== "undefined") {
-        files = files.concat(post.embeds);
-      }
-
       return files.filter(
         file =>
           file.mimetype.startsWith("image/") ||
@@ -150,21 +146,6 @@
       document.title = originalTitle;
     }
   });
-
-  function getNotificationMessage(notification) {
-    const replies = extractReplies(notification.post).filter(reply => {
-      return (
-        $posts[reply.postId] && $posts[reply.postId].user_uuid === $userUuid
-      );
-    });
-
-    if (replies.length) {
-      const reply = replies[0];
-      return reply.message.map((m, i) => (i === 0 ? trimStart(m) : m));
-    }
-
-    return [];
-  }
 </script>
 
 {#if isVisible}
@@ -203,7 +184,7 @@
             </div>
 
             <div class="notification__message">
-              {@html markup(getNotificationMessage(notification))}
+              {@html markup(notification.post.message)}
             </div>
 
             {#if notification.post.files.length}
@@ -350,7 +331,7 @@
         </div>
 
         <div class="notification__message">
-          {@html markup(getNotificationMessage(notification))}
+          {@html markup(notification.post.message)}
         </div>
 
         {#if notification.post.files.length}

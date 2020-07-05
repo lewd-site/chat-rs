@@ -19,53 +19,43 @@ export function markup(m: Markup | Markup[]): string {
         return m.map(markup).join('');
     }
 
-    let html = escapeHtml(m.text);
-    const tags = [...m.tags];
-    tags.reverse();
-    tags.forEach(tag => {
-        switch (tag.type) {
+    if (m.type === 'Text') {
+        return escapeHtml(m.text);
+    } else if (m.type === 'Tag') {
+        let html = markup(m.children);
+        switch (m.tag.type) {
             case 'Bold':
-                html = `<strong class="markup markup_bold">${html}</strong>`;
-                break;
+                return `<strong class="markup markup_bold">${html}</strong>`;
 
             case 'Italic':
-                html = `<em class="markup markup_italic">${html}</em>`;
-                break;
+                return `<em class="markup markup_italic">${html}</em>`;
 
             case 'Underline':
-                html = `<span class="markup markup_underline">${html}</span>`;
-                break;
+                return `<span class="markup markup_underline">${html}</span>`;
 
             case 'Strike':
-                html = `<del class="markup markup_strike">${html}</del>`;
-                break;
+                return `<del class="markup markup_strike">${html}</del>`;
 
             case 'Superscript':
-                html = `<sup class="markup markup_superscript">${html}</sup>`;
-                break;
+                return `<sup class="markup markup_superscript">${html}</sup>`;
 
             case 'Subscript':
-                html = `<sub class="markup markup_subscript">${html}</sub>`;
-                break;
+                return `<sub class="markup markup_subscript">${html}</sub>`;
 
             case 'Code':
-                html = `<pre class="markup markup_code">${html}</pre>`;
-                break;
+                return `<pre class="markup markup_code">${html}</pre>`;
 
             case 'CodeBlock':
-                html = `<pre class="markup markup_codeblock">${html}</pre>`;
-                break;
+                return `<pre class="markup markup_codeblock">${html}</pre>`;
 
             case 'Spoiler':
-                html = `<span class="markup markup_spoiler">${html}</span>`;
-                break;
+                return `<span class="markup markup_spoiler">${html}</span>`;
 
             case 'Color':
-                html = `<span style="color: ${tag.color};">${html}</span>`;
-                break;
+                return `<span style="color: ${m.tag.color};">${html}</span>`;
 
             case 'RefLink':
-                const targetPost = _posts[tag.id];
+                const targetPost = _posts[m.tag.id];
                 if (targetPost) {
                     html +=
                         `<span class="reflink__author">` +
@@ -74,29 +64,28 @@ export function markup(m: Markup | Markup[]): string {
                         `</span>`;
                 }
 
-                html = `<a class="markup markup_reflink reflink" href="#post_${tag.id}" ` +
-                    `data-ref-link="${tag.id}"` +
-                    `data-show-post-popup="${tag.id}">${html}</a>`;
-                break;
+                return `<a class="markup markup_reflink reflink" href="#post_${m.tag.id}" ` +
+                    `data-ref-link="${m.tag.id}"` +
+                    `data-show-post-popup="${m.tag.id}">${html}</a>`;
 
             case 'Link':
                 const className = [
                     'markup',
                     'markup_link',
-                    tag.icon ? 'markup_icon_' + tag.icon : null,
+                    m.tag.icon ? 'markup_icon_' + m.tag.icon : null,
                 ].filter(c => c).join(' ');
-                html = `<a class="${className}" href="${tag.url}" target="_blank">${html}</a>`;
-                break;
+                return `<a class="${className}" href="${m.tag.url}" target="_blank">${html}</a>`;
 
             case 'Quote':
-                html = `<span class="markup markup_quote">${html}</span>`;
-                break;
+                return `<span class="markup markup_quote">${html}</span>`;
 
             case 'HTML':
-                html = tag.content;
-                break;
-        }
-    });
+                return m.tag.content;
 
-    return html;
+            default:
+                return '';
+        }
+    } else {
+        return '';
+    }
 }

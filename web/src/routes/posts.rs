@@ -60,8 +60,11 @@ fn create_post(
     let mut ref_links: Vec<i32> = post
         .message
         .iter()
-        .filter_map(|s| s.get_ref_link())
-        .map(|i| i as i32)
+        .map(|s| {
+            let items: Vec<i32> = s.clone().get_ref_links().into_iter().map(|id| id as i32).collect();
+            items
+        })
+        .flatten()
         .collect();
 
     ref_links.sort_unstable();

@@ -64,10 +64,18 @@ export interface HTML {
 
 export type Tag = BBCode | Color | RefLink | Link | Quote | HTML;
 
-export interface Markup {
+interface MarkupText {
+    readonly type: 'Text';
     readonly text: string;
-    readonly tags: Tag[];
 }
+
+interface MarkupTag {
+    readonly type: 'Tag';
+    readonly tag: Tag;
+    readonly children: Markup[];
+}
+
+export type Markup = MarkupText | MarkupTag;
 
 export interface Post {
     readonly id: number;
@@ -80,7 +88,7 @@ export interface Post {
     readonly user_uuid: string | null;
 
     reply_from?: number[];
-    embeds?: Embed[];
+    embeds?: string[];
 }
 
 export interface PostPopup {

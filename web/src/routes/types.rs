@@ -1,6 +1,6 @@
 use chrono::prelude::*;
 use data::models::files::File;
-use data::models::message_parser::{MessageParser, Segment};
+use data::models::message_parser::{MessageParser, Markup};
 use data::models::notifications::Notification;
 use data::models::posts::Post;
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
@@ -88,7 +88,7 @@ pub struct PostWithFiles {
     pub name: String,
     pub tripcode: String,
     pub message_raw: String,
-    pub message: Vec<Segment>,
+    pub message: Vec<Markup>,
     pub created_at: NaiveDateTime,
     pub files: Vec<File>,
     pub user_uuid: Option<String>,
@@ -101,7 +101,7 @@ impl PostWithFiles {
             name: post.name,
             tripcode: post.tripcode,
             message_raw: post.message.clone(),
-            message: MessageParser::str_to_segments(&post.message),
+            message: MessageParser::str_to_markup(&post.message),
             created_at: post.created_at,
             files,
             user_uuid: post.user_uuid,

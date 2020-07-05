@@ -1,5 +1,6 @@
 <script>
   import AudioPlayer from "./AudioPlayer.svelte";
+  import Embed from "./Embed.svelte";
   import { gallery } from "./gallery";
   import { markup } from "./markup";
   import { formatName } from "./post";
@@ -50,10 +51,6 @@
   function handleFileClick(file) {
     mediaBoxFiles.update(currentFiles => {
       let { files } = post;
-
-      if (typeof post.embeds !== "undefined") {
-        files = files.concat(post.embeds);
-      }
 
       return files.filter(
         file =>
@@ -195,20 +192,7 @@
   {#if post.embeds}
     <div class="post__embeds">
       {#each post.embeds as embed}
-        <div class="post__embed">
-          <a
-            href={embed.id}
-            target="_blank"
-            title={embed.name}
-            on:click|preventDefault={e => handleFileClick(embed)}>
-            <picture>
-              <img
-                class="post__embed-preview"
-                src={embed.thumbnail_url}
-                alt="Preview" />
-            </picture>
-          </a>
-        </div>
+        <Embed url={embed} on:fileClick={e => handleFileClick(e.detail)} />
       {/each}
     </div>
   {/if}
