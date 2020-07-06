@@ -1,11 +1,10 @@
 import { writable } from 'svelte/store';
 
-import { RefLink, Post, Link, Embed, Markup } from '../types';
+import { Post, Markup } from '../types';
 
 export type Posts = { [key: number]: Post };
 
 const MAX_POSTS = 100;
-const POPUP_HEADER_PADDIGN = 24;
 
 export const posts = writable<Posts>({});
 
@@ -20,28 +19,32 @@ function arrayToHash(posts: Post[]): Posts {
     }, {} as Posts);
 }
 
-function triggerPostUpdate(post: Post) {
-    posts.update(posts => ({ ...posts, [post.id]: post }));
+function updatePost(id: number, callback: (post: Post) => Post) {
+    posts.update(posts => {
+        const post = posts[id];
+        if (typeof post !== 'undefined') {
+            return { ...posts, [id]: callback(post) };
+        } else {
+            return posts;
+        }
+    });
 }
 
-function processMarkup(markup: Markup, post: Post, allPosts: Post[]): Markup {
+function processMarkup(markup: Markup, post: Post): Markup {
     if (markup.type === 'Text') {
         return markup;
-    }
-    else if (markup.type === 'Tag') {
+    } else if (markup.type === 'Tag') {
         let { children } = markup;
-        children = children.map(m => processMarkup(m, post, allPosts));
+        children = children.map(m => processMarkup(m, post));
 
         const { tag } = markup;
         if (tag.type === 'RefLink') {
-            const targetPost = allPosts.find(p => +p.id === +tag.id);
-            if (targetPost !== undefined) {
-                if (targetPost.reply_from === undefined) {
-                    targetPost.reply_from = [post.id];
-                } else if (targetPost.reply_from.indexOf(post.id) === -1) {
-                    targetPost.reply_from.push(post.id);
-                }
-            }
+            setTimeout(() => updatePost(+tag.id, targetPost => {
+                const reply_from = typeof targetPost.reply_from !== 'undefined'
+                    ? Array.from(new Set([...targetPost.reply_from, post.id]))
+                    : [post.id];
+                return { ...targetPost, reply_from };
+            }));
         } else if (tag.type === 'Link') {
             if (/^(?:https?:\/\/)?(?:www\.)?(?:voca\.ro|vocaroo\.com)\/([A-Za-z0-9]+)$/.test(tag.url)) {
                 const matches = tag.url.match(/^(?:https?:\/\/)?(?:www\.)?(?:voca\.ro|vocaroo\.com)\/([A-Za-z0-9]+)$/);
@@ -67,37 +70,28 @@ function processMarkup(markup: Markup, post: Post, allPosts: Post[]): Markup {
     }
 }
 
-function processPost(post: Post, allPosts: Post[]): Post {
-    const message = post.message.map(m => processMarkup(m, post, allPosts));
+function processPost(post: Post): Post {
+    const message = post.message.map(m => processMarkup(m, post));
     return { ...post, message };
 }
 
-function processPosts(posts: Post[], allPosts: Post[]): Post[] {
-    return posts.map(post => processPost(post, allPosts));
-}
-
-export function setPosts(newPosts: Post[]) {
-    posts.set(arrayToHash(newPosts.map(newPost => processPost(newPost, newPosts))));
+export function addPost(post: Post) {
+    posts.update(posts => {
+        return { ...posts, [post.id]: processPost(post) }
+    });
 }
 
 export function addPosts(newPosts: Post[]) {
     posts.update(posts => {
-        let values = hashToArray(posts);
-        values = values.concat(processPosts(newPosts, [...values, ...newPosts]));
-        values.sort((a, b) => +a.id - b.id);
-
-        return arrayToHash(values);
+        const result = { ...posts };
+        newPosts.forEach(p => result[p.id] = processPost(p));
+        return result;
     });
 }
 
-export function addPost(newPost: Post) {
-    posts.update(posts => {
-        const values = hashToArray(posts);
-        values.push(processPost(newPost, values));
-        values.sort((a, b) => +a.id - b.id);
-
-        return arrayToHash(values);
-    });
+export function setPosts(newPosts: Post[]) {
+    posts.set({});
+    addPosts(newPosts);
 }
 
 export function unloadOldPosts() {
