@@ -436,6 +436,10 @@
     <div class="post-form__markup-row" transition:slide={{ duration: 150 }}>
       <div class="post-form__markup-row-left">
         <button
+          class="post-form__gallery {$galleryVisible ? 'post-form__gallery_active' : ''}"
+          on:click|preventDefault={toggleGallery} />
+
+        <button
           class="post-form__bold"
           title="Alt+B"
           on:click|preventDefault={e => insertMarkup('b')}>
@@ -505,11 +509,7 @@
           on:click|preventDefault={toggleMarkupPinned} />
       </div>
 
-      <div class="post-form__markup-row-right">
-        <button
-          class="post-form__gallery {$galleryVisible ? 'post-form__gallery_active' : ''}"
-          on:click|preventDefault={toggleGallery} />
-      </div>
+      <div class="post-form__markup-row-right" />
     </div>
   {/if}
 
