@@ -9,7 +9,8 @@
     mediaBoxFiles,
     mediaBoxFile,
     nsfwMode,
-    setNSFWMode
+    setNSFWMode,
+    hideGallery
   } from "../stores/files";
   import {
     notifications,
@@ -63,6 +64,8 @@
   }
 
   function handleFileClick(post, file) {
+    hideGallery();
+
     mediaBoxFiles.update(currentFiles => {
       let { files } = post;
 
@@ -78,7 +81,7 @@
         return file;
       }
 
-      return +currentFile.id !== +file.id ? file : null;
+      return currentFile.id != file.id ? file : null;
     });
   }
 

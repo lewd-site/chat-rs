@@ -12,6 +12,7 @@ import EventEmitter from './event-emitter';
 import Api from './services/api';
 import Coub from './services/coub';
 import Sso from './services/sso';
+import Tenor from './services/tenor';
 import TikTok from './services/tiktok';
 import YouTube from './services/youtube';
 import { showAuthModal, userUuid } from './stores/auth';
@@ -33,8 +34,9 @@ declare global {
         coub?: Coub;
         eventBus?: EventEmitter;
         sso?: Sso;
-        ws?: Ws;
+        tenor?: Tenor;
         tiktok?: TikTok;
+        ws?: Ws;
         youtube?: YouTube;
     }
 }
@@ -79,8 +81,9 @@ window.api = new Api();
 window.coub = new Coub();
 window.sso = new Sso(() => window.api!.getToken());
 window.tiktok = new TikTok();
-window.ws = new Ws(config.wsUrl);
+window.tenor = new Tenor();
 window.youtube = new YouTube();
+window.ws = new Ws(config.wsUrl);
 
 userUuid.subscribe(uuid => {
     if (!uuid) {

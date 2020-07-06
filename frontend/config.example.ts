@@ -4,6 +4,7 @@ export const config = {
     sentryDsn: null,
     coubProxyUrl: '/api/v1/oembed/coub/',
     youtubeProxyUrl: '/api/v1/oembed/youtube/',
+    tenorKey: '',
 };
 
 export default config;

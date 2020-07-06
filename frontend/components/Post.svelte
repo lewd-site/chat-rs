@@ -5,7 +5,7 @@
   import { markup } from "./markup";
   import { formatName } from "./post";
   import { userUuid } from "../stores/auth";
-  import { mediaBoxFiles, mediaBoxFile } from "../stores/files";
+  import { mediaBoxFiles, mediaBoxFile, hideGallery } from "../stores/files";
   import {
     hasPopup,
     addPopup,
@@ -49,6 +49,8 @@
   }
 
   function handleFileClick(file) {
+    hideGallery();
+
     mediaBoxFiles.update(currentFiles => {
       let { files } = post;
 

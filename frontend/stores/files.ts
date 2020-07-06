@@ -24,6 +24,8 @@ export function toggleNSFWMode() {
 export const galleryVisible = writable<boolean>(false);
 
 export function showGallery() {
+    mediaBoxFiles.set([]);
+    mediaBoxFile.set(null);
     galleryVisible.set(true);
 }
 
@@ -32,7 +34,14 @@ export function hideGallery() {
 }
 
 export function toggleGallery() {
-    galleryVisible.update(value => !value);
+    galleryVisible.update(value => {
+        if (!value) {
+            mediaBoxFiles.set([]);
+            mediaBoxFile.set(null);
+        }
+
+        return !value;
+    });
 }
 
 const MAX_FILES = 100;
