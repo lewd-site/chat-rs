@@ -59,3 +59,16 @@ export function setRecentFiles(newFiles: File[]) {
     const files = newFiles.slice(0, MAX_FILES);
     recentFiles.set(files);
 }
+
+type ShowOriginalFiles = 'none' | 'gif' | 'all';
+
+let _showOriginalFiles: ShowOriginalFiles = 'gif';
+if (localStorage.getItem('settings.original_files') !== null) {
+    _showOriginalFiles = localStorage['settings.original_files'];
+}
+
+export const showOriginalFiles = writable<ShowOriginalFiles>(_showOriginalFiles);
+
+showOriginalFiles.subscribe(value => {
+    localStorage['settings.original_files'] = value;
+});

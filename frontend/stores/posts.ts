@@ -100,3 +100,5 @@ export function unloadOldPosts() {
         return arrayToHash(values.slice(-MAX_POSTS));
     });
 }
+
+export const visiblePosts = writable<number[]>([]);

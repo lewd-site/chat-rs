@@ -10,7 +10,8 @@
     mediaBoxFile,
     nsfwMode,
     setNSFWMode,
-    hideGallery
+    hideGallery,
+    showOriginalFiles
   } from "../stores/files";
   import {
     notifications,
@@ -257,6 +258,26 @@
             on:change={e => setNSFWMode(e.target.checked)}
             hidden />
           <span class="menu__checkbox-label">NSFW-режим</span>
+          <div class="menu__checkbox-mark" />
+        </label>
+
+        <label class="menu__checkbox">
+          <input
+            type="checkbox"
+            checked={['gif', 'all'].indexOf($showOriginalFiles) !== -1}
+            on:change={e => showOriginalFiles.set(e.target.checked ? 'gif' : 'none')}
+            hidden />
+          <span class="menu__checkbox-label">Заменять превью GIF оригиналами</span>
+          <div class="menu__checkbox-mark" />
+        </label>
+
+        <label class="menu__checkbox">
+          <input
+            type="checkbox"
+            checked={$showOriginalFiles === 'all'}
+            on:change={e => showOriginalFiles.set(e.target.checked ? 'all' : 'none')}
+            hidden />
+          <span class="menu__checkbox-label">Заменять все превью оригиналами</span>
           <div class="menu__checkbox-mark" />
         </label>
       </section>

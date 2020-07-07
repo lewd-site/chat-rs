@@ -1,6 +1,25 @@
+<script context="module">
+  import { visiblePosts } from "../stores/posts";
+
+  const observerConfig = { threshold: 0 };
+  const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        visiblePosts.update(posts => [...posts, entry.target.post.id]);
+      } else {
+        visiblePosts.update(posts =>
+          posts.filter(p => p !== entry.target.post.id)
+        );
+      }
+    }, observerConfig);
+  });
+</script>
+
 <script>
+  import { onMount, onDestroy } from "svelte";
   import AudioPlayer from "./AudioPlayer.svelte";
   import Embed from "./Embed.svelte";
+  import PostImagePreview from "./PostImagePreview.svelte";
   import { gallery } from "./gallery";
   import { markup } from "./markup";
   import { formatName } from "./post";
@@ -126,6 +145,17 @@
   $: videoFiles = post.files.filter(file => file.mimetype.startsWith("video/"));
 
   $: imageGallery = gallery(imageFiles);
+
+  let contentElement = null;
+
+  onMount(() => {
+    contentElement.post = post;
+    observer.observe(contentElement);
+  });
+
+  onDestroy(() => {
+    observer.unobserve(contentElement);
+  });
 </script>
 
 <div class="post__header">
@@ -144,27 +174,16 @@
 <div
   class="post__content"
   on:mouseover={handleMouseOver}
-  on:mouseout={handleMouseOut}>
+  on:mouseout={handleMouseOut}
+  bind:this={contentElement}>
   <div
     class="post__files"
     style={`width: ${imageGallery.width}px; height: ${imageGallery.height}px`}>
     {#each imageGallery.entries as entry (entry.file.id)}
-      <div
-        class="post__file"
-        style={`top: ${entry.top}px; left: ${entry.left}px; width: ${entry.width}px; height: ${entry.height}px;`}>
-        <a
-          href="/src/{entry.file.md5}.{entry.file.extension}"
-          target="_blank"
-          title={entry.file.name}
-          on:click|preventDefault={e => handleFileClick(entry.file)}>
-          <picture>
-            <img
-              class="post__file-preview"
-              src="/thumb/{entry.file.md5}?max_width=360"
-              alt="Preview" />
-          </picture>
-        </a>
-      </div>
+      <PostImagePreview
+        {entry}
+        showOriginal={$visiblePosts.indexOf(post.id) !== -1}
+        on:fileClick={e => handleFileClick(e.detail)} />
     {/each}
   </div>
 

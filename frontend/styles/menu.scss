@@ -296,6 +296,8 @@
         width: 22px;
         height: 22px;
 
+        flex-shrink: 0;
+
         background: transparent;
         background-image: url('../images/checkbox.svg');
         background-position: center center;
