@@ -20,6 +20,7 @@
   import AudioPlayer from "./AudioPlayer.svelte";
   import Embed from "./Embed.svelte";
   import PostImagePreview from "./PostImagePreview.svelte";
+  import { formatFileSize } from "./file";
   import { gallery } from "./gallery";
   import { markup } from "./markup";
   import { formatName } from "./post";
@@ -197,7 +198,7 @@
         <a
           href="/src/{file.md5}.{file.extension}"
           target="_blank"
-          title={file.name}
+          title={`${file.name}, ${file.width}x${file.height}, ${formatFileSize(file.size)}`}
           on:click|preventDefault={e => handleFileClick(file)}>
           <picture>
             <img

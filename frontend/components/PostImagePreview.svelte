@@ -1,5 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
+  import { formatFileSize } from "./file";
   import { showOriginalFiles } from "../stores/files";
 
   export let entry = null;
@@ -42,7 +43,7 @@
   <a
     href="/src/{entry.file.md5}.{entry.file.extension}"
     target="_blank"
-    title={entry.file.name}
+    title={`${entry.file.name}, ${entry.file.width}x${entry.file.height}, ${formatFileSize(entry.file.size)}`}
     on:click|preventDefault={handleFileClick}>
     <picture>
       <img class="post__file-preview" src={previewUrl} alt="Preview" />

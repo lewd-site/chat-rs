@@ -1,5 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
+  import { formatFileSize } from "./file";
 
   export let file = null;
 
@@ -20,7 +21,7 @@
       class="gallery__file-link"
       href="/src/{file.md5}.{file.extension}"
       target="_blank"
-      title={file.name}
+      title={`${file.name}, ${file.width}x${file.height}, ${formatFileSize(file.size)}`}
       on:click|preventDefault={e => handleFileClick(file)}>
       <picture>
         <img
@@ -41,7 +42,7 @@
       class="gallery__file-link"
       href="/src/{file.md5}.{file.extension}"
       target="_blank"
-      title={file.name}
+      title={`${file.name}, ${formatFileSize(file.size)}`}
       on:click|preventDefault={e => handleFileClick(file)}>
       <div class="gallery__file-preview" />
     </a>
@@ -57,7 +58,7 @@
       class="gallery__file-link"
       href="/src/{file.md5}.{file.extension}"
       target="_blank"
-      title={file.name}
+      title={`${file.name}, ${file.width}x${file.height}, ${formatFileSize(file.size)}`}
       on:click|preventDefault={e => handleFileClick(file)}>
       <picture>
         <img

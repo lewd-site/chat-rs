@@ -1,6 +1,6 @@
 <script>
   import { derived } from "svelte/store";
-
+  import { formatFileSize } from "./file";
   import { markup } from "./markup";
   import { formatName, trimStart, extractReplies } from "./post";
   import { hslide } from "../anim";
@@ -197,7 +197,7 @@
                   {#if file.mimetype.startsWith('image/')}
                     <div
                       class="notification__file notification__file_image"
-                      title={file.name}
+                      title={`${file.name}, ${file.width}x${file.height}, ${formatFileSize(file.size)}`}
                       on:click|preventDefault={e => handleFileClick(notification.post, file)}>
                       <picture>
                         <img
@@ -209,7 +209,7 @@
                   {:else if file.mimetype.startsWith('video/')}
                     <div
                       class="notification__file notification__file_video"
-                      title={file.name}
+                      title={`${file.name}, ${file.width}x${file.height}, ${formatFileSize(file.size)}`}
                       on:click|preventDefault={e => handleFileClick(notification.post, file)}>
                       <picture>
                         <img
@@ -221,7 +221,7 @@
                   {:else if file.mimetype.startsWith('audio/')}
                     <div
                       class="notification__file notification__file_audio"
-                      title={file.name} />
+                      title={`${file.name}, ${formatFileSize(file.size)}`} />
                   {/if}
                 {/each}
               </div>
@@ -267,7 +267,9 @@
             checked={['gif', 'all'].indexOf($showOriginalFiles) !== -1}
             on:change={e => showOriginalFiles.set(e.target.checked ? 'gif' : 'none')}
             hidden />
-          <span class="menu__checkbox-label">Заменять превью GIF оригиналами</span>
+          <span class="menu__checkbox-label">
+            Заменять превью GIF оригиналами
+          </span>
           <div class="menu__checkbox-mark" />
         </label>
 
@@ -277,7 +279,9 @@
             checked={$showOriginalFiles === 'all'}
             on:change={e => showOriginalFiles.set(e.target.checked ? 'all' : 'none')}
             hidden />
-          <span class="menu__checkbox-label">Заменять все превью оригиналами</span>
+          <span class="menu__checkbox-label">
+            Заменять все превью оригиналами
+          </span>
           <div class="menu__checkbox-mark" />
         </label>
       </section>

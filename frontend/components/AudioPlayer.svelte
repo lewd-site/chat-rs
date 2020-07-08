@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy } from "svelte";
+  import { formatFileSize } from "./file";
 
   export let className = "";
   export let file = null;
@@ -138,7 +139,7 @@
   });
 </script>
 
-<div class={_className} title={file.name}>
+<div class={_className} title={`${file.name}, ${formatFileSize(file.size)}`}>
   <div class="audio-player__icon" on:click|preventDefault={handleIconClick} />
 
   {#if file && expanded}

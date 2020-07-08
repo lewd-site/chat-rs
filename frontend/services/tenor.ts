@@ -5,6 +5,8 @@ const PER_PAGE = 40;
 
 interface Media {
     readonly url: string;
+    readonly size: number;
+    readonly dims: number[];
 }
 
 interface Gif {

@@ -1,6 +1,7 @@
 <script>
   import { fade } from "svelte/transition";
   import VideoPlayer from "./VideoPlayer.svelte";
+  import { formatFileSize } from "./file";
   import { hslide } from "../anim";
   import { mediaBoxFiles, mediaBoxFile } from "../stores/files";
 
@@ -370,22 +371,14 @@
         {#each $mediaBoxFiles as file}
           <div
             class={getGalleryFileClass(file, $mediaBoxFile)}
+            title={`${file.name}, ${file.width}x${file.height}, ${formatFileSize(file.size)}`}
             on:click|preventDefault={e => handleFileClick(file)}>
-            {#if file.mimetype === 'video/x-youtube' || file.mimetype === 'video/x-coub'}
-              <picture>
-                <img
-                  class="media-box__preview"
-                  src={file.thumbnail_url}
-                  alt="Preview" />
-              </picture>
-            {:else}
-              <picture>
-                <img
-                  class="media-box__preview"
-                  src="/thumb/{file.md5}?max_width=360"
-                  alt="Preview" />
-              </picture>
-            {/if}
+            <picture>
+              <img
+                class="media-box__preview"
+                src="/thumb/{file.md5}?max_width=360"
+                alt="Preview" />
+            </picture>
           </div>
         {/each}
       </div>

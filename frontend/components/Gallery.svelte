@@ -1,5 +1,6 @@
 <script>
   import GalleryFile from "./GalleryFile.svelte";
+  import { formatFileSize } from "./file";
   import { hslide } from "../anim";
   import {
     galleryVisible,
@@ -204,7 +205,7 @@
                 class="gallery__file-link"
                 href={item.url}
                 target="_blank"
-                title={item.title}
+                title={`${item.media[0]['gif'].dims[0]}x${item.media[0]['gif'].dims[1]}, ${formatFileSize(item.media[0]['gif'].size)}`}
                 on:click|preventDefault={e => handleGifClick(item)}>
                 <picture>
                   <img
