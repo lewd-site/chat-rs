@@ -326,6 +326,42 @@
       handleNext();
     }
   }
+
+  let searchItems = [];
+
+  $: {
+    if ($mediaBoxFile) {
+      const path = `${window.location.origin}/src/${$mediaBoxFile.md5}.${$mediaBoxFile.extension}`;
+      const pathURL = encodeURIComponent(path);
+
+      searchItems = [
+        {
+          name: "IQDB",
+          url: `https://iqdb.org/?url=${pathURL}`
+        },
+        {
+          name: "Google",
+          url: `https://www.google.com/searchbyimage?image_url=${pathURL}`
+        },
+        {
+          name: "Yandex",
+          url: `https://yandex.ru/images/search?rpt=imageview&img_url=${pathURL}`
+        },
+        {
+          name: "TinEye",
+          url: `https://tineye.com/search/?url=${pathURL}`
+        },
+        {
+          name: "SauceNAO",
+          url: `https://saucenao.com/search.php?url=${pathURL}`
+        },
+        {
+          name: "trace.moe",
+          url: `https://trace.moe/?url=${pathURL}`
+        }
+      ];
+    }
+  }
 </script>
 
 {#if $mediaBoxFile !== null}
@@ -333,34 +369,55 @@
     class="media-box__controls"
     on:wheel={handleGalleryWheel}
     transition:hslide={{ duration: 300 }}>
-    <button
-      class="media-box__close"
-      title="Закрыть"
-      on:click|preventDefault={handleCloseClick} />
+    <div class="media-box__buttons">
+      <button
+        class="media-box__close"
+        title="Закрыть"
+        on:click|preventDefault={handleCloseClick} />
 
-    <button
-      class="media-box__zoom-in"
-      title="Увеличить"
-      on:click|preventDefault={handleZoomInClick} />
+      <button
+        class="media-box__zoom-in"
+        title="Увеличить"
+        on:click|preventDefault={handleZoomInClick} />
 
-    <button
-      class="media-box__zoom-out"
-      title="Уменьшить"
-      on:click|preventDefault={handleZoomOutClick} />
+      <button
+        class="media-box__zoom-out"
+        title="Уменьшить"
+        on:click|preventDefault={handleZoomOutClick} />
 
-    <button
-      class="media-box__original"
-      title="Оригинальный размер"
-      on:click|preventDefault={handleZoomOriginal} />
+      <button
+        class="media-box__original"
+        title="Оригинальный размер"
+        on:click|preventDefault={handleZoomOriginal} />
 
-    <button
-      class="media-box__fit"
-      title="По размеру окна"
-      on:click|preventDefault={handleZoomFit} />
+      <button
+        class="media-box__fit"
+        title="По размеру окна"
+        on:click|preventDefault={handleZoomFit} />
 
-    <a title="Загрузить" href={src} download={$mediaBoxFile.name}>
-      <span class="media-box__download" />
-    </a>
+      <a title="Загрузить" href={src} download={$mediaBoxFile.name}>
+        <span class="media-box__download" />
+      </a>
+
+      <div class="media-box__search" title="Поиск по картинке">
+        <span class="media-box__search-icon"></span>
+
+        <div class="media-box__search-popup">
+          <ul class="media-box__search-list">
+            {#each searchItems as item}
+              <li class="media-box__search-item">
+                <a
+                  class="media-box__search-link"
+                  href={item.url}
+                  target="_blank">
+                  {item.name}
+                </a>
+              </li>
+            {/each}
+          </ul>
+        </div>
+      </div>
+    </div>
 
     {#if $mediaBoxFiles.length > 1}
       <button
