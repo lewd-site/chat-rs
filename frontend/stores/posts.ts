@@ -46,14 +46,15 @@ function processMarkup(markup: Markup, post: Post): Markup {
                 return { ...targetPost, reply_from };
             }));
         } else if (tag.type === 'Link') {
-            if (/^(?:https?:\/\/)?(?:www\.)?(?:voca\.ro|vocaroo\.com)\/([A-Za-z0-9]+)$/.test(tag.url)) {
-                const matches = tag.url.match(/^(?:https?:\/\/)?(?:www\.)?(?:voca\.ro|vocaroo\.com)\/([A-Za-z0-9]+)$/);
+            if (/^(?:https?:\/\/)?(?:www\.)?(?:voca\.ro|vocaroo\.com)\/([0-9a-z_-]+)$/i.test(tag.url)) {
+                const matches = tag.url.match(/^(?:https?:\/\/)?(?:www\.)?(?:voca\.ro|vocaroo\.com)\/([0-9a-z_-]+)$/i);
                 const html = `<iframe class="markup_vocaroo" width="300" height="60" src="https://vocaroo.com/embed/${matches![1]}" frameborder="0"></iframe>`;
 
                 return { type: 'Tag', tag: { type: 'HTML', content: html }, children: [] };
             } else if (
                 /^(?:https?:\/\/)?(?:www\.)?coub\.com\/view\//i.test(tag.url) ||
-                /^(?:https?:\/\/)?(?:www\.)?(?:tiktok\.com)\/@([0-9a-z_-]+)\/video\/(?:\d+)/i.test(tag.url) ||
+                /^(?:https?:\/\/)?(?:www\.)?(?:tiktok\.com)\/@(?:[0-9a-z_-]+)\/video\/(?:\d+)/i.test(tag.url) ||
+                /^(?:https?:\/\/)?(?:vm\.tiktok\.com)\/(?:[0-9a-z_-]+)/i.test(tag.url) ||
                 /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch|embed|v)|youtu\.be\/)/i.test(tag.url)
             ) {
                 if (post.embeds === undefined) {

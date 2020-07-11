@@ -78,7 +78,8 @@ export function markup(m: Markup | Markup[]): string {
                     'markup_link',
                     /^(?:https?:\/\/)?(?:www\.)?coub\.com\/view\//i.test(m.tag.url)
                         ? 'markup_icon_coub' : null,
-                    /^(?:https?:\/\/)?(?:www\.)?(tiktok\.com)\/@([0-9a-z_-]+)\/video\/(\d+)/i.test(m.tag.url)
+                    (/^(?:https?:\/\/)?(?:www\.)?(?:tiktok\.com)\/@(?:[0-9a-z_-]+)\/video\/(\d+)/i.test(m.tag.url) ||
+                        /^(?:https?:\/\/)?(?:vm\.tiktok\.com)\/(?:[0-9a-z_-]+)/i.test(m.tag.url))
                         ? 'markup_icon_tiktok' : null,
                     /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch|embed|v)|youtu\.be\/)/i.test(m.tag.url)
                         ? 'markup_icon_youtube' : null,
