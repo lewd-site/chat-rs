@@ -1,4 +1,5 @@
 import { Embed } from '../types';
+import { embedTitles } from '../stores/files';
 
 const POPUP_HEADER_PADDIGN = 24;
 
@@ -6,6 +7,8 @@ export async function getEmbed(url: string): Promise<Embed> {
     if (/^(?:https?:\/\/)?(?:www\.)?coub\.com\/view\//i.test(url)) {
         const _url = encodeURIComponent(url.replace(/^https?:\/\//, ''));
         const data = await window.coub!.getCoubInfo(_url);
+
+        embedTitles.update(embedTitles => ({ ...embedTitles, [url]: data.title }));
 
         const html = data.html.replace('muted=true', 'muted=false')
             .replace(/width="\d+"/i, 'width="100%"')
@@ -29,6 +32,8 @@ export async function getEmbed(url: string): Promise<Embed> {
         const videoId = encodeURIComponent(normalizedUrl);
         const data = await window.tiktok!.getVideoInfo(videoId);
 
+        embedTitles.update(embedTitles => ({ ...embedTitles, [url]: data.title }));
+
         const html = data.html.replace('<script async src="https://www.tiktok.com/embed.js"></script>', '');
 
         const embed: Embed = {
@@ -49,6 +54,8 @@ export async function getEmbed(url: string): Promise<Embed> {
     } else if (/^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch|embed|v)|youtu\.be\/)/i.test(url)) {
         const _url = encodeURIComponent(url.replace(/^https?:\/\//, ''));
         const data = await window.youtube!.getVideoInfo(_url);
+
+        embedTitles.update(embedTitles => ({ ...embedTitles, [url]: data.title }));
 
         const html = data.html.replace(/src="([^"]+)"/i, 'src="$1&autoplay=1"')
             .replace(/width="\d+"/i, 'width="100%"')

@@ -62,8 +62,9 @@
         color: #3DE389;
     }
 
-    &_icon_youtube,
-    &_icon_coub {
+    &_icon_coub,
+    &_icon_tiktok,
+    &_icon_youtube {
         &::before {
             content: '';
 
@@ -84,15 +85,21 @@
         }
     }
 
-    &_icon_youtube {
-        &::before {
-            mask-image: url('../images/youtube.svg');
-        }
-    }
-
     &_icon_coub {
         &::before {
             mask-image: url('../images/coub.svg');
+        }
+    }
+
+    &_icon_tiktok {
+        &::before {
+            mask-image: url('../images/tiktok.svg');
+        }
+    }
+
+    &_icon_youtube {
+        &::before {
+            mask-image: url('../images/youtube.svg');
         }
     }
 }

@@ -49,8 +49,6 @@ export interface RefLink {
 export interface Link {
     readonly type: 'Link';
     readonly url: string;
-
-    icon?: string;
 }
 
 export interface Quote {

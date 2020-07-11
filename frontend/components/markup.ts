@@ -1,9 +1,13 @@
 import { formatName } from './post';
+import { embedTitles } from '../stores/files';
 import { posts, Posts } from '../stores/posts';
 import { Markup } from '../types';
 
 let _posts: Posts = {};
 posts.subscribe(posts => _posts = posts);
+
+let _embedTitles: { [url: string]: string } = {};
+embedTitles.subscribe(embedTitles => _embedTitles = embedTitles);
 
 function escapeHtml(html: string): string {
     return html
@@ -72,8 +76,17 @@ export function markup(m: Markup | Markup[]): string {
                 const className = [
                     'markup',
                     'markup_link',
-                    m.tag.icon ? 'markup_icon_' + m.tag.icon : null,
+                    /^(?:https?:\/\/)?(?:www\.)?coub\.com\/view\//i.test(m.tag.url)
+                        ? 'markup_icon_coub' : null,
+                    /^(?:https?:\/\/)?(?:www\.)?(tiktok\.com)\/@([0-9a-z_-]+)\/video\/(\d+)/i.test(m.tag.url)
+                        ? 'markup_icon_tiktok' : null,
+                    /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch|embed|v)|youtu\.be\/)/i.test(m.tag.url)
+                        ? 'markup_icon_youtube' : null,
                 ].filter(c => c).join(' ');
+                if (typeof _embedTitles[m.tag.url] !== 'undefined') {
+                    html = escapeHtml(_embedTitles[m.tag.url]);
+                }
+
                 return `<a class="${className}" href="${m.tag.url}" target="_blank">${html}</a>`;
 
             case 'Quote':

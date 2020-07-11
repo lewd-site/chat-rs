@@ -72,3 +72,5 @@ export const showOriginalFiles = writable<ShowOriginalFiles>(_showOriginalFiles)
 showOriginalFiles.subscribe(value => {
     localStorage['settings.original_files'] = value;
 });
+
+export const embedTitles = writable<{ [url: string]: string }>({});
