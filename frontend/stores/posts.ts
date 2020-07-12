@@ -1,3 +1,4 @@
+import { createPcg32, randomInt } from 'pcg';
 import { writable } from 'svelte/store';
 
 import { Post, Markup } from '../types';
@@ -29,6 +30,8 @@ function updatePost(id: number, callback: (post: Post) => Post) {
         }
     });
 }
+
+const postRand: { [id: number]: any } = {};
 
 function processMarkup(markup: Markup, post: Post): Markup {
     if (markup.type === 'Text') {
@@ -63,6 +66,26 @@ function processMarkup(markup: Markup, post: Post): Markup {
                     post.embeds.push(tag.url);
                 }
             }
+        } else if (tag.type === 'Dice') {
+            const count = Math.max(1, Math.min(20, tag.count));
+            const max = Math.max(1, Math.min(1000000000, tag.max));
+            const results: number[] = [];
+
+            if (typeof postRand[post.id] === 'undefined') {
+                postRand[post.id] = createPcg32({}, post.id ^ Date.parse(post.created_at), 1);
+            }
+
+            for (let i = 0; i < count; ++i) {
+                const [value, rand] = randomInt(0, max + 1, postRand[post.id]);
+                results.push(value);
+                postRand[post.id] = rand;
+            }
+
+            const sum = results.reduce((acc, cur) => acc + cur, 0);
+            const avg = sum / results.length;
+
+            const content = `<span class="markup_dice">##${count}d${max}## = ${results.join(', ')} (sum ${sum}, avg ${avg})</span>`;
+            return { type: 'Tag', tag: { type: 'HTML', content }, children: [] };
         }
 
         return { ...markup, children };

@@ -51,6 +51,12 @@ export interface Link {
     readonly url: string;
 }
 
+export interface Dice {
+    readonly type: 'Dice';
+    readonly count: number;
+    readonly max: number;
+}
+
 export interface Quote {
     readonly type: 'Quote';
 }
@@ -60,7 +66,7 @@ export interface HTML {
     readonly content: string;
 }
 
-export type Tag = BBCode | Color | RefLink | Link | Quote | HTML;
+export type Tag = BBCode | Color | RefLink | Link | Dice | Quote | HTML;
 
 interface MarkupText {
     readonly type: 'Text';

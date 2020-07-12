@@ -1,11 +1,12 @@
 use nom::branch::alt;
 use nom::bytes::complete::{is_a, is_not, tag, tag_no_case};
 use nom::character::complete::{char, digit1, one_of};
-use nom::combinator::{map, not, peek, recognize, value};
 use nom::combinator::opt;
-use nom::IResult;
+use nom::combinator::{map, not, peek, recognize, value};
 use nom::multi::{many0, many_m_n};
+use nom::sequence::separated_pair;
 use nom::sequence::{delimited, pair, preceded, tuple};
+use nom::IResult;
 use serde::Serialize;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -104,6 +105,7 @@ pub enum Token {
     Text(String),
     RefLink(u32),
     Link(String),
+    Dice(u32, u32),
     OpeningTag(OpeningTag),
     ClosingTag(ClosingTag),
 }
@@ -124,6 +126,7 @@ pub enum Style {
     RefLink { id: u32 },
     Link { url: String },
     Quote,
+    Dice { count: u32, max: u32 },
 }
 
 impl Style {
@@ -208,16 +211,28 @@ impl Markup {
                 let text = format!("{}{}", t1, t2);
                 Some(Markup::Text { text })
             }
-            (Markup::Tag { tag: s1, children: c1 }, Markup::Tag { tag: s2, children: c2 }) => {
+            (
+                Markup::Tag {
+                    tag: s1,
+                    children: c1,
+                },
+                Markup::Tag {
+                    tag: s2,
+                    children: c2,
+                },
+            ) => {
                 if s1 == s2 {
                     let mut children = c1.clone();
                     children.append(&mut c2.clone());
-                    Some(Markup::Tag { tag: s1.clone(), children })
+                    Some(Markup::Tag {
+                        tag: s1.clone(),
+                        children,
+                    })
                 } else {
                     None
                 }
             }
-            _ => None
+            _ => None,
         }
     }
 
@@ -231,7 +246,7 @@ impl Markup {
 
                 result
             }
-            Markup::Text { text: _ } => Vec::new()
+            Markup::Text { text: _ } => Vec::new(),
         }
     }
 }
@@ -480,6 +495,17 @@ impl MessageParser {
         )(input)
     }
 
+    fn dice(input: &str) -> IResult<&str, Token> {
+        map(
+            delimited(
+                tag("##"),
+                separated_pair(digit1, char('d'), digit1),
+                tag("##"),
+            ),
+            |(count, max): (&str, &str)| Token::Dice(count.parse().unwrap(), max.parse().unwrap()),
+        )(input)
+    }
+
     fn link(input: &str) -> IResult<&str, Token> {
         map(
             tuple((
@@ -508,7 +534,7 @@ impl MessageParser {
     }
 
     fn text(input: &str) -> IResult<&str, Token> {
-        map(is_not("[> "), |s: &str| Token::Text(s.to_string()))(input)
+        map(is_not("[># "), |s: &str| Token::Text(s.to_string()))(input)
     }
 
     fn ref_link(input: &str) -> IResult<&str, Token> {
@@ -523,8 +549,9 @@ impl MessageParser {
             MessageParser::opening_tag,
             MessageParser::ref_link,
             MessageParser::link,
+            MessageParser::dice,
             MessageParser::text,
-            map(one_of("[> "), |c: char| Token::Text(c.to_string())),
+            map(one_of("[># "), |c: char| Token::Text(c.to_string())),
         )))(input)
     }
 
@@ -553,7 +580,8 @@ impl MessageParser {
 
         let lines: Vec<&str> = input.split("\n").collect();
         let len = lines.len();
-        let lines: Vec<Vec<Token>> = lines.into_iter()
+        let lines: Vec<Vec<Token>> = lines
+            .into_iter()
             .map(|s| match MessageParser::block(s) {
                 Ok((_, o)) => o,
                 _ => Vec::new(),
@@ -656,6 +684,25 @@ impl MessageParser {
                         result.push(Segment { text: url, tags });
                     }
                 }
+                Token::Dice(count, max) => {
+                    let text = format!("##{}d{}##", count.to_string(), max.to_string());
+
+                    if active_styles.contains(&Style::CodeBlock) {
+                        result.push(Segment {
+                            text,
+                            tags: vec![Style::CodeBlock],
+                        });
+                    } else if active_styles.contains(&Style::Code) {
+                        result.push(Segment {
+                            text,
+                            tags: vec![Style::Code],
+                        });
+                    } else {
+                        let mut tags = active_styles.clone();
+                        tags.push(Style::Dice { count, max });
+                        result.push(Segment { text, tags });
+                    }
+                }
                 Token::OpeningTag(tag) => {
                     if active_styles.contains(&Style::CodeBlock) {
                         result.push(Segment {
@@ -672,22 +719,19 @@ impl MessageParser {
                     }
                 }
                 Token::ClosingTag(tag) => {
-                    if active_styles.contains(&Style::CodeBlock)
-                        && tag != ClosingTag::CodeBlock
-                    {
+                    if active_styles.contains(&Style::CodeBlock) && tag != ClosingTag::CodeBlock {
                         result.push(Segment {
                             text: String::from(ClosingTag::to_string(&tag)),
                             tags: vec![Style::CodeBlock],
                         });
-                    } else if active_styles.contains(&Style::Code) && tag != ClosingTag::Code
-                    {
+                    } else if active_styles.contains(&Style::Code) && tag != ClosingTag::Code {
                         result.push(Segment {
                             text: String::from(ClosingTag::to_string(&tag)),
                             tags: vec![Style::Code],
                         });
                     } else {
                         if let Some(index) =
-                        active_styles.iter().rposition(|item| item.is_pair(&tag))
+                            active_styles.iter().rposition(|item| item.is_pair(&tag))
                         {
                             active_styles.remove(index);
                         }
@@ -741,14 +785,20 @@ impl MessageParser {
         let mut tags = segment.tags.clone();
         tags.reverse();
         for tag in tags {
-            result = Markup::Tag { tag, children: vec![result] };
+            result = Markup::Tag {
+                tag,
+                children: vec![result],
+            };
         }
 
         result
     }
 
     pub fn segments_to_markup(segments: Vec<Segment>) -> Vec<Markup> {
-        let tree = segments.into_iter().map(MessageParser::segment_to_markup).collect();
+        let tree = segments
+            .into_iter()
+            .map(MessageParser::segment_to_markup)
+            .collect();
         MessageParser::optimize_tree(tree)
     }
 
@@ -816,23 +866,14 @@ mod tests {
     fn tokenize_ref_link() {
         let input = ">>12345";
         let tokens = MessageParser::tokenize(input);
-        assert_eq!(
-            Ok(vec!(Token::RefLink(12345))),
-            tokens
-        );
+        assert_eq!(Ok(vec!(Token::RefLink(12345))), tokens);
     }
 
     #[test]
     fn tokenize_adjacent_ref_links() {
         let input = ">>123>>456";
         let tokens = MessageParser::tokenize(input);
-        assert_eq!(
-            Ok(vec!(
-                Token::RefLink(123),
-                Token::RefLink(456),
-            )),
-            tokens
-        );
+        assert_eq!(Ok(vec!(Token::RefLink(123), Token::RefLink(456),)), tokens);
     }
 
     #[test]
@@ -854,9 +895,7 @@ mod tests {
         let input = "http://localhost/";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok(vec!(
-                Token::Link("http://localhost/".to_string()),
-            )),
+            Ok(vec!(Token::Link("http://localhost/".to_string()),)),
             tokens
         );
     }
@@ -866,9 +905,7 @@ mod tests {
         let input = "http://localhost/path";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok(vec!(
-                Token::Link("http://localhost/path".to_string()),
-            )),
+            Ok(vec!(Token::Link("http://localhost/path".to_string()),)),
             tokens
         );
     }
@@ -878,9 +915,7 @@ mod tests {
         let input = "http://localhost/?query";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok(vec!(
-                Token::Link("http://localhost/?query".to_string()),
-            )),
+            Ok(vec!(Token::Link("http://localhost/?query".to_string()),)),
             tokens
         );
     }
@@ -890,9 +925,7 @@ mod tests {
         let input = "http://localhost/#fragment";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok(vec!(
-                Token::Link("http://localhost/#fragment".to_string()),
-            )),
+            Ok(vec!(Token::Link("http://localhost/#fragment".to_string()),)),
             tokens
         );
     }
@@ -902,9 +935,7 @@ mod tests {
         let input = "http://localhost/path?query";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok(vec!(
-                Token::Link("http://localhost/path?query".to_string()),
-            )),
+            Ok(vec!(Token::Link("http://localhost/path?query".to_string()),)),
             tokens
         );
     }
@@ -914,9 +945,9 @@ mod tests {
         let input = "http://localhost/path#fragment";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok(vec!(
-                Token::Link("http://localhost/path#fragment".to_string()),
-            )),
+            Ok(vec!(Token::Link(
+                "http://localhost/path#fragment".to_string()
+            ),)),
             tokens
         );
     }
@@ -926,9 +957,9 @@ mod tests {
         let input = "http://localhost/?query#fragment";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok(vec!(
-                Token::Link("http://localhost/?query#fragment".to_string()),
-            )),
+            Ok(vec!(Token::Link(
+                "http://localhost/?query#fragment".to_string()
+            ),)),
             tokens
         );
     }
@@ -938,9 +969,9 @@ mod tests {
         let input = "http://localhost/path?query#fragment";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok(vec!(
-                Token::Link("http://localhost/path?query#fragment".to_string()),
-            )),
+            Ok(vec!(Token::Link(
+                "http://localhost/path?query#fragment".to_string()
+            ),)),
             tokens
         );
     }
@@ -949,24 +980,14 @@ mod tests {
     fn tokenize_opening_tag() {
         let input = "[spoiler]";
         let tokens = MessageParser::tokenize(input);
-        assert_eq!(
-            Ok(vec!(
-                Token::OpeningTag(OpeningTag::Spoiler),
-            )),
-            tokens
-        );
+        assert_eq!(Ok(vec!(Token::OpeningTag(OpeningTag::Spoiler),)), tokens);
     }
 
     #[test]
     fn tokenize_closing_tag() {
         let input = "[/code]";
         let tokens = MessageParser::tokenize(input);
-        assert_eq!(
-            Ok(vec!(
-                Token::ClosingTag(ClosingTag::Code),
-            )),
-            tokens
-        );
+        assert_eq!(Ok(vec!(Token::ClosingTag(ClosingTag::Code),)), tokens);
     }
 
     #[test]
@@ -1027,11 +1048,9 @@ mod tests {
         let input = "[color=#ABC]";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok(vec!(
-                Token::OpeningTag(OpeningTag::Color {
-                    color: "#ABC".to_string()
-                }),
-            )),
+            Ok(vec!(Token::OpeningTag(OpeningTag::Color {
+                color: "#ABC".to_string()
+            }),)),
             tokens
         );
     }
@@ -1041,11 +1060,9 @@ mod tests {
         let input = "[color=#ABCD]";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok(vec!(
-                Token::OpeningTag(OpeningTag::Color {
-                    color: "#ABCD".to_string()
-                }),
-            )),
+            Ok(vec!(Token::OpeningTag(OpeningTag::Color {
+                color: "#ABCD".to_string()
+            }),)),
             tokens
         );
     }
@@ -1055,11 +1072,9 @@ mod tests {
         let input = "[color=#ABCDEF]";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok(vec!(
-                Token::OpeningTag(OpeningTag::Color {
-                    color: "#ABCDEF".to_string()
-                }),
-            )),
+            Ok(vec!(Token::OpeningTag(OpeningTag::Color {
+                color: "#ABCDEF".to_string()
+            }),)),
             tokens
         );
     }
@@ -1069,11 +1084,9 @@ mod tests {
         let input = "[color=#ABCDEFAB]";
         let tokens = MessageParser::tokenize(input);
         assert_eq!(
-            Ok(vec!(
-                Token::OpeningTag(OpeningTag::Color {
-                    color: "#ABCDEFAB".to_string()
-                }),
-            )),
+            Ok(vec!(Token::OpeningTag(OpeningTag::Color {
+                color: "#ABCDEFAB".to_string()
+            }),)),
             tokens
         );
     }
@@ -1121,12 +1134,7 @@ mod tests {
     fn tokenize_unopened_tag() {
         let input = "spoiler]";
         let tokens = MessageParser::tokenize(input);
-        assert_eq!(
-            Ok(vec!(
-                Token::Text("spoiler]".to_string()),
-            )),
-            tokens
-        );
+        assert_eq!(Ok(vec!(Token::Text("spoiler]".to_string()),)), tokens);
     }
 
     #[test]
@@ -1421,9 +1429,9 @@ mod tests {
         let input = "Lorem ipsum";
         let markup = MessageParser::str_to_markup(input);
         assert_eq!(
-            vec![
-                Markup::Text { text: "Lorem ipsum".to_string() }
-            ],
+            vec![Markup::Text {
+                text: "Lorem ipsum".to_string()
+            }],
             markup
         );
     }
@@ -1434,14 +1442,18 @@ mod tests {
         let markup = MessageParser::str_to_markup(input);
         assert_eq!(
             vec![
-                Markup::Text { text: "Lorem ".to_string() },
+                Markup::Text {
+                    text: "Lorem ".to_string()
+                },
                 Markup::Tag {
                     tag: Style::Bold,
-                    children: vec![
-                        Markup::Text { text: "ipsum dolor".to_string() },
-                    ],
+                    children: vec![Markup::Text {
+                        text: "ipsum dolor".to_string()
+                    },],
                 },
-                Markup::Text { text: " sit".to_string() },
+                Markup::Text {
+                    text: " sit".to_string()
+                },
             ],
             markup
         );
@@ -1453,20 +1465,26 @@ mod tests {
         let markup = MessageParser::str_to_markup(input);
         assert_eq!(
             vec![
-                Markup::Text { text: "Lorem ".to_string() },
+                Markup::Text {
+                    text: "Lorem ".to_string()
+                },
                 Markup::Tag {
                     tag: Style::Bold,
                     children: vec![
-                        Markup::Text { text: "ipsum ".to_string() },
+                        Markup::Text {
+                            text: "ipsum ".to_string()
+                        },
                         Markup::Tag {
                             tag: Style::Italic,
-                            children: vec![
-                                Markup::Text { text: "dolor".to_string() },
-                            ],
+                            children: vec![Markup::Text {
+                                text: "dolor".to_string()
+                            },],
                         },
                     ],
                 },
-                Markup::Text { text: " sit".to_string() },
+                Markup::Text {
+                    text: " sit".to_string()
+                },
             ],
             markup
         );
