@@ -119,7 +119,7 @@
 </script>
 
 {#if $galleryVisible}
-  <div class="gallery__inner" transition:hslide={{ duration: 300 }}>
+  <div class="gallery__inner" transition:hslide={{ duration: 300, origin: '100% 0' }}>
     {#if tab === 'main'}
       <header class="gallery__header">
         <div

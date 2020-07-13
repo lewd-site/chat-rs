@@ -368,7 +368,7 @@
   <div
     class="media-box__controls"
     on:wheel={handleGalleryWheel}
-    transition:hslide={{ duration: 300 }}>
+    transition:hslide={{ duration: 300, origin: '100% 0' }}>
     <div class="media-box__buttons">
       <button
         class="media-box__close"
