@@ -1098,7 +1098,9 @@ mod tests {
         assert_eq!(
             Ok(vec!(
                 Token::Text("[".to_string()),
-                Token::Text("color=#ABCDEFG]".to_string()),
+                Token::Text("color=".to_string()),
+                Token::Text("#".to_string()),
+                Token::Text("ABCDEFG]".to_string()),
             )),
             tokens
         );

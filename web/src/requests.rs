@@ -14,6 +14,7 @@ pub struct UploadedFile {
 
 pub struct CreatePostMultipart {
     pub name: String,
+    pub tripcode: Option<String>,
     pub message: String,
     pub files: Vec<UploadedFile>,
 }
@@ -27,6 +28,7 @@ impl FromDataSimple for CreatePostMultipart {
         if req_ct == &ct {
             let options = MultipartFormDataOptions::with_multipart_form_data_fields(vec![
                 MultipartFormDataField::text("name").size_limit(255),
+                MultipartFormDataField::text("tripcode").size_limit(255),
                 MultipartFormDataField::text("message").size_limit(8000),
                 MultipartFormDataField::file("file")
                     .repetition(Repetition::fixed(5))
@@ -41,6 +43,14 @@ impl FromDataSimple for CreatePostMultipart {
                     name_field.text
                 }
                 None => String::from(""),
+            };
+
+            let tripcode = match form_data.texts.remove("tripcode") {
+                Some(mut tripcode_fields) => {
+                    let tripcode_field = tripcode_fields.remove(0);
+                    Some(tripcode_field.text)
+                }
+                None => None,
             };
 
             let message = match form_data.texts.remove("message") {
@@ -65,6 +75,7 @@ impl FromDataSimple for CreatePostMultipart {
 
             Outcome::Success(CreatePostMultipart {
                 name,
+                tripcode,
                 message,
                 files,
             })

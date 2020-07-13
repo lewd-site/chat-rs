@@ -80,10 +80,6 @@
       tripcode = tripcode.substr(1);
     }
 
-    if (tripcode.length) {
-      name = `${name}#${tripcode}`;
-    }
-
     try {
       disabled = true;
 
@@ -130,7 +126,12 @@
         return;
       }
 
-      const post = await window.api.submitPost({ name, message, files });
+      const post = await window.api.submitPost({
+        name,
+        tripcode,
+        message,
+        files
+      });
 
       message = "";
 

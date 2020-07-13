@@ -64,7 +64,7 @@ impl Post {
         hash.chars().skip(len - 10).collect()
     }
 
-    fn process_name(name: &str) -> (String, String) {
+    fn process_name(name: &str, tripcode: &str) -> (String, String) {
         let hash_index = name.chars().position(|ch| ch == '#');
         match hash_index {
             Some(index) => {
@@ -74,15 +74,24 @@ impl Post {
                 (name, tripcode)
             }
             None => {
-                let name = String::from(name);
-                let tripcode = String::from("");
+                let name = name.to_string();
+                let tripcode = if tripcode.len() > 0 {
+                    Post::create_tripcode(&tripcode)
+                } else {
+                    "".to_string()
+                };
                 (name, tripcode)
             }
         }
     }
 
-    pub fn new(name: &str, message: &str, user_uuid: Option<&str>) -> Result<NewPost, String> {
-        let (name, tripcode) = Post::process_name(name);
+    pub fn new(
+        name: &str,
+        tripcode: &str,
+        message: &str,
+        user_uuid: Option<&str>,
+    ) -> Result<NewPost, String> {
+        let (name, tripcode) = Post::process_name(name, tripcode);
 
         if message.len() >= 8000 {
             return Err(String::from("Message is too long"));
@@ -91,9 +100,9 @@ impl Post {
         Ok(NewPost {
             name,
             tripcode,
-            message: String::from(message),
+            message: message.to_string(),
             created_at: NaiveDateTime::from_timestamp(Utc::now().timestamp(), 0),
-            user_uuid: user_uuid.map(|str| String::from(str)),
+            user_uuid: user_uuid.map(String::from),
         })
     }
 }
@@ -156,7 +165,7 @@ mod tests {
 
     #[test]
     fn process_name_without_password() {
-        let (name, tripcode) = Post::process_name("username");
+        let (name, tripcode) = Post::process_name("username", "");
 
         assert_eq!("username", name);
         assert_eq!("", tripcode);
@@ -164,23 +173,31 @@ mod tests {
 
     #[test]
     fn process_name_with_empty_password() {
-        let (name, tripcode) = Post::process_name("username#");
+        let (name, tripcode) = Post::process_name("username#", "");
 
         assert_eq!("username", name);
         assert_eq!("8NBuQ4l6uQ", tripcode);
     }
 
     #[test]
+    fn process_name_with_password() {
+        let (name, tripcode) = Post::process_name("username#*Tp0tp8[", "");
+
+        assert_eq!("username", name);
+        assert_eq!("LLLLLLLLL.", tripcode);
+    }
+
+    #[test]
     fn process_name_with_password_only() {
-        let (name, tripcode) = Post::process_name("#*Tp0tp8[");
+        let (name, tripcode) = Post::process_name("", "*Tp0tp8[");
 
         assert_eq!("", name);
         assert_eq!("LLLLLLLLL.", tripcode);
     }
 
     #[test]
-    fn process_name() {
-        let (name, tripcode) = Post::process_name("username#*Tp0tp8[");
+    fn process_name_with_separate_password() {
+        let (name, tripcode) = Post::process_name("username", "*Tp0tp8[");
 
         assert_eq!("username", name);
         assert_eq!("LLLLLLLLL.", tripcode);

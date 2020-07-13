@@ -18,12 +18,14 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize)]
 pub struct CreatePostJson {
     name: String,
+    tripcode: Option<String>,
     message: String,
 }
 
 #[derive(FromForm)]
 pub struct CreatePostForm {
     name: String,
+    tripcode: Option<String>,
     message: String,
 }
 
@@ -40,11 +42,12 @@ pub struct PostResponse {
 fn create_post(
     conn: ChatDbConn,
     name: &str,
+    tripcode: &str,
     message: &str,
     files: Vec<UploadedFile>,
     user_uuid: Option<&str>,
 ) -> (PostWithFiles, Vec<NotificationWithPost>) {
-    let new_post = Post::new(name, message, user_uuid).unwrap();
+    let new_post = Post::new(name, tripcode, message, user_uuid).unwrap();
     let post = PostRepository::create(&*conn, &new_post);
     let files = files
         .into_iter()
@@ -61,7 +64,12 @@ fn create_post(
         .message
         .iter()
         .map(|s| {
-            let items: Vec<i32> = s.clone().get_ref_links().into_iter().map(|id| id as i32).collect();
+            let items: Vec<i32> = s
+                .clone()
+                .get_ref_links()
+                .into_iter()
+                .map(|id| id as i32)
+                .collect();
             items
         })
         .flatten()
@@ -119,6 +127,7 @@ pub fn create_post_json(
     let (post, notifications) = create_post(
         conn,
         &data.name,
+        &data.tripcode.clone().unwrap_or("".to_string()),
         &data.message,
         Vec::new(),
         Some(&user_uuid),
@@ -143,6 +152,7 @@ pub fn create_post_form(
     let (post, notifications) = create_post(
         conn,
         &data.name,
+        &data.tripcode.clone().unwrap_or("".to_string()),
         &data.message,
         Vec::new(),
         Some(&user_uuid),
@@ -166,6 +176,7 @@ pub fn create_post_multipart(
     let (post, notifications) = create_post(
         conn,
         &data.name,
+        &data.tripcode.unwrap_or("".to_string()),
         &data.message,
         data.files,
         Some(&user_uuid),

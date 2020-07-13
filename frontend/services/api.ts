@@ -5,6 +5,7 @@ import { Post, Notification } from '../types';
 
 interface SubmitPostRequest {
     readonly name: string;
+    readonly tripcode: string;
     readonly message: string;
     readonly files: FileList | File[];
 }
@@ -63,6 +64,7 @@ export class Api {
     public submitPost = async (data: SubmitPostRequest): Promise<Post> => {
         const formData = new FormData();
         formData.append('name', data.name);
+        formData.append('tripcode', data.tripcode);
         formData.append('message', data.message);
 
         if (data.files && data.files.length) {
