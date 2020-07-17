@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
 import { token } from '../stores/auth';
-import { Post, Notification } from '../types';
+import { Post, Notification, PostNotification } from '../types';
 
 interface SubmitPostRequest {
     readonly name: string;
@@ -19,11 +19,11 @@ interface PostResponse {
 }
 
 interface NotificationResponse {
-    readonly item: Notification;
+    readonly item: PostNotification;
 }
 
 interface NotificationListResponse {
-    readonly items: Notification[];
+    readonly items: PostNotification[];
 }
 
 interface FileResponse {
@@ -101,7 +101,7 @@ export class Api {
         return response.data.item;
     };
 
-    public getNotifications = async (): Promise<Notification[]> => {
+    public getNotifications = async (): Promise<PostNotification[]> => {
         const config: AxiosRequestConfig = { headers: {} };
 
         const token = await this.getToken();
@@ -112,10 +112,10 @@ export class Api {
         }
 
         const response = await axios.get<NotificationListResponse>('/api/v1/notifications', config);
-        return response.data.items;
+        return response.data.items.map(item => ({ ...item, type: 'post' }));
     };
 
-    public readNotification = async (id: number): Promise<Notification> => {
+    public readNotification = async (id: number): Promise<PostNotification> => {
         const config: AxiosRequestConfig = { headers: {} };
 
         const token = await this.getToken();
@@ -124,7 +124,7 @@ export class Api {
         }
 
         const response = await axios.post<NotificationResponse>(`/api/v1/notifications/${id}/read`, {}, config);
-        return response.data.item;
+        return { ...response.data.item, type: 'post' };
     };
 
     public deleteNotification = async (id: number): Promise<Notification> => {
@@ -136,7 +136,7 @@ export class Api {
         }
 
         const response = await axios.delete<NotificationResponse>(`/api/v1/notifications/${id}`, config);
-        return response.data.item;
+        return { ...response.data.item, type: 'post' };
     };
 
     public getLatestFiles = async (): Promise<File[]> => {

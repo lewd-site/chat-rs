@@ -109,9 +109,17 @@ export interface PostPopup {
     readonly pinned: boolean;
 }
 
-export interface Notification {
+export interface SystemNotification {
+    readonly type: 'system';
+    readonly message: string;
+}
+
+export interface PostNotification {
+    readonly type: 'post';
     readonly id: number;
     readonly user_uuid: string;
     readonly read: boolean;
     readonly post: Post;
 }
+
+export type Notification = SystemNotification | PostNotification;

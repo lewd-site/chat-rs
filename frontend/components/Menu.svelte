@@ -38,8 +38,12 @@
     window.api.readNotification(notification.id);
   }
 
-  function handleNotificationClick(e, id) {
-    const post = document.getElementById(`post_${id}`);
+  function handleNotificationClick(e, notification) {
+    if (notification.type !== "post") {
+      return;
+    }
+
+    const post = document.getElementById(`post_${notification.post.id}`);
     if (post) {
       e.preventDefault();
       utils.scrollToElement(post);
@@ -170,7 +174,7 @@
             class="menu__notification notification"
             transition:hslide={{ duration: 150 }}
             on:mouseover={e => handleNotificationHover(e, notification)}
-            on:click|preventDefault={e => handleNotificationClick(e, notification.post.id)}>
+            on:click|preventDefault={e => handleNotificationClick(e, notification)}>
             <button
               type="button"
               class="notification__close"
@@ -337,77 +341,83 @@
   </div>
 
   <div class="menu__messages">
-    {#each $newNotifications as notification (notification.id)}
+    {#each $newNotifications as notification}
       <div
         class="menu__message notification"
         transition:hslide={{ duration: 150 }}
-        on:click|preventDefault={e => handleNotificationClick(e, notification.post.id)}>
+        on:click|preventDefault={e => handleNotificationClick(e, notification)}>
         <button
           type="button"
           class="notification__close"
           on:click|preventDefault={e => handleNotiticationClose(e, notification)} />
 
-        <div class="notification__title">
-          Ответ от
-          <span class="notification__name">
-            {formatName(notification.post)}
-          </span>
+        {#if notification.type === 'system'}
+          <div class="notification__message">
+            {@html notification.message}
+          </div>
+        {:else if notification.type === 'post'}
+          <div class="notification__title">
+            Ответ от
+            <span class="notification__name">
+              {formatName(notification.post)}
+            </span>
 
-          <span class="notification__tripcode">
-            {notification.post.tripcode}
-          </span>
-        </div>
+            <span class="notification__tripcode">
+              {notification.post.tripcode}
+            </span>
+          </div>
 
-        <div class="notification__message">
-          {@html markup(notification.post.message)}
-        </div>
+          <div class="notification__message">
+            {@html markup(notification.post.message)}
+          </div>
 
-        {#if notification.post.files.length}
-          <div class="notification__files">
-            {#each notification.post.files as file (file.id)}
-              {#if file.mimetype.startsWith('image/')}
-                <div
-                  class="notification__file notification__file_image"
-                  title={file.name}
-                  on:click|preventDefault={e => handleFileClick(notification.post, file)}>
-                  <picture>
-                    <img
-                      class="notification__file-preview"
-                      src="/thumb/{file.md5}?max_width=360"
-                      alt="Preview" />
-                  </picture>
-                </div>
-              {:else if file.mimetype.startsWith('video/')}
-                <div
-                  class="notification__file notification__file_video"
-                  title={file.name}
-                  on:click|preventDefault={e => handleFileClick(notification.post, file)}>
-                  <picture>
-                    <img
-                      class="notification__file-preview"
-                      src="/thumb/{file.md5}?max_width=360"
-                      alt="Preview" />
-                  </picture>
-                </div>
-              {:else if file.mimetype.startsWith('audio/')}
-                <div
-                  class="notification__file notification__file_audio"
-                  title={file.name} />
-              {/if}
-            {/each}
+          {#if notification.post.files.length}
+            <div class="notification__files">
+              {#each notification.post.files as file (file.id)}
+                {#if file.mimetype.startsWith('image/')}
+                  <div
+                    class="notification__file notification__file_image"
+                    title={file.name}
+                    on:click|preventDefault={e => handleFileClick(notification.post, file)}>
+                    <picture>
+                      <img
+                        class="notification__file-preview"
+                        src="/thumb/{file.md5}?max_width=360"
+                        alt="Preview" />
+                    </picture>
+                  </div>
+                {:else if file.mimetype.startsWith('video/')}
+                  <div
+                    class="notification__file notification__file_video"
+                    title={file.name}
+                    on:click|preventDefault={e => handleFileClick(notification.post, file)}>
+                    <picture>
+                      <img
+                        class="notification__file-preview"
+                        src="/thumb/{file.md5}?max_width=360"
+                        alt="Preview" />
+                    </picture>
+                  </div>
+                {:else if file.mimetype.startsWith('audio/')}
+                  <div
+                    class="notification__file notification__file_audio"
+                    title={file.name} />
+                {/if}
+              {/each}
+            </div>
+          {/if}
+
+          <div class="notification__footer">
+            {#if notification.read}
+              <span class="notification__read" />
+            {:else}
+              <span class="notification__unread" />
+            {/if}
+            <span class="notification__date">
+              {formatDateTime(notification.post.created_at)}
+            </span>
           </div>
         {/if}
-
-        <div class="notification__footer">
-          {#if notification.read}
-            <span class="notification__read" />
-          {:else}
-            <span class="notification__unread" />
-          {/if}
-          <span class="notification__date">
-            {formatDateTime(notification.post.created_at)}
-          </span>
-        </div>
       </div>
     {/each}
   </div>

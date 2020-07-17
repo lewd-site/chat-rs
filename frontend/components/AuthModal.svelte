@@ -1,5 +1,6 @@
 <script>
   import { showAuthModal, token } from "../stores/auth";
+  import { addNewNotification } from "../stores/notifications";
 
   let email = "";
   let password = "";
@@ -12,7 +13,7 @@
   function handleCancel(e) {
     showAuthModal.set(false);
     error = "";
-    window.eventBus.dispatch('authmodal_canceled');
+    window.eventBus.dispatch("authmodal_canceled");
   }
 
   async function handleSubmit(e) {
@@ -24,7 +25,8 @@
       error = "";
 
       authButton.setAttribute("hidden", "");
-      window.eventBus.dispatch('authmodal_submitted');
+      window.eventBus.dispatch("authmodal_submitted");
+      addNewNotification({ type: "system", message: `Вы вошли как ${email}` });
     } catch (e) {
       error = e;
 

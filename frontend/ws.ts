@@ -2,7 +2,7 @@ import { TokenData } from './services/sso';
 import { token } from './stores/auth';
 import { addNotification, setNotifications, addNewNotification } from './stores/notifications';
 import { addPost, setPosts } from './stores/posts';
-import { Post, Notification } from './types';
+import { Post, PostNotification } from './types';
 import utils from './utils';
 
 interface WsPostCreated {
@@ -15,7 +15,7 @@ interface WsPostCreated {
 interface WsNotificationCreated {
     readonly event: 'notification_created',
     readonly data: {
-        readonly item: Notification,
+        readonly item: PostNotification,
     },
 }
 
@@ -105,8 +105,9 @@ export class Ws {
 
             case 'notification_created': {
                 if (message.data.item.user_uuid === _token?.user_uuid) {
-                    addNotification(message.data.item);
-                    addNewNotification(message.data.item);
+                    const notification: PostNotification = { ...message.data.item, type: 'post' };
+                    addNotification(notification);
+                    addNewNotification(notification);
                 }
                 break;
             }
