@@ -1,7 +1,7 @@
 use crate::routes::types::{Authenticated, NotificationWithPost, PostWithFiles};
 use crate::ChatDbConn;
-use data::repositories::files::FileRepository;
-use data::repositories::notifications::NotificationRepository;
+use chat::repositories::files::FileRepository;
+use chat::repositories::notifications::NotificationRepository;
 use rocket::response::status::NotFound;
 use rocket_contrib::json::Json;
 use serde::Serialize;

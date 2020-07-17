@@ -1,8 +1,8 @@
 use chrono::prelude::*;
-use data::models::files::File;
-use data::models::message_parser::{MessageParser, Markup};
-use data::models::notifications::Notification;
-use data::models::posts::Post;
+use chat::models::files::File;
+use chat::models::message_parser::{MessageParser, Markup};
+use chat::models::notifications::Notification;
+use chat::models::posts::Post;
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome};

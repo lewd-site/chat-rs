@@ -255,6 +255,45 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
 
 [[package]]
+name = "chat"
+version = "1.0.0"
+dependencies = [
+ "chrono",
+ "diesel",
+ "encoding_rs",
+ "image",
+ "infer",
+ "md5",
+ "mime 0.3.16",
+ "mime_guess 2.0.3",
+ "nom",
+ "pwhash",
+ "rand 0.7.3",
+ "serde",
+]
+
+[[package]]
+name = "chat_web"
+version = "1.0.0"
+dependencies = [
+ "chat",
+ "chrono",
+ "diesel",
+ "image",
+ "jsonwebtoken",
+ "lazy_static",
+ "mime 0.3.16",
+ "rand 0.7.3",
+ "rocket",
+ "rocket-multipart-form-data",
+ "rocket-sentry",
+ "rocket_contrib",
+ "serde",
+ "serde_json",
+ "tungstenite",
+]
+
+[[package]]
 name = "chrono"
 version = "0.4.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -378,24 +417,6 @@ checksum = "4434400df11d95d556bac068ddfedd482915eb18fe8bea89bc80b6e4b1c179e5"
 dependencies = [
  "generic-array",
  "subtle 1.0.0",
-]
-
-[[package]]
-name = "data"
-version = "1.0.0"
-dependencies = [
- "chrono",
- "diesel",
- "encoding_rs",
- "image",
- "infer",
- "md5",
- "mime 0.3.16",
- "mime_guess 2.0.3",
- "nom",
- "pwhash",
- "rand 0.7.3",
- "serde",
 ]
 
 [[package]]
@@ -2755,27 +2776,6 @@ name = "wasm-bindgen-shared"
 version = "0.2.63"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c9ba19973a58daf4db6f352eda73dc0e289493cd29fb2632eb172085b6521acd"
-
-[[package]]
-name = "web"
-version = "1.0.0"
-dependencies = [
- "chrono",
- "data",
- "diesel",
- "image",
- "jsonwebtoken",
- "lazy_static",
- "mime 0.3.16",
- "rand 0.7.3",
- "rocket",
- "rocket-multipart-form-data",
- "rocket-sentry",
- "rocket_contrib",
- "serde",
- "serde_json",
- "tungstenite",
-]
 
 [[package]]
 name = "web-sys"

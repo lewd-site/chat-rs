@@ -1,12 +1,12 @@
 [package]
-name = "web"
+name = "chat_web"
 version = "1.0.0"
 authors = ["Nina Lisitsinskaya <vvatashi@protonmail.com>"]
 edition = "2018"
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
-data = { path = "../data" }
+chat = { path = "../chat" }
 diesel = { version = "1.4.4", features = ["postgres"] }
 image = { git = "https://github.com/image-rs/image.git", rev = "260f929" }
 jsonwebtoken = "7.1.1"

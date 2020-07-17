@@ -1,7 +1,7 @@
 use crate::routes::types::Authenticated;
 use crate::ChatDbConn;
-use data::models::files::{File, UserFavoriteFile};
-use data::repositories::files::FileRepository;
+use chat::models::files::{File, UserFavoriteFile};
+use chat::repositories::files::FileRepository;
 use rocket::response::status::{Created, NotFound};
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};

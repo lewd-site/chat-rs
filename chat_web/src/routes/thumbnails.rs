@@ -1,5 +1,5 @@
 use crate::ChatDbConn;
-use data::repositories::files::FileRepository;
+use chat::repositories::files::FileRepository;
 use image::imageops::FilterType;
 use image::io::Reader;
 use rand::distributions::Alphanumeric;
