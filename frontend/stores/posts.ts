@@ -51,7 +51,12 @@ function processMarkup(markup: Markup, post: Post): Markup {
         } else if (tag.type === 'Link') {
             if (/^(?:https?:\/\/)?(?:www\.)?(?:voca\.ro|vocaroo\.com)\/([0-9a-z_-]+)$/i.test(tag.url)) {
                 const matches = tag.url.match(/^(?:https?:\/\/)?(?:www\.)?(?:voca\.ro|vocaroo\.com)\/([0-9a-z_-]+)$/i);
-                const html = `<iframe class="markup_vocaroo" width="300" height="60" src="https://vocaroo.com/embed/${matches![1]}" frameborder="0"></iframe>`;
+                const html = `<iframe class="markup_vocaroo" width="300" height="60" frameborder="0" src="https://vocaroo.com/embed/${matches![1]}"></iframe>`;
+
+                return { type: 'Tag', tag: { type: 'HTML', content: html }, children: [] };
+            } else if (/^(?:https?:\/\/)?open.spotify.com\/(?:album|artist|playlist|track)\/(?:[0-9a-z_-]+)/i.test(tag.url)) {
+                const matches = tag.url.match(/^(?:https?:\/\/)?open.spotify.com\/(album|artist|playlist|track)\/([0-9a-z_-]+)/i);
+                const html = `<iframe class="markup_spotify" width="300" height="300" allowtransparency="true" frameborder="0" allow="encrypted-media" src="https://open.spotify.com/embed/${matches![1]}/${matches![2]}"></iframe>`;
 
                 return { type: 'Tag', tag: { type: 'HTML', content: html }, children: [] };
             } else if (
