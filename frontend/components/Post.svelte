@@ -1,5 +1,5 @@
 <script context="module">
-  import { visiblePosts } from "../stores/posts";
+  import { visiblePosts } from '../stores/posts';
 
   const observerConfig = { threshold: 0 };
   const observer = new IntersectionObserver((entries, observer) => {
@@ -16,23 +16,23 @@
 </script>
 
 <script>
-  import { onMount, onDestroy } from "svelte";
-  import AudioPlayer from "./AudioPlayer.svelte";
-  import Embed from "./Embed.svelte";
-  import PostImagePreview from "./PostImagePreview.svelte";
-  import { formatFileSize } from "./file";
-  import { gallery } from "./gallery";
-  import { markup } from "./markup";
-  import { formatName } from "./post";
-  import { userUuid } from "../stores/auth";
-  import { mediaBoxFiles, mediaBoxFile, hideGallery } from "../stores/files";
+  import { onMount, onDestroy } from 'svelte';
+  import AudioPlayer from './AudioPlayer.svelte';
+  import Embed from './Embed.svelte';
+  import PostImagePreview from './PostImagePreview.svelte';
+  import { formatFileSize } from './file';
+  import { gallery } from './gallery';
+  import { markup } from './markup';
+  import { formatName } from './post';
+  import { userUuid } from '../stores/auth';
+  import { mediaBoxFiles, mediaBoxFile, hideGallery } from '../stores/files';
   import {
     hasPopup,
     addPopup,
     setPopupHover,
     checkPopup
-  } from "../stores/post_popups";
-  import { posts } from "../stores/posts";
+  } from '../stores/post_popups';
+  import { posts } from '../stores/posts';
 
   export let post;
 
@@ -41,29 +41,29 @@
   let _posts = $posts;
 
   function formatTime(time) {
-    const date = new Date(time + "Z");
+    const date = new Date(time + 'Z');
     const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
 
     const day = date
       .getDate()
       .toString()
-      .padStart(2, "0");
+      .padStart(2, '0');
 
     const hours = date
       .getHours()
       .toString()
-      .padStart(2, "0");
+      .padStart(2, '0');
 
     const minutes = date
       .getMinutes()
       .toString()
-      .padStart(2, "0");
+      .padStart(2, '0');
 
     const seconds = date
       .getSeconds()
       .toString()
-      .padStart(2, "0");
+      .padStart(2, '0');
 
     return `${hours}:${minutes}:${seconds} ${day}.${month}.${year}`;
   }
@@ -76,8 +76,8 @@
 
       return files.filter(
         file =>
-          file.mimetype.startsWith("image/") ||
-          file.mimetype.startsWith("video/")
+          file.mimetype.startsWith('image/') ||
+          file.mimetype.startsWith('video/')
       );
     });
 
@@ -93,7 +93,7 @@
   let showPopupTimeout = null;
 
   function handleMouseOver(e) {
-    let target = e.target.closest("[data-show-post-popup]");
+    let target = e.target.closest('[data-show-post-popup]');
     if (!target) {
       return;
     }
@@ -101,7 +101,7 @@
     if (hasPopup(target)) {
       setPopupHover(target, true);
     } else {
-      const parentPopup = target.closest("[data-post-popup]");
+      const parentPopup = target.closest('[data-post-popup]');
       const layoutBox = document.body.getBoundingClientRect();
       const top = e.clientY - layoutBox.top;
       const left = e.clientX - layoutBox.left;
@@ -111,8 +111,8 @@
       showPopupTimeout = setTimeout(() => {
         addPopup(
           target,
-          parentPopup ? +parentPopup.getAttribute("data-post-popup") : null,
-          +target.getAttribute("data-show-post-popup"),
+          parentPopup ? +parentPopup.getAttribute('data-post-popup') : null,
+          +target.getAttribute('data-show-post-popup'),
           top,
           left,
           bottomToTop,
@@ -123,7 +123,7 @@
   }
 
   function handleMouseOut(e) {
-    let target = e.target.closest("[data-show-post-popup]");
+    let target = e.target.closest('[data-show-post-popup]');
     if (!target) {
       return;
     }
@@ -138,12 +138,12 @@
   }
 
   function handleReplyClick(e) {
-    window.eventBus.dispatch("reply", post.id);
+    window.eventBus.dispatch('reply', post.id);
   }
 
-  $: imageFiles = post.files.filter(file => file.mimetype.startsWith("image/"));
-  $: audioFiles = post.files.filter(file => file.mimetype.startsWith("audio/"));
-  $: videoFiles = post.files.filter(file => file.mimetype.startsWith("video/"));
+  $: imageFiles = post.files.filter(file => file.mimetype.startsWith('image/'));
+  $: audioFiles = post.files.filter(file => file.mimetype.startsWith('audio/'));
+  $: videoFiles = post.files.filter(file => file.mimetype.startsWith('video/'));
 
   $: imageGallery = gallery(imageFiles);
 

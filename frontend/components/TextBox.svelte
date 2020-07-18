@@ -1,9 +1,9 @@
 <script>
-  import { onMount, onDestroy, createEventDispatcher } from "svelte";
+  import { onMount, onDestroy, createEventDispatcher } from 'svelte';
 
-  export let className = "";
-  export let name = "";
-  export let value = "";
+  export let className = '';
+  export let name = '';
+  export let value = '';
   export let disabled = false;
 
   let element = null;
@@ -13,11 +13,11 @@
   const dispatch = createEventDispatcher();
 
   export function clear() {
-    value = "";
+    value = '';
 
     setTimeout(() => {
-      element.style.height = "54px";
-      element.style.height = element.scrollHeight + "px";
+      element.style.height = '54px';
+      element.style.height = element.scrollHeight + 'px';
 
       checkSelection();
     });
@@ -37,13 +37,13 @@
   }
 
   export function updateHeight() {
-    element.style.height = "54px";
-    element.style.height = element.scrollHeight + "px";
+    element.style.height = '54px';
+    element.style.height = element.scrollHeight + 'px';
   }
 
   function handleInput(e) {
     updateHeight();
-    dispatch("change", { value });
+    dispatch('change', { value });
   }
 
   function handleMouseUp(e) {
@@ -61,7 +61,7 @@
     ) {
       selectionStart = element.selectionStart;
       selectionEnd = element.selectionEnd;
-      dispatch("selectionChange", { start: selectionStart, end: selectionEnd });
+      dispatch('selectionChange', { start: selectionStart, end: selectionEnd });
     }
   }
 

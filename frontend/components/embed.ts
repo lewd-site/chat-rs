@@ -3,14 +3,25 @@ import { embedTitles } from '../stores/files';
 
 const POPUP_HEADER_PADDIGN = 24;
 
+const TIKTOK_PATTERN = /^(?:https?:\/\/)?(?:www\.)?(?:tiktok\.com)\/@([0-9a-z_-]+)\/video\/(\d+)/i;
+const TIKTOK_SHORT_PATTERN = /^(?:https?:\/\/)?(?:vm\.tiktok\.com)\/([0-9a-z_-]+)/i;
+const YOUTUBE_PATTERN = /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch|embed|v)|youtu\.be\/)/i;
+
 export async function getEmbed(url: string): Promise<Embed> {
   if (/^(?:https?:\/\/)?(?:www\.)?coub\.com\/view\//i.test(url)) {
     const _url = encodeURIComponent(url.replace(/^https?:\/\//, ''));
-    const data = await window.coub!.getCoubInfo(_url);
+    const data = await window.coub?.getCoubInfo(_url);
+    if (!data) {
+      throw new Error(`Can't fetch embed info for ${url}`);
+    }
 
-    embedTitles.update(embedTitles => ({ ...embedTitles, [url]: data.title }));
+    embedTitles.update((embedTitles) => ({
+      ...embedTitles,
+      [url]: data.title,
+    }));
 
-    const html = data.html.replace('muted=true', 'muted=false')
+    const html = data.html
+      .replace('muted=true', 'muted=false')
       .replace(/width="\d+"/i, 'width="100%"')
       .replace(/height="\d+"/i, 'height="100%"');
 
@@ -27,15 +38,28 @@ export async function getEmbed(url: string): Promise<Embed> {
     };
 
     return embed;
-  } else if (/^(?:https?:\/\/)?(?:www\.)?(?:tiktok\.com)\/@(?:[0-9a-z_-]+)\/video\/(?:\d+)/i.test(url)) {
-    const matches = url.match(/^(?:https?:\/\/)?(?:www\.)?(?:tiktok\.com)\/@([0-9a-z_-]+)\/video\/(\d+)/i);
-    const normalizedUrl = `https://www.tiktok.com/@${matches![1]}/video/${matches![2]}`;
+  } else if (TIKTOK_PATTERN.test(url)) {
+    const matches = url.match(TIKTOK_PATTERN);
+    if (!matches) {
+      throw new Error(`Can't fetch embed info for ${url}`);
+    }
+
+    const normalizedUrl = `https://www.tiktok.com/@${matches[1]}/video/${matches[2]}`;
     const videoId = encodeURIComponent(normalizedUrl);
-    const data = await window.tiktok!.getVideoInfo(videoId);
+    const data = await window.tiktok?.getVideoInfo(videoId);
+    if (!data) {
+      throw new Error(`Can't fetch embed info for ${url}`);
+    }
 
-    embedTitles.update(embedTitles => ({ ...embedTitles, [url]: data.title }));
+    embedTitles.update((embedTitles) => ({
+      ...embedTitles,
+      [url]: data.title,
+    }));
 
-    const html = data.html.replace('<script async src="https://www.tiktok.com/embed.js"></script>', '');
+    const html = data.html.replace(
+      '<script async src="https://www.tiktok.com/embed.js"></script>',
+      '',
+    );
 
     const embed: Embed = {
       id: url,
@@ -52,15 +76,28 @@ export async function getEmbed(url: string): Promise<Embed> {
     };
 
     return embed;
-  } else if (/^(?:https?:\/\/)?(?:vm\.tiktok\.com)\/(?:[0-9a-z]+)/i.test(url)) {
-    const matches = url.match(/^(?:https?:\/\/)?(?:vm\.tiktok\.com)\/([0-9a-z_-]+)/i);
-    const normalizedUrl = `https://vm.tiktok.com/${matches![1]}/`;
+  } else if (TIKTOK_SHORT_PATTERN.test(url)) {
+    const matches = url.match(TIKTOK_SHORT_PATTERN);
+    if (!matches) {
+      throw new Error(`Can't fetch embed info for ${url}`);
+    }
+
+    const normalizedUrl = `https://vm.tiktok.com/${matches[1]}/`;
     const videoId = encodeURIComponent(normalizedUrl);
-    const data = await window.tiktok!.getVideoInfo(videoId);
+    const data = await window.tiktok?.getVideoInfo(videoId);
+    if (!data) {
+      throw new Error(`Can't fetch embed info for ${url}`);
+    }
 
-    embedTitles.update(embedTitles => ({ ...embedTitles, [url]: data.title }));
+    embedTitles.update((embedTitles) => ({
+      ...embedTitles,
+      [url]: data.title,
+    }));
 
-    const html = data.html.replace('<script async src="https://www.tiktok.com/embed.js"></script>', '');
+    const html = data.html.replace(
+      '<script async src="https://www.tiktok.com/embed.js"></script>',
+      '',
+    );
 
     const embed: Embed = {
       id: url,
@@ -77,13 +114,20 @@ export async function getEmbed(url: string): Promise<Embed> {
     };
 
     return embed;
-  } else if (/^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch|embed|v)|youtu\.be\/)/i.test(url)) {
+  } else if (YOUTUBE_PATTERN.test(url)) {
     const _url = encodeURIComponent(url.replace(/^https?:\/\//, ''));
-    const data = await window.youtube!.getVideoInfo(_url);
+    const data = await window.youtube?.getVideoInfo(_url);
+    if (!data) {
+      throw new Error(`Can't fetch embed info for ${url}`);
+    }
 
-    embedTitles.update(embedTitles => ({ ...embedTitles, [url]: data.title }));
+    embedTitles.update((embedTitles) => ({
+      ...embedTitles,
+      [url]: data.title,
+    }));
 
-    const html = data.html.replace(/src="([^"]+)"/i, 'src="$1&autoplay=1"')
+    const html = data.html
+      .replace(/src="([^"]+)"/i, 'src="$1&autoplay=1"')
       .replace(/width="\d+"/i, 'width="100%"')
       .replace(/height="\d+"/i, 'height="100%"');
 
@@ -102,6 +146,6 @@ export async function getEmbed(url: string): Promise<Embed> {
 
     return embed;
   } else {
-    throw new Error("Unknown embed type");
+    throw new Error('Unknown embed type');
   }
 }

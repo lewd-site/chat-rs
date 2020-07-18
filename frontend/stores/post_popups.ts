@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 
 import { mediaBoxFile } from './files';
-import { PostPopup, File, Embed } from '../types';
+import { PostPopup, File, Embed, isFile } from '../types';
 
 export type PostPopups = { [key: number]: PostPopup };
 
@@ -13,15 +13,15 @@ let _file: File | Embed | null = null;
 
 export const popups = writable<PostPopups>({});
 
-popups.subscribe(popups => _popups = popups);
-mediaBoxFile.subscribe(file => _file = file);
+popups.subscribe((popups) => (_popups = popups));
+mediaBoxFile.subscribe((file) => (_file = file));
 
-export function getPopup(link: HTMLElement) {
-  return Object.values(_popups).find(popup => popup.link === link);
+export function getPopup(link: HTMLElement): PostPopup | undefined {
+  return Object.values(_popups).find((popup) => popup.link === link);
 }
 
-export function hasPopup(link: HTMLElement) {
-  return !!Object.values(_popups).find(popup => popup.link === link);
+export function hasPopup(link: HTMLElement): boolean {
+  return !!Object.values(_popups).find((popup) => popup.link === link);
 }
 
 export function addPopup(
@@ -32,7 +32,7 @@ export function addPopup(
   left: number,
   bottomToTop: boolean,
   rightToLeft: boolean,
-) {
+): void {
   if (hasPopup(link)) {
     return;
   }
@@ -52,12 +52,12 @@ export function addPopup(
     pinned: false,
   };
 
-  popups.update(popups => ({ ...popups, [id]: popup }));
+  popups.update((popups) => ({ ...popups, [id]: popup }));
   setTimeout(() => setPopupFadeById(id, false), 100);
 }
 
-export function setPopupHoverById(id: number, hover: boolean) {
-  popups.update(popups => {
+export function setPopupHoverById(id: number, hover: boolean): void {
+  popups.update((popups) => {
     if (!_popups[id]) {
       return popups;
     }
@@ -66,8 +66,8 @@ export function setPopupHoverById(id: number, hover: boolean) {
   });
 }
 
-export function setPopupPinnedById(id: number, pinned: boolean) {
-  popups.update(popups => {
+export function setPopupPinnedById(id: number, pinned: boolean): void {
+  popups.update((popups) => {
     if (!_popups[id]) {
       return popups;
     }
@@ -76,8 +76,8 @@ export function setPopupPinnedById(id: number, pinned: boolean) {
   });
 }
 
-export function setPopupFadeById(id: number, fade: boolean) {
-  popups.update(popups => {
+export function setPopupFadeById(id: number, fade: boolean): void {
+  popups.update((popups) => {
     if (!_popups[id]) {
       return popups;
     }
@@ -86,7 +86,7 @@ export function setPopupFadeById(id: number, fade: boolean) {
   });
 }
 
-export function setPopupHover(link: HTMLElement, hover: boolean) {
+export function setPopupHover(link: HTMLElement, hover: boolean): void {
   const popup = getPopup(link);
   if (popup) {
     setPopupHoverById(popup.id, hover);
@@ -98,12 +98,14 @@ function shouldClosePopup(popup: PostPopup): boolean {
     return false;
   }
 
-  if (_file !== null && +(_file as any).post_id === +popup.postId) {
+  if (_file !== null && isFile(_file) && +_file.post_id === +popup.postId) {
     return false;
   }
 
-  const children = Object.values(_popups).filter(p => p.parentPopupId && +p.parentPopupId === +popup.id);
-  return children.every(p => shouldClosePopup(p));
+  const children = Object.values(_popups).filter(
+    (p) => p.parentPopupId && +p.parentPopupId === +popup.id,
+  );
+  return children.every((p) => shouldClosePopup(p));
 }
 
 function doCheckPopup(id: number) {
@@ -119,7 +121,7 @@ function doCheckPopup(id: number) {
   setPopupFadeById(popup.id, true);
 
   setTimeout(() => {
-    popups.update(popups => {
+    popups.update((popups) => {
       const _popups = { ...popups };
       delete _popups[popup.id];
       return _popups;
@@ -133,11 +135,11 @@ function doCheckPopup(id: number) {
   }, POPUP_CLOSE_TIME);
 }
 
-export function checkPopupById(id: number) {
+export function checkPopupById(id: number): void {
   setTimeout(() => doCheckPopup(id), POPUP_CLOSE_TIME);
 }
 
-export function checkPopup(link: HTMLElement) {
+export function checkPopup(link: HTMLElement): void {
   const popup = getPopup(link);
   if (popup) {
     checkPopupById(popup.id);

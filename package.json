@@ -19,13 +19,20 @@
     "@types/prosemirror-state": "^1.2.4",
     "@types/prosemirror-transform": "^1.1.1",
     "@types/prosemirror-view": "^1.11.4",
+    "@typescript-eslint/eslint-plugin": "^3.6.1",
+    "@typescript-eslint/parser": "^3.6.1",
     "autoprefixer": "^9.8.2",
+    "eslint": "^7.4.0",
+    "eslint-config-prettier": "^6.11.0",
     "parcel-bundler": "^1.12.4",
     "parcel-plugin-svelte": "^4.0.6",
+    "prettier": "^2.0.5",
+    "prettier-plugin-svelte": "^1.1.0",
     "sass": "^1.26.8",
-    "typescript": "^3.9.5"
+    "typescript": "^3.9.7"
   },
   "dependencies": {
+    "@sentry/browser": "^5.19.2",
     "@simonwep/pickr": "^1.7.1",
     "axios": "^0.19.2",
     "jwt-decode": "^2.2.0",

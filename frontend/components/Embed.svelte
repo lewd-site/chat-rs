@@ -1,8 +1,8 @@
 <script>
-  import { createEventDispatcher } from "svelte";
-  import { getEmbed } from "./embed";
+  import { createEventDispatcher } from 'svelte';
+  import { getEmbed } from './embed';
 
-  export let url = "";
+  export let url = '';
 
   let embed = null;
 
@@ -17,7 +17,7 @@
   const dispatch = createEventDispatcher();
 
   function handleFileClick() {
-    dispatch("fileClick", embed);
+    dispatch('fileClick', embed);
   }
 </script>
 

@@ -1,10 +1,10 @@
 <script>
-  import { derived } from "svelte/store";
-  import { formatFileSize } from "./file";
-  import { markup } from "./markup";
-  import { formatName, trimStart, extractReplies } from "./post";
-  import { hslide } from "../anim";
-  import { userUuid } from "../stores/auth";
+  import { derived } from 'svelte/store';
+  import { formatFileSize } from './file';
+  import { markup } from './markup';
+  import { formatName, trimStart, extractReplies } from './post';
+  import { hslide } from '../anim';
+  import { userUuid } from '../stores/auth';
   import {
     mediaBoxFiles,
     mediaBoxFile,
@@ -12,7 +12,7 @@
     setNSFWMode,
     hideGallery,
     showOriginalFiles
-  } from "../stores/files";
+  } from '../stores/files';
   import {
     notifications,
     setNotifications,
@@ -20,14 +20,14 @@
     removeNotification,
     newNotifications,
     removeNewNotification
-  } from "../stores/notifications";
-  import { posts } from "../stores/posts";
-  import { utils } from "../utils";
+  } from '../stores/notifications';
+  import { posts } from '../stores/posts';
+  import { utils } from '../utils';
 
   let isVisible = false;
-  let tab = "main";
-  let name = localStorage.getItem("settings.name");
-  let tripcode = localStorage.getItem("settings.tripcode");
+  let tab = 'main';
+  let name = localStorage.getItem('settings.name');
+  let tripcode = localStorage.getItem('settings.tripcode');
 
   function handleNotificationHover(e, notification) {
     if (notification.read) {
@@ -39,7 +39,7 @@
   }
 
   function handleNotificationClick(e, notification) {
-    if (notification.type !== "post") {
+    if (notification.type !== 'post') {
       return;
     }
 
@@ -47,8 +47,8 @@
     if (post) {
       e.preventDefault();
       utils.scrollToElement(post);
-      post.classList.add("post_highlight");
-      setTimeout(() => post.classList.remove("post_highlight"), 500);
+      post.classList.add('post_highlight');
+      setTimeout(() => post.classList.remove('post_highlight'), 500);
       return false;
     }
   }
@@ -76,8 +76,8 @@
 
       return files.filter(
         file =>
-          file.mimetype.startsWith("image/") ||
-          file.mimetype.startsWith("video/")
+          file.mimetype.startsWith('image/') ||
+          file.mimetype.startsWith('video/')
       );
     });
 
@@ -91,38 +91,38 @@
   }
 
   function handleNameChange(e) {
-    localStorage["settings.name"] = e.target.value;
+    localStorage['settings.name'] = e.target.value;
   }
 
   function handleTripcodeChange(e) {
-    localStorage["settings.tripcode"] = e.target.value;
+    localStorage['settings.tripcode'] = e.target.value;
   }
 
   function formatDate(time) {
-    const date = new Date(typeof time === "string" ? time + "Z" : time);
+    const date = new Date(typeof time === 'string' ? time + 'Z' : time);
     const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
 
     const day = date
       .getDate()
       .toString()
-      .padStart(2, "0");
+      .padStart(2, '0');
 
     return `${day}.${month}.${year}`;
   }
 
   function formatTime(time) {
-    const date = new Date(typeof time === "string" ? time + "Z" : time);
+    const date = new Date(typeof time === 'string' ? time + 'Z' : time);
 
     const hours = date
       .getHours()
       .toString()
-      .padStart(2, "0");
+      .padStart(2, '0');
 
     const minutes = date
       .getMinutes()
       .toString()
-      .padStart(2, "0");
+      .padStart(2, '0');
 
     return `${hours}:${minutes}`;
   }

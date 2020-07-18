@@ -10,12 +10,10 @@ interface SlideParams {
   origin: string;
 }
 
-export function hslide(node: Element, {
-  delay = 0,
-  duration = 400,
-  easing = cubicOut,
-  origin = '0 0'
-}: SlideParams): TransitionConfig {
+export function hslide(
+  node: Element,
+  { delay = 0, duration = 400, easing = cubicOut, origin = '0 0' }: SlideParams,
+): TransitionConfig {
   const style = getComputedStyle(node);
   const opacity = +style.opacity;
   const height = parseFloat(style.height);
@@ -24,11 +22,11 @@ export function hslide(node: Element, {
     delay,
     duration,
     easing,
-    css: t =>
-      `overflow: hidden;` +
+    css: (t) =>
+      'overflow: hidden;' +
       `opacity: ${Math.min(t * 20, 1) * opacity};` +
       `height: ${height}px;` +
       `transform: scaleX(${t});` +
-      `transform-origin: ${origin};`
+      `transform-origin: ${origin};`,
   };
 }

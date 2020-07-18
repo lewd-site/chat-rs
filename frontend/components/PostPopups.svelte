@@ -1,14 +1,14 @@
 <script>
-  import { derived } from "svelte/store";
+  import { derived } from 'svelte/store';
 
-  import Post from "./Post.svelte";
+  import Post from './Post.svelte';
   import {
     popups,
     setPopupHoverById,
     setPopupPinnedById,
     checkPopupById
-  } from "../stores/post_popups";
-  import { posts } from "../stores/posts";
+  } from '../stores/post_popups';
+  import { posts } from '../stores/posts';
 
   export const values = derived([popups, posts], ([popups, posts]) => {
     return Object.values(popups).map(popup => ({
@@ -31,28 +31,28 @@
       styles.push(`left: ${popup.left}px`);
     }
 
-    return styles.join("; ");
+    return styles.join('; ');
   }
 
   function getClass(popup) {
-    const classes = ["post-popups__post", "post"];
+    const classes = ['post-popups__post', 'post'];
     if (popup.bottomToTop) {
-      classes.push("post-popups__post_bottom-to-top");
+      classes.push('post-popups__post_bottom-to-top');
     }
 
     if (popup.rightToLeft) {
-      classes.push("post-popups__post_right-to-left");
+      classes.push('post-popups__post_right-to-left');
     }
 
     if (popup.fade) {
-      classes.push("post-popups__post_fade");
+      classes.push('post-popups__post_fade');
     }
 
-    return classes.join(" ");
+    return classes.join(' ');
   }
 
   function handleMouseEnter(e, popup) {
-    if (!e.target.hasAttribute("data-post-popup")) {
+    if (!e.target.hasAttribute('data-post-popup')) {
       return;
     }
 
@@ -60,7 +60,7 @@
   }
 
   function handleMouseLeave(e, popup) {
-    if (!e.target.hasAttribute("data-post-popup")) {
+    if (!e.target.hasAttribute('data-post-popup')) {
       return;
     }
 

@@ -1,27 +1,27 @@
 <script>
-  import { createEventDispatcher } from "svelte";
-  import { formatFileSize } from "./file";
-  import { showOriginalFiles } from "../stores/files";
+  import { createEventDispatcher } from 'svelte';
+  import { formatFileSize } from './file';
+  import { showOriginalFiles } from '../stores/files';
 
   export let entry = null;
   export let showOriginal = false;
 
   const thumbnailUrl = `/thumb/${entry.file.md5}?max_width=360`;
   const originalUrl = `/src/${entry.file.md5}.${entry.file.extension}`;
-  let previewUrl = "";
+  let previewUrl = '';
 
   $: if (showOriginal) {
     switch ($showOriginalFiles) {
-      case "all":
+      case 'all':
         previewUrl = originalUrl;
         break;
 
-      case "gif":
+      case 'gif':
         previewUrl =
-          entry.file.mimetype === "image/gif" ? originalUrl : thumbnailUrl;
+          entry.file.mimetype === 'image/gif' ? originalUrl : thumbnailUrl;
         break;
 
-      case "none":
+      case 'none':
       default:
         previewUrl = thumbnailUrl;
         break;
@@ -33,7 +33,7 @@
   const dispatch = createEventDispatcher();
 
   function handleFileClick() {
-    dispatch("fileClick", entry.file);
+    dispatch('fileClick', entry.file);
   }
 </script>
 

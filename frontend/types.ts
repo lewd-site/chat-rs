@@ -30,10 +30,21 @@ export interface Embed {
 
 export type Media = File | Embed;
 
+export function isFile(media: unknown): media is File {
+  return typeof (media as File).post_id !== undefined;
+}
+
 export interface BBCode {
   readonly type:
-  | 'Bold' | 'Italic' | 'Underline' | 'Strike'
-  | 'Superscript' | 'Subscript' | 'Code' | 'CodeBlock' | 'Spoiler';
+    | 'Bold'
+    | 'Italic'
+    | 'Underline'
+    | 'Strike'
+    | 'Superscript'
+    | 'Subscript'
+    | 'Code'
+    | 'CodeBlock'
+    | 'Spoiler';
 }
 
 export interface Color {

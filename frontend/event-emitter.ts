@@ -1,4 +1,4 @@
-export type Listener = (...args: any[]) => void;
+export type Listener = (...args: unknown[]) => void;
 export type ListenerCollection = { [event: string]: Listener[] };
 export type Unsubscriber = () => void;
 
@@ -15,12 +15,12 @@ export class EventEmitter {
     return () => this.unsubscribe(event, listener);
   }
 
-  public dispatch(event: string, ...args: any[]): void {
+  public dispatch(event: string, ...args: unknown[]): void {
     if (!this.listeners[event]) {
       return;
     }
 
-    this.listeners[event].forEach(l => l.apply(this, args));
+    this.listeners[event].forEach((l) => l.apply(this, args));
   }
 
   public unsubscribe(event: string, listener: Listener): void {
@@ -28,7 +28,7 @@ export class EventEmitter {
       return;
     }
 
-    this.listeners[event] = this.listeners[event].filter(l => l !== listener);
+    this.listeners[event] = this.listeners[event].filter((l) => l !== listener);
   }
 
   public unsubscribeAll(event: string): void {

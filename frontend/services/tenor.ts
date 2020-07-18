@@ -40,7 +40,7 @@ export class Tenor {
       return localStorage['tenor_aid'];
     }
 
-    return localStorage['tenor_aid'] = await this.createAnonId();
+    return (localStorage['tenor_aid'] = await this.createAnonId());
   }
 
   public async search(query: string, page = 0): Promise<TenorSearchResponse> {
@@ -48,8 +48,9 @@ export class Tenor {
     const limit = PER_PAGE;
     const pos = PER_PAGE * page;
     const anon_id = await this.getAnonId();
-    const url = `https://api.tenor.com/v1/search?key=${config.tenorKey}&q=${q}&limit=${limit}&pos=${pos}&anon_id=${anon_id}&` +
-      `locale=ru_RU&contentfilter=off&media_filter=basic&ar_range=all`;
+    const url =
+      `https://api.tenor.com/v1/search?key=${config.tenorKey}&q=${q}&limit=${limit}&pos=${pos}&anon_id=${anon_id}&` +
+      'locale=ru_RU&contentfilter=off&media_filter=basic&ar_range=all';
     const response = await axios.get<TenorSearchResponse>(url);
     return response.data;
   }

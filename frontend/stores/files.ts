@@ -9,13 +9,13 @@ const _nsfwMode = localStorage.getItem('settings.nsfw') === 'true';
 
 export const nsfwMode = writable<boolean>(_nsfwMode);
 
-export function setNSFWMode(value: boolean) {
+export function setNSFWMode(value: boolean): void {
   nsfwMode.set(value);
   localStorage.setItem('settings.nsfw', `${value}`);
 }
 
-export function toggleNSFWMode() {
-  nsfwMode.update(value => {
+export function toggleNSFWMode(): void {
+  nsfwMode.update((value) => {
     localStorage.setItem('settings.nsfw', `${!value}`);
     return !value;
   });
@@ -23,18 +23,18 @@ export function toggleNSFWMode() {
 
 export const galleryVisible = writable<boolean>(false);
 
-export function showGallery() {
+export function showGallery(): void {
   mediaBoxFiles.set([]);
   mediaBoxFile.set(null);
   galleryVisible.set(true);
 }
 
-export function hideGallery() {
+export function hideGallery(): void {
   galleryVisible.set(false);
 }
 
-export function toggleGallery() {
-  galleryVisible.update(value => {
+export function toggleGallery(): void {
+  galleryVisible.update((value) => {
     if (!value) {
       mediaBoxFiles.set([]);
       mediaBoxFile.set(null);
@@ -48,14 +48,14 @@ const MAX_FILES = 100;
 
 export const favoriteFiles = writable<File[]>([]);
 
-export function setFavoriteFiles(newFiles: File[]) {
+export function setFavoriteFiles(newFiles: File[]): void {
   const files = newFiles.slice(0, MAX_FILES);
   favoriteFiles.set(files);
 }
 
 export const recentFiles = writable<File[]>([]);
 
-export function setRecentFiles(newFiles: File[]) {
+export function setRecentFiles(newFiles: File[]): void {
   const files = newFiles.slice(0, MAX_FILES);
   recentFiles.set(files);
 }
@@ -69,7 +69,7 @@ if (localStorage.getItem('settings.original_files') !== null) {
 
 export const showOriginalFiles = writable<ShowOriginalFiles>(_showOriginalFiles);
 
-showOriginalFiles.subscribe(value => {
+showOriginalFiles.subscribe((value) => {
   localStorage['settings.original_files'] = value;
 });
 

@@ -1,21 +1,21 @@
 <script>
-  import Pickr from "@simonwep/pickr";
-  import { onMount, onDestroy } from "svelte";
-  import { scale, slide } from "svelte/transition";
+  import Pickr from '@simonwep/pickr';
+  import { onMount, onDestroy } from 'svelte';
+  import { scale, slide } from 'svelte/transition';
 
-  import TextBox from "./TextBox.svelte";
-  import { showAuthModal } from "../stores/auth";
-  import { galleryVisible, toggleGallery } from "../stores/files";
-  import utils from "../utils";
+  import TextBox from './TextBox.svelte';
+  import { showAuthModal } from '../stores/auth';
+  import { galleryVisible, toggleGallery } from '../stores/files';
+  import utils from '../utils';
 
   const MAX_FILES = 5;
   const RESIZE_DELAY = 200;
 
-  let message = "";
+  let message = '';
   let files = [];
   let previews = [];
   let showMarkup = false;
-  let markupPinned = localStorage.getItem("settings.markup_pinned") === "true";
+  let markupPinned = localStorage.getItem('settings.markup_pinned') === 'true';
   let disabled = false;
 
   let inputFiles = null;
@@ -74,9 +74,9 @@
       return;
     }
 
-    let name = localStorage.getItem("settings.name") || "";
-    let tripcode = localStorage.getItem("settings.tripcode") || "";
-    if (tripcode.startsWith("#")) {
+    let name = localStorage.getItem('settings.name') || '';
+    let tripcode = localStorage.getItem('settings.tripcode') || '';
+    if (tripcode.startsWith('#')) {
       tripcode = tripcode.substr(1);
     }
 
@@ -89,24 +89,24 @@
 
         const handleAuthModalCanceled = () => {
           window.eventBus.unsubscribe(
-            "authmodal_canceled",
+            'authmodal_canceled',
             handleAuthModalCanceled
           );
 
           window.eventBus.unsubscribe(
-            "authmodal_submitted",
+            'authmodal_submitted',
             handleAuthModalSubmitted
           );
         };
 
         const handleAuthModalSubmitted = () => {
           window.eventBus.unsubscribe(
-            "authmodal_canceled",
+            'authmodal_canceled',
             handleAuthModalCanceled
           );
 
           window.eventBus.unsubscribe(
-            "authmodal_submitted",
+            'authmodal_submitted',
             handleAuthModalSubmitted
           );
 
@@ -114,12 +114,12 @@
         };
 
         window.eventBus.subscribe(
-          "authmodal_canceled",
+          'authmodal_canceled',
           handleAuthModalCanceled
         );
 
         window.eventBus.subscribe(
-          "authmodal_submitted",
+          'authmodal_submitted',
           handleAuthModalSubmitted
         );
 
@@ -133,7 +133,7 @@
         files
       });
 
-      message = "";
+      message = '';
 
       previews.forEach(p => URL.revokeObjectURL(p.src));
 
@@ -159,7 +159,7 @@
   function updateSize() {
     const rect = formElement.getBoundingClientRect();
     document.querySelector(
-      ".layout__post-list"
+      '.layout__post-list'
     ).style.marginBottom = `${rect.height + 32}px`;
   }
 
@@ -167,9 +167,9 @@
     const selection = window
       .getSelection()
       .toString()
-      .replace(/\r/g, "")
+      .replace(/\r/g, '')
       .trim()
-      .replace(/^(.+)$/gm, "> $1");
+      .replace(/^(.+)$/gm, '> $1');
 
     const range = messageElement.getSelectionRange();
     const textBefore = message.substr(0, range.start);
@@ -178,9 +178,9 @@
 
     const replyToTheSamePost =
       textBefore.lastIndexOf(`>>${postId}`) !== -1 &&
-      textBefore.lastIndexOf(`>>${postId}`) === textBefore.lastIndexOf(">>");
+      textBefore.lastIndexOf(`>>${postId}`) === textBefore.lastIndexOf('>>');
 
-    let textToInsert = replyToTheSamePost ? "" : `>>${postId}`;
+    let textToInsert = replyToTheSamePost ? '' : `>>${postId}`;
 
     if (selection.length) {
       if (textToInsert.length) {
@@ -191,12 +191,12 @@
     }
 
     if (textToInsert.length) {
-      if (textBefore.length && !textBefore.endsWith("\n")) {
+      if (textBefore.length && !textBefore.endsWith('\n')) {
         textToInsert = `\n${textToInsert}`;
       }
 
       if (textAfter.length) {
-        if (textAfter.startsWith("\n")) {
+        if (textAfter.startsWith('\n')) {
           textToInsert = `${textToInsert}\n`;
         } else {
           textToInsert = `${textToInsert}\n\n`;
@@ -207,7 +207,7 @@
       }
     }
 
-    message = [textBefore, textToInsert, textAfter].join("");
+    message = [textBefore, textToInsert, textAfter].join('');
     cursor += textToInsert.length;
 
     setTimeout(() => {
@@ -233,7 +233,7 @@
       selectedText,
       `[/${tag}]`,
       textAfter
-    ].join("");
+    ].join('');
 
     setTimeout(() => {
       messageElement.updateHeight();
@@ -252,32 +252,32 @@
 
   function toggleMarkupPinned() {
     markupPinned = !markupPinned;
-    localStorage["settings.markup_pinned"] = markupPinned.toString();
+    localStorage['settings.markup_pinned'] = markupPinned.toString();
     setTimeout(updateSize, RESIZE_DELAY);
   }
 
   function handleKeyDown(e) {
-    if (e.code === "Enter" && e.ctrlKey) {
+    if (e.code === 'Enter' && e.ctrlKey) {
       e.preventDefault();
       submit();
-    } else if (e.code === "KeyB" && e.ctrlKey) {
+    } else if (e.code === 'KeyB' && e.ctrlKey) {
       e.preventDefault();
       fileElement.click();
-    } else if (e.code === "KeyB" && e.altKey) {
+    } else if (e.code === 'KeyB' && e.altKey) {
       e.preventDefault();
-      insertMarkup("b");
-    } else if (e.code === "KeyI" && e.altKey) {
+      insertMarkup('b');
+    } else if (e.code === 'KeyI' && e.altKey) {
       e.preventDefault();
-      insertMarkup("i");
-    } else if (e.code === "KeyT" && e.altKey) {
+      insertMarkup('i');
+    } else if (e.code === 'KeyT' && e.altKey) {
       e.preventDefault();
-      insertMarkup("s");
-    } else if (e.code === "KeyP" && e.altKey) {
+      insertMarkup('s');
+    } else if (e.code === 'KeyP' && e.altKey) {
       e.preventDefault();
-      insertMarkup("spoiler");
-    } else if (e.code === "KeyC" && e.altKey) {
+      insertMarkup('spoiler');
+    } else if (e.code === 'KeyC' && e.altKey) {
       e.preventDefault();
-      insertMarkup("code");
+      insertMarkup('code');
     }
   }
 
@@ -290,9 +290,9 @@
     const files = [...data.items]
       .filter(
         item =>
-          item.type.startsWith("image/") ||
-          item.type.startsWith("audio/") ||
-          item.type.startsWith("video/")
+          item.type.startsWith('image/') ||
+          item.type.startsWith('audio/') ||
+          item.type.startsWith('video/')
       )
       .map(item => item.getAsFile());
 
@@ -329,18 +329,18 @@
   }
 
   onMount(() => {
-    window.eventBus.subscribe("reply", handleReply);
-    window.eventBus.subscribe("gallery_upload", addFile);
+    window.eventBus.subscribe('reply', handleReply);
+    window.eventBus.subscribe('gallery_upload', addFile);
 
     setTimeout(updateSize);
 
     pickr = Pickr.create({
-      el: ".post-form__color-picker",
-      theme: "nano",
+      el: '.post-form__color-picker',
+      theme: 'nano',
       useAsButton: true,
-      default: "#ffffff",
-      defaultRepresentation: "HEX",
-      position: "top-middle",
+      default: '#ffffff',
+      defaultRepresentation: 'HEX',
+      position: 'top-middle',
       components: {
         preview: true,
         opacity: true,
@@ -351,28 +351,28 @@
         }
       },
       i18n: {
-        "btn:save": "Вставить",
-        "btn:cancel": "Отмена",
-        "aria:btn:save": "Вставить",
-        "aria:btn:cancel": "Отмена"
+        'btn:save': 'Вставить',
+        'btn:cancel': 'Отмена',
+        'aria:btn:save': 'Вставить',
+        'aria:btn:cancel': 'Отмена'
       }
     });
 
-    pickr.on("save", () => {
+    pickr.on('save', () => {
       pickr.hide();
-      insertMarkup("color", pickr.getColor().toHEXA());
+      insertMarkup('color', pickr.getColor().toHEXA());
       setTimeout(messageElement.focus());
     });
 
-    pickr.on("cancel", () => {
+    pickr.on('cancel', () => {
       pickr.hide();
       setTimeout(messageElement.focus());
     });
   });
 
   onDestroy(() => {
-    window.eventBus.unsubscribe("reply", handleReply);
-    window.eventBus.unsubscribe("gallery_upload", addFile);
+    window.eventBus.unsubscribe('reply', handleReply);
+    window.eventBus.unsubscribe('gallery_upload', addFile);
     pickr.destroy();
   });
 </script>

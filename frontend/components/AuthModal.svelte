@@ -1,36 +1,36 @@
 <script>
-  import { showAuthModal, token } from "../stores/auth";
-  import { addNewNotification } from "../stores/notifications";
+  import { showAuthModal, token } from '../stores/auth';
+  import { addNewNotification } from '../stores/notifications';
 
-  let email = "";
-  let password = "";
-  let error = "";
+  let email = '';
+  let password = '';
+  let error = '';
 
   function handleEmailChange(e) {
-    localStorage["auth_email"] = e.target.value;
+    localStorage['auth_email'] = e.target.value;
   }
 
   function handleCancel(e) {
     showAuthModal.set(false);
-    error = "";
-    window.eventBus.dispatch("authmodal_canceled");
+    error = '';
+    window.eventBus.dispatch('authmodal_canceled');
   }
 
   async function handleSubmit(e) {
-    const authButton = document.getElementById("login");
+    const authButton = document.getElementById('login');
 
     try {
       token.set(await window.sso.loginByEmail(email, password));
       showAuthModal.set(false);
-      error = "";
+      error = '';
 
-      authButton.setAttribute("hidden", "");
-      window.eventBus.dispatch("authmodal_submitted");
-      addNewNotification({ type: "system", message: `Вы вошли как ${email}` });
+      authButton.setAttribute('hidden', '');
+      window.eventBus.dispatch('authmodal_submitted');
+      addNewNotification({ type: 'system', message: `Вы вошли как ${email}` });
     } catch (e) {
       error = e;
 
-      authButton.removeAttribute("hidden");
+      authButton.removeAttribute('hidden');
     }
   }
 </script>

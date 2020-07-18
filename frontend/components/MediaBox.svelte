@@ -1,9 +1,9 @@
 <script>
-  import { fade } from "svelte/transition";
-  import VideoPlayer from "./VideoPlayer.svelte";
-  import { formatFileSize } from "./file";
-  import { hslide } from "../anim";
-  import { mediaBoxFiles, mediaBoxFile } from "../stores/files";
+  import { fade } from 'svelte/transition';
+  import VideoPlayer from './VideoPlayer.svelte';
+  import { formatFileSize } from './file';
+  import { hslide } from '../anim';
+  import { mediaBoxFiles, mediaBoxFile } from '../stores/files';
 
   const PADDING_H = 96;
 
@@ -30,8 +30,8 @@
   }
 
   function handlePointerUp(e) {
-    window.removeEventListener("pointerup", handlePointerUp);
-    window.removeEventListener("pointermove", handlePointerMove);
+    window.removeEventListener('pointerup', handlePointerUp);
+    window.removeEventListener('pointermove', handlePointerMove);
 
     if (!isDragged) {
       mediaBoxFile.set(null);
@@ -66,8 +66,8 @@
 
     e.preventDefault();
 
-    window.addEventListener("pointerup", handlePointerUp);
-    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointermove', handlePointerMove);
 
     dragStartOffsetX = offsetX;
     dragStartOffsetY = offsetY;
@@ -105,16 +105,16 @@
       src = `/src/${file.md5}.${file.extension}`;
     });
 
-    if (file.mimetype === "video/x-tiktok") {
-      const existingScript = document.getElementById("tiktok-loader");
+    if (file.mimetype === 'video/x-tiktok') {
+      const existingScript = document.getElementById('tiktok-loader');
       if (existingScript) {
         existingScript.remove();
       }
 
-      const script = document.createElement("script");
-      script.src = "https://www.tiktok.com/embed.js";
+      const script = document.createElement('script');
+      script.src = 'https://www.tiktok.com/embed.js';
       script.async = true;
-      script.id = "tiktok-loader";
+      script.id = 'tiktok-loader';
       document.head.appendChild(script);
     }
   });
@@ -135,12 +135,12 @@
     const newHeight = height * scale;
 
     const minWidth =
-      typeof $mediaBoxFile.min_width !== "undefined"
+      typeof $mediaBoxFile.min_width !== 'undefined'
         ? Math.max($mediaBoxFile.min_width, MIN_WIDTH)
         : MIN_WIDTH;
 
     const maxWidth =
-      typeof $mediaBoxFile.max_width !== "undefined"
+      typeof $mediaBoxFile.max_width !== 'undefined'
         ? Math.min($mediaBoxFile.max_width, MAX_WIDTH)
         : MAX_WIDTH;
 
@@ -301,12 +301,12 @@
 
   function getGalleryFileClass(file, currentFile) {
     const classes = [
-      "media-box__file",
-      file.id == currentFile.id ? "media-box__file_current" : null,
-      "media-box__file_" + file.mimetype.split("/")[0]
+      'media-box__file',
+      file.id == currentFile.id ? 'media-box__file_current' : null,
+      'media-box__file_' + file.mimetype.split('/')[0]
     ];
 
-    return classes.filter(c => c).join(" ");
+    return classes.filter(c => c).join(' ');
   }
 
   function handleGalleryWheel(e) {
@@ -336,27 +336,27 @@
 
       searchItems = [
         {
-          name: "IQDB",
+          name: 'IQDB',
           url: `https://iqdb.org/?url=${pathURL}`
         },
         {
-          name: "Google",
+          name: 'Google',
           url: `https://www.google.com/searchbyimage?image_url=${pathURL}`
         },
         {
-          name: "Yandex",
+          name: 'Yandex',
           url: `https://yandex.ru/images/search?rpt=imageview&img_url=${pathURL}`
         },
         {
-          name: "TinEye",
+          name: 'TinEye',
           url: `https://tineye.com/search/?url=${pathURL}`
         },
         {
-          name: "SauceNAO",
+          name: 'SauceNAO',
           url: `https://saucenao.com/search.php?url=${pathURL}`
         },
         {
-          name: "trace.moe",
+          name: 'trace.moe',
           url: `https://trace.moe/?url=${pathURL}`
         }
       ];
@@ -400,7 +400,7 @@
       </a>
 
       <div class="media-box__search" title="Поиск по картинке">
-        <span class="media-box__search-icon"></span>
+        <span class="media-box__search-icon" />
 
         <div class="media-box__search-popup">
           <ul class="media-box__search-list">

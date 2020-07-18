@@ -13,8 +13,8 @@ export interface TokenData {
 
 class Deferred<T> {
   public readonly promise: Promise<T>;
-  private _resolve: (value?: T | PromiseLike<T>) => void = () => { };
-  private _reject: (reason?: any) => void = () => { };
+  private _resolve?: (value?: T | PromiseLike<T>) => void;
+  private _reject?: (reason?: unknown) => void;
 
   public constructor() {
     this.promise = new Promise<T>((resolve, reject) => {
@@ -24,11 +24,15 @@ class Deferred<T> {
   }
 
   public resolve = (value: T) => {
-    this._resolve(value);
+    if (typeof this._resolve !== 'undefined') {
+      this._resolve(value);
+    }
   };
 
-  public reject = (reason: any) => {
-    this._reject(reason);
+  public reject = (reason: unknown) => {
+    if (typeof this._reject !== 'undefined') {
+      this._reject(reason);
+    }
   };
 }
 
@@ -36,7 +40,7 @@ export class Sso {
   private readonly element: HTMLIFrameElement;
   private readonly requests: { [id: number]: Deferred<TokenData | null> } = {};
 
-  private id: number = 0;
+  private id = 0;
   private _accessToken: string | null = null;
   private _refreshToken: string | null = null;
   private _accessTokenData: TokenData | null = null;
@@ -58,12 +62,12 @@ export class Sso {
   }
 
   public get hasExpired(): boolean {
-    if (!this.hasAccessToken) {
+    if (!this.hasAccessToken || !this.accessTokenData) {
       return true;
     }
 
     const now = Date.now();
-    const exp = this.accessTokenData!.exp * 1000;
+    const exp = this.accessTokenData.exp * 1000;
 
     return exp <= now;
   }
@@ -87,13 +91,13 @@ export class Sso {
         this.loadCallback();
       }
     });
-  }
+  };
 
-  public bind = () => {
+  public bind: () => void = () => {
     window.addEventListener('message', this.handleMessage);
   };
 
-  public unbind = () => {
+  public unbind: () => void = () => {
     window.removeEventListener('message', this.handleMessage);
   };
 
@@ -131,10 +135,13 @@ export class Sso {
   public get = (): Promise<TokenData | null> => {
     const id = ++this.id;
 
-    this.element.contentWindow?.postMessage({
-      id,
-      command: 'get_token',
-    }, config.ssoOrigin);
+    this.element.contentWindow?.postMessage(
+      {
+        id,
+        command: 'get_token',
+      },
+      config.ssoOrigin,
+    );
 
     const request = new Deferred<TokenData | null>();
     this.requests[id] = request;
@@ -144,12 +151,15 @@ export class Sso {
   public loginByEmail = (email: string, password: string): Promise<TokenData | null> => {
     const id = ++this.id;
 
-    this.element.contentWindow?.postMessage({
-      id,
-      command: 'refresh_token',
-      email,
-      password,
-    }, config.ssoOrigin);
+    this.element.contentWindow?.postMessage(
+      {
+        id,
+        command: 'refresh_token',
+        email,
+        password,
+      },
+      config.ssoOrigin,
+    );
 
     const request = new Deferred<TokenData | null>();
     this.requests[id] = request;
@@ -159,12 +169,15 @@ export class Sso {
   public loginByName = (name: string, password: string): Promise<TokenData | null> => {
     const id = ++this.id;
 
-    this.element.contentWindow?.postMessage({
-      id,
-      command: 'refresh_token',
-      name,
-      password,
-    }, config.ssoOrigin);
+    this.element.contentWindow?.postMessage(
+      {
+        id,
+        command: 'refresh_token',
+        name,
+        password,
+      },
+      config.ssoOrigin,
+    );
 
     const request = new Deferred<TokenData | null>();
     this.requests[id] = request;
@@ -174,12 +187,15 @@ export class Sso {
   public refreshByEmail = (email: string): Promise<TokenData | null> => {
     const id = ++this.id;
 
-    this.element.contentWindow?.postMessage({
-      id,
-      command: 'refresh_token',
-      email,
-      refresh_token: this._refreshToken,
-    }, config.ssoOrigin);
+    this.element.contentWindow?.postMessage(
+      {
+        id,
+        command: 'refresh_token',
+        email,
+        refresh_token: this._refreshToken,
+      },
+      config.ssoOrigin,
+    );
 
     const request = new Deferred<TokenData | null>();
     this.requests[id] = request;
@@ -189,12 +205,15 @@ export class Sso {
   public refreshByName = (name: string): Promise<TokenData | null> => {
     const id = ++this.id;
 
-    this.element.contentWindow?.postMessage({
-      id,
-      command: 'refresh_token',
-      name,
-      refresh_token: this._refreshToken,
-    }, config.ssoOrigin);
+    this.element.contentWindow?.postMessage(
+      {
+        id,
+        command: 'refresh_token',
+        name,
+        refresh_token: this._refreshToken,
+      },
+      config.ssoOrigin,
+    );
 
     const request = new Deferred<TokenData | null>();
     this.requests[id] = request;

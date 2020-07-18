@@ -4,10 +4,10 @@ import { posts, Posts } from '../stores/posts';
 import { Markup } from '../types';
 
 let _posts: Posts = {};
-posts.subscribe(posts => _posts = posts);
+posts.subscribe((posts) => (_posts = posts));
 
 let _embedTitles: { [url: string]: string } = {};
-embedTitles.subscribe(embedTitles => _embedTitles = embedTitles);
+embedTitles.subscribe((embedTitles) => (_embedTitles = embedTitles));
 
 function escapeHtml(html: string): string {
   return html
@@ -17,6 +17,11 @@ function escapeHtml(html: string): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+
+const COUB_PATTERN = /^(?:https?:\/\/)?(?:www\.)?coub\.com\/view\//i;
+const TIKTOK_PATTERN = /^(?:https?:\/\/)?(?:www\.)?(?:tiktok\.com)\/@(?:[0-9a-z_-]+)\/video\/(\d+)/i;
+const TIKTOK_SHORT_PATTERN = /^(?:https?:\/\/)?(?:vm\.tiktok\.com)\/(?:[0-9a-z_-]+)/i;
+const YOUTUBE_PATTERN = /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch|embed|v)|youtu\.be\/)/i;
 
 export function markup(m: Markup | Markup[]): string {
   if (Array.isArray(m)) {
@@ -58,37 +63,41 @@ export function markup(m: Markup | Markup[]): string {
       case 'Color':
         return `<span style="color: ${m.tag.color};">${html}</span>`;
 
-      case 'RefLink':
+      case 'RefLink': {
         const targetPost = _posts[m.tag.id];
         if (targetPost) {
           html +=
-            `<span class="reflink__author">` +
+            '<span class="reflink__author">' +
             `<span class="reflink__name">${formatName(targetPost)}</span>` +
             `<span class="reflink__tripcode">${targetPost.tripcode}</span>` +
-            `</span>`;
+            '</span>';
         }
 
-        return `<a class="markup markup_reflink reflink" href="#post_${m.tag.id}" ` +
+        return (
+          `<a class="markup markup_reflink reflink" href="#post_${m.tag.id}" ` +
           `data-ref-link="${m.tag.id}"` +
-          `data-show-post-popup="${m.tag.id}">${html}</a>`;
+          `data-show-post-popup="${m.tag.id}">${html}</a>`
+        );
+      }
 
-      case 'Link':
+      case 'Link': {
         const className = [
           'markup',
           'markup_link',
-          /^(?:https?:\/\/)?(?:www\.)?coub\.com\/view\//i.test(m.tag.url)
-            ? 'markup_icon_coub' : null,
-          (/^(?:https?:\/\/)?(?:www\.)?(?:tiktok\.com)\/@(?:[0-9a-z_-]+)\/video\/(\d+)/i.test(m.tag.url) ||
-            /^(?:https?:\/\/)?(?:vm\.tiktok\.com)\/(?:[0-9a-z_-]+)/i.test(m.tag.url))
-            ? 'markup_icon_tiktok' : null,
-          /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch|embed|v)|youtu\.be\/)/i.test(m.tag.url)
-            ? 'markup_icon_youtube' : null,
-        ].filter(c => c).join(' ');
+          COUB_PATTERN.test(m.tag.url) ? 'markup_icon_coub' : null,
+          TIKTOK_PATTERN.test(m.tag.url) || TIKTOK_SHORT_PATTERN.test(m.tag.url)
+            ? 'markup_icon_tiktok'
+            : null,
+          YOUTUBE_PATTERN.test(m.tag.url) ? 'markup_icon_youtube' : null,
+        ]
+          .filter((c) => c)
+          .join(' ');
         if (typeof _embedTitles[m.tag.url] !== 'undefined') {
           html = escapeHtml(_embedTitles[m.tag.url]);
         }
 
         return `<a class="${className}" href="${m.tag.url}" target="_blank">${html}</a>`;
+      }
 
       case 'Quote':
         return `<span class="markup markup_quote">${html}</span>`;

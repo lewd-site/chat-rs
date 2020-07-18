@@ -1,10 +1,10 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy } from 'svelte';
 
-  export let className = "";
+  export let className = '';
   export let file = null;
 
-  $: _className = ["video-player", className].filter(c => c).join(" ");
+  $: _className = ['video-player', className].filter(c => c).join(' ');
   $: src = file ? `/src/${file.md5}.${file.extension}` : null;
 
   let playerElement = null;
@@ -24,21 +24,21 @@
 
   function formatTime(value) {
     if (!value) {
-      return "0:00";
+      return '0:00';
     }
 
     const seconds = Math.floor(value % 60);
     const minutes = Math.floor(value / 60);
 
-    const _seconds = seconds.toString().padStart(2, "0");
-    const _minutes = minutes.toString().padStart(1, "0");
+    const _seconds = seconds.toString().padStart(2, '0');
+    const _minutes = minutes.toString().padStart(1, '0');
 
     return `${_minutes}:${_seconds}`;
   }
 
   function handlePointerUp(e) {
-    window.removeEventListener("pointerup", handlePointerUp);
-    window.removeEventListener("pointermove", handlePointerMove);
+    window.removeEventListener('pointerup', handlePointerUp);
+    window.removeEventListener('pointermove', handlePointerMove);
 
     if (!paused) {
       videoElement.play();
@@ -62,13 +62,13 @@
     videoElement.pause();
     currentTime = videoElement.currentTime = position * videoElement.duration;
 
-    window.addEventListener("pointerup", handlePointerUp);
-    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointermove', handlePointerMove);
   }
 
   function handleVolumePointerUp(e) {
-    window.removeEventListener("pointerup", handleVolumePointerUp);
-    window.removeEventListener("pointermove", handleVolumePointerMove);
+    window.removeEventListener('pointerup', handleVolumePointerUp);
+    window.removeEventListener('pointermove', handleVolumePointerMove);
   }
 
   function handleVolumePointerMove(e) {
@@ -81,8 +81,8 @@
   }
 
   function handleVolumePointerDown(e) {
-    window.addEventListener("pointerup", handleVolumePointerUp);
-    window.addEventListener("pointermove", handleVolumePointerMove);
+    window.addEventListener('pointerup', handleVolumePointerUp);
+    window.addEventListener('pointermove', handleVolumePointerMove);
   }
 
   function handleLoaded(e) {
@@ -92,7 +92,7 @@
 
   function handleVolumeChange(e) {
     volume = videoElement.volume;
-    localStorage.setItem("settings.volume", volume.toString());
+    localStorage.setItem('settings.volume', volume.toString());
   }
 
   function handleFullscreenChange(e) {
@@ -137,11 +137,11 @@
   let updateInterval = null;
 
   onMount(() => {
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
 
     prevVolume = volume =
-      localStorage.getItem("settings.volume") !== null
-        ? +localStorage.getItem("settings.volume")
+      localStorage.getItem('settings.volume') !== null
+        ? +localStorage.getItem('settings.volume')
         : 0.5;
 
     updateInterval = setInterval(() => {
@@ -150,7 +150,7 @@
   });
 
   onDestroy(() => {
-    document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    document.removeEventListener('fullscreenchange', handleFullscreenChange);
 
     if (updateInterval) {
       clearInterval(updateInterval);

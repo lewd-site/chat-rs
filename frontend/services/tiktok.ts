@@ -24,8 +24,10 @@ export class TikTok {
       return this.cache[videoId];
     }
 
-    const response = await axios.get<TikTokOEmbedResponse>(`https://www.tiktok.com/oembed?url=${videoId}`);
-    return this.cache[videoId] = response.data;
+    const response = await axios.get<TikTokOEmbedResponse>(
+      `https://www.tiktok.com/oembed?url=${videoId}`,
+    );
+    return (this.cache[videoId] = response.data);
   }
 }
 

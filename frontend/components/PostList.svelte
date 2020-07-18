@@ -1,8 +1,8 @@
 <script>
-  import { derived } from "svelte/store";
+  import { derived } from 'svelte/store';
 
-  import Post from "./Post.svelte";
-  import { posts } from "../stores/posts";
+  import Post from './Post.svelte';
+  import { posts } from '../stores/posts';
 
   const postValues = derived(posts, posts => Object.values(posts));
 </script>

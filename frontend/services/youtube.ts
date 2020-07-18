@@ -26,7 +26,7 @@ export class YouTube {
     }
 
     const response = await axios.get<YouTubeOEmbedResponse>(`${config.youtubeProxyUrl}${videoId}`);
-    return this.cache[videoId] = response.data;
+    return (this.cache[videoId] = response.data);
   }
 }
 

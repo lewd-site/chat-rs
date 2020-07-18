@@ -5,4 +5,4 @@ export const showAuthModal = writable<boolean>(false);
 
 export const token = writable<TokenData | null>(null);
 
-export const userUuid = derived(token, token => token?.user_uuid);
+export const userUuid = derived(token, (token) => token?.user_uuid);

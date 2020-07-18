@@ -6,27 +6,27 @@ import { Post, PostNotification } from './types';
 import utils from './utils';
 
 interface WsPostCreated {
-  readonly event: 'post_created',
+  readonly event: 'post_created';
   readonly data: {
-    readonly item: Post,
-  },
+    readonly item: Post;
+  };
 }
 
 interface WsNotificationCreated {
-  readonly event: 'notification_created',
+  readonly event: 'notification_created';
   readonly data: {
-    readonly item: PostNotification,
-  },
+    readonly item: PostNotification;
+  };
 }
 
 type WsEvent = WsPostCreated | WsNotificationCreated;
 
-function isWsEvent(data: any): data is WsEvent {
-  return (data as WsEvent).event !== undefined;
+function isWsEvent(data: unknown): data is WsEvent {
+  return typeof (data as WsEvent).event !== undefined;
 }
 
 let _token: TokenData | null = null;
-token.subscribe(token => _token = token);
+token.subscribe((token) => (_token = token));
 
 export class Ws {
   private ws: null | WebSocket = null;
@@ -63,10 +63,9 @@ export class Ws {
     }
   };
 
-  private onOpen = (e: Event) => {
+  private onOpen = () => {
     // Reload latest posts and notifications after websocket connected.
-    window.api!.getLatestPosts().then(posts => {
-
+    window.api?.getLatestPosts().then((posts) => {
       const scroll = utils.isAtBottom();
       if (scroll) {
         setTimeout(utils.scrollToBottom);
@@ -75,7 +74,7 @@ export class Ws {
       setPosts(posts);
     });
 
-    window.api?.getNotifications().then(notifications => setNotifications(notifications));
+    window.api?.getNotifications().then((notifications) => setNotifications(notifications));
   };
 
   private onClose = (e: CloseEvent) => {
@@ -105,7 +104,10 @@ export class Ws {
 
       case 'notification_created': {
         if (message.data.item.user_uuid === _token?.user_uuid) {
-          const notification: PostNotification = { ...message.data.item, type: 'post' };
+          const notification: PostNotification = {
+            ...message.data.item,
+            type: 'post',
+          };
           addNotification(notification);
           addNewNotification(notification);
         }
@@ -114,7 +116,7 @@ export class Ws {
     }
   };
 
-  private onError = (e: Event) => {
+  private onError = () => {
     this.close();
   };
 }

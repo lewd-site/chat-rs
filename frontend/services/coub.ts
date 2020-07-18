@@ -26,7 +26,7 @@ export class Coub {
     }
 
     const response = await axios.get<CoubOEmbedResponse>(`${config.coubProxyUrl}${coubId}`);
-    return this.cache[coubId] = response.data;
+    return (this.cache[coubId] = response.data);
   }
 }
 

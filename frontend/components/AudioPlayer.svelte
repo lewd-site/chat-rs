@@ -1,8 +1,8 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
-  import { formatFileSize } from "./file";
+  import { onMount, onDestroy } from 'svelte';
+  import { formatFileSize } from './file';
 
-  export let className = "";
+  export let className = '';
   export let file = null;
 
   let audioElement = null;
@@ -17,23 +17,23 @@
   $: _duration = formatTime(duration);
 
   $: _className = [
-    "audio-player",
+    'audio-player',
     className,
-    expanded ? "audio-player_expanded" : null
+    expanded ? 'audio-player_expanded' : null
   ]
     .filter(c => c)
-    .join(" ");
+    .join(' ');
 
   function formatTime(value) {
     if (!value) {
-      return "0:00";
+      return '0:00';
     }
 
     const seconds = Math.floor(value % 60);
     const minutes = Math.floor(value / 60);
 
-    const _seconds = seconds.toString().padStart(2, "0");
-    const _minutes = minutes.toString().padStart(1, "0");
+    const _seconds = seconds.toString().padStart(2, '0');
+    const _minutes = minutes.toString().padStart(1, '0');
 
     return `${_minutes}:${_seconds}`;
   }
@@ -44,8 +44,8 @@
     expanded = true;
 
     volume =
-      localStorage.getItem("settings.volume") !== null
-        ? +localStorage.getItem("settings.volume")
+      localStorage.getItem('settings.volume') !== null
+        ? +localStorage.getItem('settings.volume')
         : 0.5;
 
     if (updateInterval) {
@@ -60,7 +60,7 @@
       currentTime = audioElement.currentTime;
     }, 500);
 
-    window.eventBus.dispatch("audio_open", file);
+    window.eventBus.dispatch('audio_open', file);
   }
 
   export function close() {
@@ -88,8 +88,8 @@
   }
 
   function handlePointerUp(e) {
-    window.removeEventListener("pointerup", handlePointerUp);
-    window.removeEventListener("pointermove", handlePointerMove);
+    window.removeEventListener('pointerup', handlePointerUp);
+    window.removeEventListener('pointermove', handlePointerMove);
 
     audioElement.play();
   }
@@ -111,8 +111,8 @@
     audioElement.pause();
     currentTime = audioElement.currentTime = position * audioElement.duration;
 
-    window.addEventListener("pointerup", handlePointerUp);
-    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointermove', handlePointerMove);
   }
 
   function handleLoaded(e) {
@@ -122,15 +122,15 @@
 
   function handleVolumeChange(e) {
     volume = audioElement.volume;
-    localStorage.setItem("settings.volume", volume.toString());
+    localStorage.setItem('settings.volume', volume.toString());
   }
 
   onMount(() => {
-    window.eventBus.subscribe("audio_open", handleAudioOpen);
+    window.eventBus.subscribe('audio_open', handleAudioOpen);
   });
 
   onDestroy(() => {
-    window.eventBus.unsubscribe("audio_open", handleAudioOpen);
+    window.eventBus.unsubscribe('audio_open', handleAudioOpen);
 
     if (updateInterval) {
       clearInterval(updateInterval);

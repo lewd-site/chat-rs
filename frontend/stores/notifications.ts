@@ -8,14 +8,14 @@ export const CLOSE_NEW_NOTIFICATION_DELAY = 20000;
 export const notifications = writable<PostNotification[]>([]);
 export const newNotifications = writable<Notification[]>([]);
 
-export function setNotifications(newNotifications: PostNotification[]) {
+export function setNotifications(newNotifications: PostNotification[]): void {
   const _notifications = newNotifications.slice(0, MAX_NOTIFICATIONS);
   _notifications.sort((a, b) => +b.id - a.id);
   notifications.set(_notifications);
 }
 
-export function addNotification(newNotification: PostNotification) {
-  notifications.update(notifications => {
+export function addNotification(newNotification: PostNotification): void {
+  notifications.update((notifications) => {
     const values = [newNotification, ...notifications].slice(0, MAX_NOTIFICATIONS);
     values.sort((a, b) => +b.id - a.id);
 
@@ -23,9 +23,9 @@ export function addNotification(newNotification: PostNotification) {
   });
 }
 
-export function readNotification(notification: PostNotification) {
-  notifications.update(notifications => {
-    const index = notifications.findIndex(n => +n.id === +notification.id);
+export function readNotification(notification: PostNotification): void {
+  notifications.update((notifications) => {
+    const index = notifications.findIndex((n) => +n.id === +notification.id);
     if (index !== -1) {
       notifications.splice(index, 1, { ...notification, read: true });
     }
@@ -34,12 +34,12 @@ export function readNotification(notification: PostNotification) {
   });
 }
 
-export function removeNotification(notification: PostNotification) {
-  notifications.update(notifications => notifications.filter(n => +n.id !== +notification.id));
+export function removeNotification(notification: PostNotification): void {
+  notifications.update((notifications) => notifications.filter((n) => +n.id !== +notification.id));
 }
 
-export function addNewNotification(notification: Notification) {
-  newNotifications.update(notifications => [notification, ...notifications]);
+export function addNewNotification(notification: Notification): void {
+  newNotifications.update((notifications) => [notification, ...notifications]);
 
   let timeout: number | null = null;
 
@@ -71,10 +71,10 @@ export function addNewNotification(notification: Notification) {
   }
 }
 
-export function removeNewNotification(notification: Notification) {
-  newNotifications.update(notifications => notifications.filter(n => n !== notification));
+export function removeNewNotification(notification: Notification): void {
+  newNotifications.update((notifications) => notifications.filter((n) => n !== notification));
 }
 
-export function removeNewNotifications() {
+export function removeNewNotifications(): void {
   newNotifications.set([]);
 }

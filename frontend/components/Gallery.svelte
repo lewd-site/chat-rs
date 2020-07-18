@@ -1,7 +1,7 @@
 <script>
-  import GalleryFile from "./GalleryFile.svelte";
-  import { formatFileSize } from "./file";
-  import { hslide } from "../anim";
+  import GalleryFile from './GalleryFile.svelte';
+  import { formatFileSize } from './file';
+  import { hslide } from '../anim';
   import {
     galleryVisible,
     hideGallery,
@@ -9,9 +9,9 @@
     setFavoriteFiles,
     recentFiles,
     setRecentFiles
-  } from "../stores/files";
+  } from '../stores/files';
 
-  let tab = "main";
+  let tab = 'main';
 
   galleryVisible.subscribe(async value => {
     if (!value) {
@@ -26,17 +26,17 @@
     const url = `/src/${file.md5}.${file.extension}`;
 
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
-    xhr.responseType = "blob";
+    xhr.open('GET', url, true);
+    xhr.responseType = 'blob';
 
-    xhr.addEventListener("readystatechange", e => {
+    xhr.addEventListener('readystatechange', e => {
       if (xhr.readyState !== XMLHttpRequest.DONE) {
         return;
       }
 
       const blob = xhr.response;
       blob.name = file.name;
-      window.eventBus.dispatch("gallery_upload", blob);
+      window.eventBus.dispatch('gallery_upload', blob);
       hideGallery();
     });
 
@@ -55,7 +55,7 @@
     setRecentFiles(await window.api.getLatestFiles());
   }
 
-  let tenorSearch = "";
+  let tenorSearch = '';
   let tenorPage = 0;
   let tenorResults = [];
   let tenorTimeout = null;
@@ -95,20 +95,20 @@
   }
 
   function handleGifClick(gif) {
-    const url = gif.media[0]["gif"].url;
+    const url = gif.media[0]['gif'].url;
 
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
-    xhr.responseType = "blob";
+    xhr.open('GET', url, true);
+    xhr.responseType = 'blob';
 
-    xhr.addEventListener("readystatechange", e => {
+    xhr.addEventListener('readystatechange', e => {
       if (xhr.readyState !== XMLHttpRequest.DONE) {
         return;
       }
 
       const blob = xhr.response;
-      blob.name = "tenor.gif";
-      window.eventBus.dispatch("gallery_upload", blob);
+      blob.name = 'tenor.gif';
+      window.eventBus.dispatch('gallery_upload', blob);
       hideGallery();
     });
 
@@ -119,7 +119,9 @@
 </script>
 
 {#if $galleryVisible}
-  <div class="gallery__inner" transition:hslide={{ duration: 300, origin: '100% 0' }}>
+  <div
+    class="gallery__inner"
+    transition:hslide={{ duration: 300, origin: '100% 0' }}>
     {#if tab === 'main'}
       <header class="gallery__header">
         <div

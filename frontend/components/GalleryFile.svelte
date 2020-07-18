@@ -1,17 +1,17 @@
 <script>
-  import { createEventDispatcher } from "svelte";
-  import { formatFileSize } from "./file";
+  import { createEventDispatcher } from 'svelte';
+  import { formatFileSize } from './file';
 
   export let file = null;
 
   const dispatch = createEventDispatcher();
 
   function handleFileClick(file) {
-    dispatch("fileClick", file);
+    dispatch('fileClick', file);
   }
 
   function handleFavoriteClick(file) {
-    dispatch("favoriteClick", file);
+    dispatch('favoriteClick', file);
   }
 </script>
 

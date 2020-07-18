@@ -19,34 +19,42 @@ const SIZE_4 = 240 * 1.125;
 const SIZE_5 = 240 * 1.25;
 const GAP = 8;
 
+const EMPTY = {
+  width: 0,
+  height: 0,
+  entries: [],
+};
+
 export function gallery(files: File[]): Gallery {
   switch (files.length) {
     case 0: {
-      return {
-        width: 0,
-        height: 0,
-        entries: [],
-      };
+      return EMPTY;
     }
 
     case 1: {
       const file = files[0];
       const { width: w, height: h } = file;
-      const s = Math.min(1, SIZE / w!, SIZE / h!);
+      if (!w || !h) {
+        return EMPTY;
+      }
 
-      const sw = Math.floor(s * w!);
-      const sh = Math.floor(s * h!);
+      const s = Math.min(1, SIZE / w, SIZE / h);
+
+      const sw = Math.floor(s * w);
+      const sh = Math.floor(s * h);
 
       return {
         width: sw,
         height: sh,
-        entries: [{
-          top: 0,
-          left: 0,
-          width: sw,
-          height: sh,
-          file,
-        }]
+        entries: [
+          {
+            top: 0,
+            left: 0,
+            width: sw,
+            height: sh,
+            file,
+          },
+        ],
       };
     }
 
@@ -55,21 +63,24 @@ export function gallery(files: File[]): Gallery {
 
       const { width: w1, height: h1 } = file1;
       const { width: w2, height: h2 } = file2;
+      if (!w1 || !h1 || !w2 || !h2) {
+        return EMPTY;
+      }
 
-      const s1 = Math.min(1, SIZE / w1!, SIZE / h1!);
-      const s2 = Math.min(1, SIZE / w2!, SIZE / h2!);
+      const s1 = Math.min(1, SIZE / w1, SIZE / h1);
+      const s2 = Math.min(1, SIZE / w2, SIZE / h2);
 
-      const sw1 = s1 * w1!;
-      const sh1 = s1 * h1!;
+      const sw1 = s1 * w1;
+      const sh1 = s1 * h1;
 
-      const sw2 = s2 * w2!;
-      const sh2 = s2 * h2!;
+      const sw2 = s2 * w2;
+      const sh2 = s2 * h2;
 
-      if (sw1! + sw2! > sh1! + sh2!) {
+      if (sw1 + sw2 > sh1 + sh2) {
         const sw = Math.floor(Math.min(sw1, sw2));
 
-        const sh1 = Math.floor(h1! * sw / w1!);
-        const sh2 = Math.floor(h2! * sw / w2!);
+        const sh1 = Math.floor((h1 * sw) / w1);
+        const sh2 = Math.floor((h2 * sw) / w2);
 
         return {
           width: sw,
@@ -94,8 +105,8 @@ export function gallery(files: File[]): Gallery {
       } else {
         const sh = Math.floor(Math.min(sh1, sh2));
 
-        const sw1 = Math.floor(w1! * sh / h1!);
-        const sw2 = Math.floor(w2! * sh / h2!);
+        const sw1 = Math.floor((w1 * sh) / h1);
+        const sw2 = Math.floor((w2 * sh) / h2);
 
         return {
           width: sw1 + GAP + sw2,
@@ -126,16 +137,19 @@ export function gallery(files: File[]): Gallery {
       const { width: w1, height: h1 } = file1;
       const { width: w2, height: h2 } = file2;
       const { width: w3, height: h3 } = file3;
+      if (!w1 || !h1 || !w2 || !h2 || !w3 || !h3) {
+        return EMPTY;
+      }
 
-      const s1 = Math.min(1, SIZE / w1!, SIZE / h1!);
-      const sw1 = Math.floor(s1 * w1!);
-      const sh1 = Math.floor(s1 * h1!);
+      const s1 = Math.min(1, SIZE / w1, SIZE / h1);
+      const sw1 = Math.floor(s1 * w1);
+      const sh1 = Math.floor(s1 * h1);
 
       if (sw1 < sh1) {
         const sh = Math.floor((sh1 - GAP) / 2);
-        const s2 = Math.min(1, sh / w2!, sh / h2!);
-        const s3 = Math.min(1, sh / w3!, sh / h3!);
-        const sw = Math.floor(Math.min(s2 * w2!, s3 * w3!));
+        const s2 = Math.min(1, sh / w2, sh / h2);
+        const s3 = Math.min(1, sh / w3, sh / h3);
+        const sw = Math.floor(Math.min(s2 * w2, s3 * w3));
 
         return {
           width: sw1 + GAP + sw,
@@ -166,9 +180,9 @@ export function gallery(files: File[]): Gallery {
         };
       } else {
         const sw = Math.floor((sw1 - GAP) / 2);
-        const s2 = Math.min(1, sw / w2!, sw / h2!);
-        const s3 = Math.min(1, sw / w3!, sw / h3!);
-        const sh = Math.floor(Math.min(s2 * w2!, s3 * w3!));
+        const s2 = Math.min(1, sw / w2, sw / h2);
+        const s3 = Math.min(1, sw / w3, sw / h3);
+        const sh = Math.floor(Math.min(s2 * w2, s3 * w3));
 
         return {
           width: sw1,
@@ -207,17 +221,20 @@ export function gallery(files: File[]): Gallery {
       const { width: w2, height: h2 } = file2;
       const { width: w3, height: h3 } = file3;
       const { width: w4, height: h4 } = file4;
+      if (!w1 || !h1 || !w2 || !h2 || !w3 || !h3 || !w4 || !h4) {
+        return EMPTY;
+      }
 
-      const s1 = Math.min(1, SIZE_4 / w1!, SIZE_4 / h1!);
-      const sw1 = Math.floor(s1 * w1!);
-      const sh1 = Math.floor(s1 * h1!);
+      const s1 = Math.min(1, SIZE_4 / w1, SIZE_4 / h1);
+      const sw1 = Math.floor(s1 * w1);
+      const sh1 = Math.floor(s1 * h1);
 
       if (sw1 < sh1) {
         const sh = Math.floor((sh1 - 2 * GAP) / 3);
-        const s2 = Math.min(1, sh / w2!, sh / h2!);
-        const s3 = Math.min(1, sh / w3!, sh / h3!);
-        const s4 = Math.min(1, sh / w4!, sh / h4!);
-        const sw = Math.floor(Math.min(s2 * w2!, s3 * w3!, s4 * w4!));
+        const s2 = Math.min(1, sh / w2, sh / h2);
+        const s3 = Math.min(1, sh / w3, sh / h3);
+        const s4 = Math.min(1, sh / w4, sh / h4);
+        const sw = Math.floor(Math.min(s2 * w2, s3 * w3, s4 * w4));
 
         return {
           width: sw1 + GAP + sw,
@@ -255,10 +272,10 @@ export function gallery(files: File[]): Gallery {
         };
       } else {
         const sw = Math.floor((sw1 - 2 * GAP) / 3);
-        const s2 = Math.min(1, sw / w2!, sw / h2!);
-        const s3 = Math.min(1, sw / w3!, sw / h3!);
-        const s4 = Math.min(1, sw / w4!, sw / h4!);
-        const sh = Math.floor(Math.min(s2 * w2!, s3 * w3!, s4 * w4!));
+        const s2 = Math.min(1, sw / w2, sw / h2);
+        const s3 = Math.min(1, sw / w3, sw / h3);
+        const s4 = Math.min(1, sw / w4, sw / h4);
+        const sh = Math.floor(Math.min(s2 * w2, s3 * w3, s4 * w4));
 
         return {
           width: sw1,
@@ -305,18 +322,21 @@ export function gallery(files: File[]): Gallery {
       const { width: w3, height: h3 } = file3;
       const { width: w4, height: h4 } = file4;
       const { width: w5, height: h5 } = file5;
+      if (!w1 || !h1 || !w2 || !h2 || !w3 || !h3 || !w4 || !h4 || !w5 || !h5) {
+        return EMPTY;
+      }
 
-      const s1 = Math.min(1, SIZE_5 / w1!, SIZE_5 / h1!);
-      const sw1 = Math.floor(s1 * w1!);
-      const sh1 = Math.floor(s1 * h1!);
+      const s1 = Math.min(1, SIZE_5 / w1, SIZE_5 / h1);
+      const sw1 = Math.floor(s1 * w1);
+      const sh1 = Math.floor(s1 * h1);
 
       if (sw1 < sh1) {
         const sh = Math.floor((sh1 - 3 * GAP) / 4);
-        const s2 = Math.min(1, sh / w2!, sh / h2!);
-        const s3 = Math.min(1, sh / w3!, sh / h3!);
-        const s4 = Math.min(1, sh / w4!, sh / h4!);
-        const s5 = Math.min(1, sh / w5!, sh / h5!);
-        const sw = Math.floor(Math.min(s2 * w2!, s3 * w3!, s4 * w4!, s5 * w5!));
+        const s2 = Math.min(1, sh / w2, sh / h2);
+        const s3 = Math.min(1, sh / w3, sh / h3);
+        const s4 = Math.min(1, sh / w4, sh / h4);
+        const s5 = Math.min(1, sh / w5, sh / h5);
+        const sw = Math.floor(Math.min(s2 * w2, s3 * w3, s4 * w4, s5 * w5));
 
         return {
           width: sw1 + GAP + sw,
@@ -361,11 +381,11 @@ export function gallery(files: File[]): Gallery {
         };
       } else {
         const sw = Math.floor((sw1 - 3 * GAP) / 4);
-        const s2 = Math.min(1, sw / w2!, sw / h2!);
-        const s3 = Math.min(1, sw / w3!, sw / h3!);
-        const s4 = Math.min(1, sw / w4!, sw / h4!);
-        const s5 = Math.min(1, sw / w5!, sw / h5!);
-        const sh = Math.floor(Math.min(s2 * w2!, s3 * w3!, s4 * w4!, s5 * w5!));
+        const s2 = Math.min(1, sw / w2, sw / h2);
+        const s3 = Math.min(1, sw / w3, sw / h3);
+        const s4 = Math.min(1, sw / w4, sw / h4);
+        const s5 = Math.min(1, sw / w5, sw / h5);
+        const sh = Math.floor(Math.min(s2 * w2, s3 * w3, s4 * w4, s5 * w5));
 
         return {
           width: sw1,
@@ -412,5 +432,5 @@ export function gallery(files: File[]): Gallery {
     }
   }
 
-  return { width: 0, height: 0, entries: [] };
+  return EMPTY;
 }

@@ -1,4 +1,4 @@
-export function formatFileSize(size: number) {
+export function formatFileSize(size: number): string {
   if (size === 0) {
     return '0 B';
   }

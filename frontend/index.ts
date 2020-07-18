@@ -1,5 +1,6 @@
 import 'regenerator-runtime/runtime';
 
+import Sentry from '@sentry/browser';
 import AuthModal from './components/AuthModal.svelte';
 import Gallery from './components/Gallery.svelte';
 import MediaBox from './components/MediaBox.svelte';
@@ -28,8 +29,6 @@ import '@simonwep/pickr/dist/themes/nano.min.css';
 
 declare global {
   interface Window {
-    readonly Sentry?: any;
-
     api?: Api;
     coub?: Coub;
     eventBus?: EventEmitter;
@@ -41,9 +40,9 @@ declare global {
   }
 }
 
-if (typeof config.sentryDsn !== 'undefined' && config.sentryDsn !== null) {
+if (typeof config.sentryDsn !== undefined && config.sentryDsn !== null) {
   try {
-    window.Sentry.init({ dsn: config.sentryDsn });
+    Sentry.init({ dsn: `${config.sentryDsn}` });
   } catch (e) {
     console.log("Can't init Sentry: ", e);
   }
@@ -51,7 +50,9 @@ if (typeof config.sentryDsn !== 'undefined' && config.sentryDsn !== null) {
 
 window.eventBus = new EventEmitter();
 
-const components: { [key: string]: any } = {
+const components: {
+  [key: string]: { new ({ target }: { target: Element }): unknown };
+} = {
   '#auth-modal': AuthModal,
   '#gallery': Gallery,
   '#media-box': MediaBox,
@@ -61,42 +62,42 @@ const components: { [key: string]: any } = {
   '#post-popups': PostPopups,
 };
 
-for (let key in components) {
+for (const key in components) {
   const container = document.querySelector(key);
   if (container === null) {
     throw new Error(`${key} not found`);
   }
 
   const Component = components[key];
-  const instance = new Component({ target: container });
+  new Component({ target: container });
 }
 
 const authButton = document.getElementById('login');
 authButton?.setAttribute('hidden', '');
-authButton?.addEventListener('click', e => {
+authButton?.addEventListener('click', () => {
   showAuthModal.set(true);
 });
 
 window.api = new Api();
 window.coub = new Coub();
-window.sso = new Sso(() => window.api!.getToken());
+window.sso = new Sso(() => window.api?.getToken());
 window.tiktok = new TikTok();
 window.tenor = new Tenor();
 window.youtube = new YouTube();
 window.ws = new Ws(config.wsUrl);
 
-userUuid.subscribe(uuid => {
+userUuid.subscribe((uuid) => {
   if (!uuid) {
     return;
   }
 
-  window.api?.getNotifications().then(notifications => {
+  window.api?.getNotifications().then((notifications) => {
     setNotifications(notifications);
   });
 });
 
 let _posts: Posts = {};
-posts.subscribe(posts => _posts = posts);
+posts.subscribe((posts) => (_posts = posts));
 
 window.addEventListener('scroll', async () => {
   if (utils.isAtTop()) {
@@ -105,37 +106,40 @@ window.addEventListener('scroll', async () => {
       return;
     }
 
-    const oldPosts = await window.api!.getPostsBefore(firstPost.id);
-    addPosts(oldPosts);
-    utils.maintainScrollBottom();
+    const oldPosts = await window.api?.getPostsBefore(firstPost.id);
+    if (oldPosts) {
+      addPosts(oldPosts);
+      utils.maintainScrollBottom();
+    }
   } else if (utils.isAtBottom()) {
     unloadOldPosts();
   }
 });
 
-document.getElementById('scroll-to-top')?.addEventListener('click', e => {
+document.getElementById('scroll-to-top')?.addEventListener('click', (e) => {
   e.preventDefault();
   utils.scrollToTop();
 });
 
-document.getElementById('scroll-to-bottom')?.addEventListener('click', e => {
+document.getElementById('scroll-to-bottom')?.addEventListener('click', (e) => {
   e.preventDefault();
   utils.scrollToBottom();
 });
 
-document.getElementById('toggle-nsfw')?.addEventListener('click', e => {
+document.getElementById('toggle-nsfw')?.addEventListener('click', (e) => {
   e.preventDefault();
   toggleNSFWMode();
 });
 
-document.addEventListener('click', e => {
+document.addEventListener('click', (e) => {
   if (!(e.target instanceof HTMLElement)) {
     return;
   }
 
   const target = e.target.closest('[data-ref-link]');
   if (target) {
-    const id = +target.getAttribute('data-ref-link')!;
+    const attr = target.getAttribute('data-ref-link');
+    const id = attr ? +attr : 0;
     const post = document.getElementById(`post_${id}`);
     if (post) {
       e.preventDefault();
@@ -147,10 +151,12 @@ document.addEventListener('click', e => {
   }
 });
 
-document.addEventListener('keydown', e => {
-  if (!(e.target instanceof HTMLElement) ||
+document.addEventListener('keydown', (e) => {
+  if (
+    !(e.target instanceof HTMLElement) ||
     e.target.tagName === 'INPUT' ||
-    e.target.tagName === 'TEXTAREA') {
+    e.target.tagName === 'TEXTAREA'
+  ) {
     return;
   }
 
@@ -160,7 +166,7 @@ document.addEventListener('keydown', e => {
   }
 });
 
-nsfwMode.subscribe(nsfwMode => {
+nsfwMode.subscribe((nsfwMode) => {
   if (nsfwMode) {
     document.body.classList.add('nsfw');
   } else {

@@ -38,15 +38,15 @@ export class Api {
   public getToken = async (): Promise<string | null> => {
     const authButton = document.getElementById('login');
     try {
-      await window.sso!.get();
-      if (window.sso!.hasAccessToken && !window.sso!.hasExpired) {
-        token.set(window.sso!.accessTokenData);
+      await window.sso?.get();
+      if (window.sso?.hasAccessToken && !window.sso?.hasExpired) {
+        token.set(window.sso?.accessTokenData);
         authButton?.setAttribute('hidden', '');
       } else {
         const email = localStorage['auth_email'];
-        if (window.sso!.hasRefreshToken && email) {
-          await window.sso!.refreshByEmail(email);
-          token.set(window.sso!.accessTokenData);
+        if (window.sso?.hasRefreshToken && email) {
+          await window.sso?.refreshByEmail(email);
+          token.set(window.sso?.accessTokenData);
           authButton?.setAttribute('hidden', '');
         } else {
           token.set(null);
@@ -58,7 +58,7 @@ export class Api {
       authButton?.removeAttribute('hidden');
     }
 
-    return window.sso!.accessToken;
+    return typeof window.sso !== 'undefined' ? window.sso.accessToken : null;
   };
 
   public submitPost = async (data: SubmitPostRequest): Promise<Post> => {
@@ -68,7 +68,7 @@ export class Api {
     formData.append('message', data.message);
 
     if (data.files && data.files.length) {
-      [...data.files].forEach(file => {
+      [...data.files].forEach((file) => {
         formData.append('file', file, file.name);
       });
     }
@@ -105,14 +105,14 @@ export class Api {
     const config: AxiosRequestConfig = { headers: {} };
 
     const token = await this.getToken();
-    if (window.sso!.hasAccessToken && !window.sso!.hasExpired) {
+    if (window.sso?.hasAccessToken && !window.sso?.hasExpired) {
       config.headers['Authorization'] = `Bearer ${token}`;
     } else {
       return [];
     }
 
     const response = await axios.get<NotificationListResponse>('/api/v1/notifications', config);
-    return response.data.items.map(item => ({ ...item, type: 'post' }));
+    return response.data.items.map((item) => ({ ...item, type: 'post' }));
   };
 
   public readNotification = async (id: number): Promise<PostNotification> => {
@@ -123,7 +123,11 @@ export class Api {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await axios.post<NotificationResponse>(`/api/v1/notifications/${id}/read`, {}, config);
+    const response = await axios.post<NotificationResponse>(
+      `/api/v1/notifications/${id}/read`,
+      {},
+      config,
+    );
     return { ...response.data.item, type: 'post' };
   };
 
@@ -135,7 +139,10 @@ export class Api {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await axios.delete<NotificationResponse>(`/api/v1/notifications/${id}`, config);
+    const response = await axios.delete<NotificationResponse>(
+      `/api/v1/notifications/${id}`,
+      config,
+    );
     return { ...response.data.item, type: 'post' };
   };
 
@@ -162,7 +169,7 @@ export class Api {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await axios.post<FileResponse>(`/api/v1/favorites`, request, config);
+    const response = await axios.post<FileResponse>('/api/v1/favorites', request, config);
     return response.data.item;
   };
 

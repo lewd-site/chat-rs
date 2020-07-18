@@ -1,12 +1,12 @@
 <script>
-  import { onMount } from "svelte";
-  import { createEventDispatcher } from "svelte";
+  import { onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
 
-  import RichTextBox from "./RichTextBox.ts";
+  import RichTextBox from './RichTextBox.ts';
 
-  export let className = "";
-  export let name = "";
-  export let value = "";
+  export let className = '';
+  export let name = '';
+  export let value = '';
 
   let element;
   let richTextBox;
@@ -16,7 +16,7 @@
   onMount(() => {
     richTextBox = new RichTextBox(element, newValue => {
       value = newValue;
-      dispatch("change", { value });
+      dispatch('change', { value });
     });
   });
 
