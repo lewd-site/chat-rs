@@ -322,6 +322,12 @@
     }
   }
 
+  function handleDrop(e) {
+    if (e.dataTransfer.files.length > 0) {
+      addFiles(e.dataTransfer.files);
+    }
+  }
+
   onMount(() => {
     window.eventBus.subscribe("reply", handleReply);
     window.eventBus.subscribe("gallery_upload", addFile);
@@ -381,6 +387,10 @@
   on:submit|preventDefault={handleSubmit}
   on:focusin={handleFocusIn}
   on:focusout={handleFocusOut}
+  on:dragenter|preventDefault|stopPropagation
+  on:dragover|preventDefault|stopPropagation
+  on:dragleave|preventDefault|stopPropagation
+  on:drop|preventDefault|stopPropagation={handleDrop}
   bind:this={formElement}
   tabindex="-1">
   {#if previews.length}

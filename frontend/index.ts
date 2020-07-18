@@ -41,7 +41,7 @@ declare global {
     }
 }
 
-if (typeof config.sentryDsn !== 'undefined') {
+if (typeof config.sentryDsn !== 'undefined' && config.sentryDsn !== null) {
     try {
         window.Sentry.init({ dsn: config.sentryDsn });
     } catch (e) {
