@@ -27,54 +27,54 @@ import 'prosemirror-view/style/prosemirror.css';
 import '@simonwep/pickr/dist/themes/nano.min.css';
 
 declare global {
-    interface Window {
-        readonly Sentry?: any;
+  interface Window {
+    readonly Sentry?: any;
 
-        api?: Api;
-        coub?: Coub;
-        eventBus?: EventEmitter;
-        sso?: Sso;
-        tenor?: Tenor;
-        tiktok?: TikTok;
-        ws?: Ws;
-        youtube?: YouTube;
-    }
+    api?: Api;
+    coub?: Coub;
+    eventBus?: EventEmitter;
+    sso?: Sso;
+    tenor?: Tenor;
+    tiktok?: TikTok;
+    ws?: Ws;
+    youtube?: YouTube;
+  }
 }
 
 if (typeof config.sentryDsn !== 'undefined' && config.sentryDsn !== null) {
-    try {
-        window.Sentry.init({ dsn: config.sentryDsn });
-    } catch (e) {
-        console.log("Can't init Sentry: ", e);
-    }
+  try {
+    window.Sentry.init({ dsn: config.sentryDsn });
+  } catch (e) {
+    console.log("Can't init Sentry: ", e);
+  }
 }
 
 window.eventBus = new EventEmitter();
 
 const components: { [key: string]: any } = {
-    '#auth-modal': AuthModal,
-    '#gallery': Gallery,
-    '#media-box': MediaBox,
-    '#menu': Menu,
-    '#post-form': PostForm,
-    '#post-list': PostList,
-    '#post-popups': PostPopups,
+  '#auth-modal': AuthModal,
+  '#gallery': Gallery,
+  '#media-box': MediaBox,
+  '#menu': Menu,
+  '#post-form': PostForm,
+  '#post-list': PostList,
+  '#post-popups': PostPopups,
 };
 
 for (let key in components) {
-    const container = document.querySelector(key);
-    if (container === null) {
-        throw new Error(`${key} not found`);
-    }
+  const container = document.querySelector(key);
+  if (container === null) {
+    throw new Error(`${key} not found`);
+  }
 
-    const Component = components[key];
-    const instance = new Component({ target: container });
+  const Component = components[key];
+  const instance = new Component({ target: container });
 }
 
 const authButton = document.getElementById('login');
 authButton?.setAttribute('hidden', '');
 authButton?.addEventListener('click', e => {
-    showAuthModal.set(true);
+  showAuthModal.set(true);
 });
 
 window.api = new Api();
@@ -86,84 +86,84 @@ window.youtube = new YouTube();
 window.ws = new Ws(config.wsUrl);
 
 userUuid.subscribe(uuid => {
-    if (!uuid) {
-        return;
-    }
+  if (!uuid) {
+    return;
+  }
 
-    window.api?.getNotifications().then(notifications => {
-        setNotifications(notifications);
-    });
+  window.api?.getNotifications().then(notifications => {
+    setNotifications(notifications);
+  });
 });
 
 let _posts: Posts = {};
 posts.subscribe(posts => _posts = posts);
 
 window.addEventListener('scroll', async () => {
-    if (utils.isAtTop()) {
-        const firstPost = Object.values(_posts)[0];
-        if (!firstPost || +firstPost.id === 1) {
-            return;
-        }
-
-        const oldPosts = await window.api!.getPostsBefore(firstPost.id);
-        addPosts(oldPosts);
-        utils.maintainScrollBottom();
-    } else if (utils.isAtBottom()) {
-        unloadOldPosts();
+  if (utils.isAtTop()) {
+    const firstPost = Object.values(_posts)[0];
+    if (!firstPost || +firstPost.id === 1) {
+      return;
     }
+
+    const oldPosts = await window.api!.getPostsBefore(firstPost.id);
+    addPosts(oldPosts);
+    utils.maintainScrollBottom();
+  } else if (utils.isAtBottom()) {
+    unloadOldPosts();
+  }
 });
 
 document.getElementById('scroll-to-top')?.addEventListener('click', e => {
-    e.preventDefault();
-    utils.scrollToTop();
+  e.preventDefault();
+  utils.scrollToTop();
 });
 
 document.getElementById('scroll-to-bottom')?.addEventListener('click', e => {
-    e.preventDefault();
-    utils.scrollToBottom();
+  e.preventDefault();
+  utils.scrollToBottom();
 });
 
 document.getElementById('toggle-nsfw')?.addEventListener('click', e => {
-    e.preventDefault();
-    toggleNSFWMode();
+  e.preventDefault();
+  toggleNSFWMode();
 });
 
 document.addEventListener('click', e => {
-    if (!(e.target instanceof HTMLElement)) {
-        return;
-    }
+  if (!(e.target instanceof HTMLElement)) {
+    return;
+  }
 
-    const target = e.target.closest('[data-ref-link]');
-    if (target) {
-        const id = +target.getAttribute('data-ref-link')!;
-        const post = document.getElementById(`post_${id}`);
-        if (post) {
-            e.preventDefault();
-            utils.scrollToElement(post);
-            post.classList.add('post_highlight');
-            setTimeout(() => post.classList.remove('post_highlight'), 500);
-            return false;
-        }
+  const target = e.target.closest('[data-ref-link]');
+  if (target) {
+    const id = +target.getAttribute('data-ref-link')!;
+    const post = document.getElementById(`post_${id}`);
+    if (post) {
+      e.preventDefault();
+      utils.scrollToElement(post);
+      post.classList.add('post_highlight');
+      setTimeout(() => post.classList.remove('post_highlight'), 500);
+      return false;
     }
+  }
 });
 
 document.addEventListener('keydown', e => {
-    if (!(e.target instanceof HTMLElement) ||
-        e.target.tagName === 'INPUT' ||
-        e.target.tagName === 'TEXTAREA') {
-        return;
-    }
+  if (!(e.target instanceof HTMLElement) ||
+    e.target.tagName === 'INPUT' ||
+    e.target.tagName === 'TEXTAREA') {
+    return;
+  }
 
-    if (e.code === 'KeyB') {
-        e.preventDefault();
-        toggleNSFWMode();
-    }
+  if (e.code === 'KeyB') {
+    e.preventDefault();
+    toggleNSFWMode();
+  }
 });
 
 nsfwMode.subscribe(nsfwMode => {
-    if (nsfwMode) {
-        document.body.classList.add('nsfw');
-    } else {
-        document.body.classList.remove('nsfw');
-    }
+  if (nsfwMode) {
+    document.body.classList.add('nsfw');
+  } else {
+    document.body.classList.remove('nsfw');
+  }
 });

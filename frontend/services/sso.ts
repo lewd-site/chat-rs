@@ -3,203 +3,203 @@ import jwtDecode from 'jwt-decode';
 import config from '../config';
 
 export interface TokenData {
-    readonly user_uuid: string;
-    readonly user_name: string;
-    readonly user_email: string;
-    readonly iat: number;
-    readonly nbf: number;
-    readonly exp: number;
+  readonly user_uuid: string;
+  readonly user_name: string;
+  readonly user_email: string;
+  readonly iat: number;
+  readonly nbf: number;
+  readonly exp: number;
 }
 
 class Deferred<T> {
-    public readonly promise: Promise<T>;
-    private _resolve: (value?: T | PromiseLike<T>) => void = () => { };
-    private _reject: (reason?: any) => void = () => { };
+  public readonly promise: Promise<T>;
+  private _resolve: (value?: T | PromiseLike<T>) => void = () => { };
+  private _reject: (reason?: any) => void = () => { };
 
-    public constructor() {
-        this.promise = new Promise<T>((resolve, reject) => {
-            this._resolve = resolve;
-            this._reject = reject;
-        });
-    }
+  public constructor() {
+    this.promise = new Promise<T>((resolve, reject) => {
+      this._resolve = resolve;
+      this._reject = reject;
+    });
+  }
 
-    public resolve = (value: T) => {
-        this._resolve(value);
-    };
+  public resolve = (value: T) => {
+    this._resolve(value);
+  };
 
-    public reject = (reason: any) => {
-        this._reject(reason);
-    };
+  public reject = (reason: any) => {
+    this._reject(reason);
+  };
 }
 
 export class Sso {
-    private readonly element: HTMLIFrameElement;
-    private readonly requests: { [id: number]: Deferred<TokenData | null> } = {};
+  private readonly element: HTMLIFrameElement;
+  private readonly requests: { [id: number]: Deferred<TokenData | null> } = {};
 
-    private id: number = 0;
-    private _accessToken: string | null = null;
-    private _refreshToken: string | null = null;
-    private _accessTokenData: TokenData | null = null;
+  private id: number = 0;
+  private _accessToken: string | null = null;
+  private _refreshToken: string | null = null;
+  private _accessTokenData: TokenData | null = null;
 
-    public get hasAccessToken(): boolean {
-        return this._accessToken !== null;
+  public get hasAccessToken(): boolean {
+    return this._accessToken !== null;
+  }
+
+  public get hasRefreshToken(): boolean {
+    return this._refreshToken !== null;
+  }
+
+  public get accessToken(): string | null {
+    return this._accessToken;
+  }
+
+  public get accessTokenData(): TokenData | null {
+    return this._accessTokenData;
+  }
+
+  public get hasExpired(): boolean {
+    if (!this.hasAccessToken) {
+      return true;
     }
 
-    public get hasRefreshToken(): boolean {
-        return this._refreshToken !== null;
-    }
+    const now = Date.now();
+    const exp = this.accessTokenData!.exp * 1000;
 
-    public get accessToken(): string | null {
-        return this._accessToken;
-    }
+    return exp <= now;
+  }
 
-    public get accessTokenData(): TokenData | null {
-        return this._accessTokenData;
-    }
+  public constructor(private readonly loadCallback?: () => void) {
+    this.bind();
 
-    public get hasExpired(): boolean {
-        if (!this.hasAccessToken) {
-            return true;
+    this.element = document.createElement('iframe');
+    this.element.setAttribute('hidden', '');
+    this.element.src = config.ssoOrigin;
+    document.body.appendChild(this.element);
+
+    this.element.addEventListener('load', this.handleLoad);
+  }
+
+  private handleLoad = () => {
+    this.element.removeEventListener('load', this.handleLoad);
+
+    setTimeout(() => {
+      if (this.loadCallback) {
+        this.loadCallback();
+      }
+    });
+  }
+
+  public bind = () => {
+    window.addEventListener('message', this.handleMessage);
+  };
+
+  public unbind = () => {
+    window.removeEventListener('message', this.handleMessage);
+  };
+
+  private handleMessage = (e: MessageEvent) => {
+    if (e.data.command === 'set_token') {
+      this._accessToken = e.data.access_token || null;
+      this._refreshToken = e.data.refresh_token || null;
+
+      if (this.accessToken) {
+        this._accessTokenData = jwtDecode(this.accessToken);
+      } else {
+        this._accessTokenData = null;
+      }
+
+      if (e.data.id) {
+        const request = this.requests[e.data.id];
+        if (request) {
+          request.resolve(this.accessTokenData);
         }
 
-        const now = Date.now();
-        const exp = this.accessTokenData!.exp * 1000;
-
-        return exp <= now;
-    }
-
-    public constructor(private readonly loadCallback?: () => void) {
-        this.bind();
-
-        this.element = document.createElement('iframe');
-        this.element.setAttribute('hidden', '');
-        this.element.src = config.ssoOrigin;
-        document.body.appendChild(this.element);
-
-        this.element.addEventListener('load', this.handleLoad);
-    }
-
-    private handleLoad = () => {
-        this.element.removeEventListener('load', this.handleLoad);
-
-        setTimeout(() => {
-            if (this.loadCallback) {
-                this.loadCallback();
-            }
-        });
-    }
-
-    public bind = () => {
-        window.addEventListener('message', this.handleMessage);
-    };
-
-    public unbind = () => {
-        window.removeEventListener('message', this.handleMessage);
-    };
-
-    private handleMessage = (e: MessageEvent) => {
-        if (e.data.command === 'set_token') {
-            this._accessToken = e.data.access_token || null;
-            this._refreshToken = e.data.refresh_token || null;
-
-            if (this.accessToken) {
-                this._accessTokenData = jwtDecode(this.accessToken);
-            } else {
-                this._accessTokenData = null;
-            }
-
-            if (e.data.id) {
-                const request = this.requests[e.data.id];
-                if (request) {
-                    request.resolve(this.accessTokenData);
-                }
-
-                delete this.requests[e.data.id];
-            }
-        } else if (e.data.command === 'error') {
-            if (e.data.id) {
-                const request = this.requests[e.data.id];
-                if (request) {
-                    request.reject(e.data.error);
-                }
-
-                delete this.requests[e.data.id];
-            }
+        delete this.requests[e.data.id];
+      }
+    } else if (e.data.command === 'error') {
+      if (e.data.id) {
+        const request = this.requests[e.data.id];
+        if (request) {
+          request.reject(e.data.error);
         }
-    };
 
-    public get = (): Promise<TokenData | null> => {
-        const id = ++this.id;
+        delete this.requests[e.data.id];
+      }
+    }
+  };
 
-        this.element.contentWindow?.postMessage({
-            id,
-            command: 'get_token',
-        }, config.ssoOrigin);
+  public get = (): Promise<TokenData | null> => {
+    const id = ++this.id;
 
-        const request = new Deferred<TokenData | null>();
-        this.requests[id] = request;
-        return request.promise;
-    };
+    this.element.contentWindow?.postMessage({
+      id,
+      command: 'get_token',
+    }, config.ssoOrigin);
 
-    public loginByEmail = (email: string, password: string): Promise<TokenData | null> => {
-        const id = ++this.id;
+    const request = new Deferred<TokenData | null>();
+    this.requests[id] = request;
+    return request.promise;
+  };
 
-        this.element.contentWindow?.postMessage({
-            id,
-            command: 'refresh_token',
-            email,
-            password,
-        }, config.ssoOrigin);
+  public loginByEmail = (email: string, password: string): Promise<TokenData | null> => {
+    const id = ++this.id;
 
-        const request = new Deferred<TokenData | null>();
-        this.requests[id] = request;
-        return request.promise;
-    };
+    this.element.contentWindow?.postMessage({
+      id,
+      command: 'refresh_token',
+      email,
+      password,
+    }, config.ssoOrigin);
 
-    public loginByName = (name: string, password: string): Promise<TokenData | null> => {
-        const id = ++this.id;
+    const request = new Deferred<TokenData | null>();
+    this.requests[id] = request;
+    return request.promise;
+  };
 
-        this.element.contentWindow?.postMessage({
-            id,
-            command: 'refresh_token',
-            name,
-            password,
-        }, config.ssoOrigin);
+  public loginByName = (name: string, password: string): Promise<TokenData | null> => {
+    const id = ++this.id;
 
-        const request = new Deferred<TokenData | null>();
-        this.requests[id] = request;
-        return request.promise;
-    };
+    this.element.contentWindow?.postMessage({
+      id,
+      command: 'refresh_token',
+      name,
+      password,
+    }, config.ssoOrigin);
 
-    public refreshByEmail = (email: string): Promise<TokenData | null> => {
-        const id = ++this.id;
+    const request = new Deferred<TokenData | null>();
+    this.requests[id] = request;
+    return request.promise;
+  };
 
-        this.element.contentWindow?.postMessage({
-            id,
-            command: 'refresh_token',
-            email,
-            refresh_token: this._refreshToken,
-        }, config.ssoOrigin);
+  public refreshByEmail = (email: string): Promise<TokenData | null> => {
+    const id = ++this.id;
 
-        const request = new Deferred<TokenData | null>();
-        this.requests[id] = request;
-        return request.promise;
-    };
+    this.element.contentWindow?.postMessage({
+      id,
+      command: 'refresh_token',
+      email,
+      refresh_token: this._refreshToken,
+    }, config.ssoOrigin);
 
-    public refreshByName = (name: string): Promise<TokenData | null> => {
-        const id = ++this.id;
+    const request = new Deferred<TokenData | null>();
+    this.requests[id] = request;
+    return request.promise;
+  };
 
-        this.element.contentWindow?.postMessage({
-            id,
-            command: 'refresh_token',
-            name,
-            refresh_token: this._refreshToken,
-        }, config.ssoOrigin);
+  public refreshByName = (name: string): Promise<TokenData | null> => {
+    const id = ++this.id;
 
-        const request = new Deferred<TokenData | null>();
-        this.requests[id] = request;
-        return request.promise;
-    };
+    this.element.contentWindow?.postMessage({
+      id,
+      command: 'refresh_token',
+      name,
+      refresh_token: this._refreshToken,
+    }, config.ssoOrigin);
+
+    const request = new Deferred<TokenData | null>();
+    this.requests[id] = request;
+    return request.promise;
+  };
 }
 
 export default Sso;

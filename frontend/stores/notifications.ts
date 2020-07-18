@@ -9,72 +9,72 @@ export const notifications = writable<PostNotification[]>([]);
 export const newNotifications = writable<Notification[]>([]);
 
 export function setNotifications(newNotifications: PostNotification[]) {
-    const _notifications = newNotifications.slice(0, MAX_NOTIFICATIONS);
-    _notifications.sort((a, b) => +b.id - a.id);
-    notifications.set(_notifications);
+  const _notifications = newNotifications.slice(0, MAX_NOTIFICATIONS);
+  _notifications.sort((a, b) => +b.id - a.id);
+  notifications.set(_notifications);
 }
 
 export function addNotification(newNotification: PostNotification) {
-    notifications.update(notifications => {
-        const values = [newNotification, ...notifications].slice(0, MAX_NOTIFICATIONS);
-        values.sort((a, b) => +b.id - a.id);
+  notifications.update(notifications => {
+    const values = [newNotification, ...notifications].slice(0, MAX_NOTIFICATIONS);
+    values.sort((a, b) => +b.id - a.id);
 
-        return values;
-    });
+    return values;
+  });
 }
 
 export function readNotification(notification: PostNotification) {
-    notifications.update(notifications => {
-        const index = notifications.findIndex(n => +n.id === +notification.id);
-        if (index !== -1) {
-            notifications.splice(index, 1, { ...notification, read: true });
-        }
+  notifications.update(notifications => {
+    const index = notifications.findIndex(n => +n.id === +notification.id);
+    if (index !== -1) {
+      notifications.splice(index, 1, { ...notification, read: true });
+    }
 
-        return notifications;
-    });
+    return notifications;
+  });
 }
 
 export function removeNotification(notification: PostNotification) {
-    notifications.update(notifications => notifications.filter(n => +n.id !== +notification.id));
+  notifications.update(notifications => notifications.filter(n => +n.id !== +notification.id));
 }
 
 export function addNewNotification(notification: Notification) {
-    newNotifications.update(notifications => [notification, ...notifications]);
+  newNotifications.update(notifications => [notification, ...notifications]);
 
-    let timeout: number | null = null;
+  let timeout: number | null = null;
 
-    const blur = () => {
-        if (timeout) {
-            clearTimeout(timeout);
-            timeout = null;
-        }
-    };
-
-    const focus = () => {
-        if (!timeout) {
-            timeout = setTimeout(() => {
-                document.removeEventListener('blur', blur);
-                document.removeEventListener('focus', focus);
-
-                removeNewNotification(notification);
-            }, CLOSE_NEW_NOTIFICATION_DELAY);
-        }
-    };
-
-    document.addEventListener('blur', blur);
-    document.addEventListener('focus', focus);
-
-    if (document.hidden) {
-        blur();
-    } else {
-        focus();
+  const blur = () => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
     }
+  };
+
+  const focus = () => {
+    if (!timeout) {
+      timeout = setTimeout(() => {
+        document.removeEventListener('blur', blur);
+        document.removeEventListener('focus', focus);
+
+        removeNewNotification(notification);
+      }, CLOSE_NEW_NOTIFICATION_DELAY);
+    }
+  };
+
+  document.addEventListener('blur', blur);
+  document.addEventListener('focus', focus);
+
+  if (document.hidden) {
+    blur();
+  } else {
+    focus();
+  }
 }
 
 export function removeNewNotification(notification: Notification) {
-    newNotifications.update(notifications => notifications.filter(n => n !== notification));
+  newNotifications.update(notifications => notifications.filter(n => n !== notification));
 }
 
 export function removeNewNotifications() {
-    newNotifications.set([]);
+  newNotifications.set([]);
 }
