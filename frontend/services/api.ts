@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
 import { token } from '../stores/auth';
-import { Post, Notification, PostNotification } from '../types';
+import { Post, NotificationDTO } from '../types';
 
 interface SubmitPostRequest {
   readonly name: string;
@@ -19,11 +19,11 @@ interface PostResponse {
 }
 
 interface NotificationResponse {
-  readonly item: PostNotification;
+  readonly item: NotificationDTO;
 }
 
 interface NotificationListResponse {
-  readonly items: PostNotification[];
+  readonly items: NotificationDTO[];
 }
 
 interface FileResponse {
@@ -101,7 +101,7 @@ export class Api {
     return response.data.item;
   };
 
-  public getNotifications = async (): Promise<PostNotification[]> => {
+  public getNotifications = async (): Promise<NotificationDTO[]> => {
     const config: AxiosRequestConfig = { headers: {} };
 
     const token = await this.getToken();
@@ -112,10 +112,10 @@ export class Api {
     }
 
     const response = await axios.get<NotificationListResponse>('/api/v1/notifications', config);
-    return response.data.items.map((item) => ({ ...item, type: 'post' }));
+    return response.data.items;
   };
 
-  public readNotification = async (id: number): Promise<PostNotification> => {
+  public readNotification = async (id: number): Promise<NotificationDTO> => {
     const config: AxiosRequestConfig = { headers: {} };
 
     const token = await this.getToken();
@@ -128,10 +128,10 @@ export class Api {
       {},
       config,
     );
-    return { ...response.data.item, type: 'post' };
+    return response.data.item;
   };
 
-  public deleteNotification = async (id: number): Promise<Notification> => {
+  public deleteNotification = async (id: number): Promise<NotificationDTO> => {
     const config: AxiosRequestConfig = { headers: {} };
 
     const token = await this.getToken();
@@ -143,7 +143,7 @@ export class Api {
       `/api/v1/notifications/${id}`,
       config,
     );
-    return { ...response.data.item, type: 'post' };
+    return response.data.item;
   };
 
   public getLatestFiles = async (): Promise<File[]> => {

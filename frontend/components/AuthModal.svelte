@@ -1,6 +1,7 @@
 <script>
+  import { SystemNotification } from '../models/Notification';
   import { showAuthModal, token } from '../stores/auth';
-  import { addNewNotification } from '../stores/notifications';
+  import NotificationPopups from '../stores/NotificationPopups';
 
   let email = '';
   let password = '';
@@ -26,7 +27,9 @@
 
       authButton.setAttribute('hidden', '');
       window.eventBus.dispatch('authmodal_submitted');
-      addNewNotification({ type: 'system', message: `Вы вошли как ${email}` });
+
+      const notification = new SystemNotification(`Вы вошли как ${email}`, new Date());
+      NotificationPopups.add(notification);
     } catch (e) {
       error = e;
 
@@ -55,10 +58,7 @@
     {/if}
 
     <div class="auth-modal__actions">
-      <button
-        type="button"
-        class="auth-modal__cancel"
-        on:click|preventDefault={handleCancel}>
+      <button type="button" class="auth-modal__cancel" on:click|preventDefault={handleCancel}>
         Отмена
       </button>
 

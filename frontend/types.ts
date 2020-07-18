@@ -120,17 +120,9 @@ export interface PostPopup {
   readonly pinned: boolean;
 }
 
-export interface SystemNotification {
-  readonly type: 'system';
-  readonly message: string;
-}
-
-export interface PostNotification {
-  readonly type: 'post';
+export interface NotificationDTO {
   readonly id: number;
   readonly user_uuid: string;
   readonly read: boolean;
   readonly post: Post;
 }
-
-export type Notification = SystemNotification | PostNotification;

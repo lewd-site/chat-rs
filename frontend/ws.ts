@@ -1,9 +1,11 @@
+import { PostNotification as PostNotificationModel, PostNotification } from './models/Notification';
 import { TokenData } from './services/sso';
 import { token } from './stores/auth';
-import { addNotification, setNotifications, addNewNotification } from './stores/notifications';
 import { addPost, setPosts } from './stores/posts';
-import { Post, PostNotification } from './types';
+import { Post, NotificationDTO } from './types';
 import utils from './utils';
+import NotificationPopups from './stores/NotificationPopups';
+import Notifications from './stores/Notifications';
 
 interface WsPostCreated {
   readonly event: 'post_created';
@@ -15,7 +17,7 @@ interface WsPostCreated {
 interface WsNotificationCreated {
   readonly event: 'notification_created';
   readonly data: {
-    readonly item: PostNotification;
+    readonly item: NotificationDTO;
   };
 }
 
@@ -74,7 +76,10 @@ export class Ws {
       setPosts(posts);
     });
 
-    window.api?.getNotifications().then((notifications) => setNotifications(notifications));
+    window.api?.getNotifications().then((notifications) => {
+      const notificationModels = notifications.map(PostNotification.createFromDTO);
+      Notifications.replaceAll(notificationModels);
+    });
   };
 
   private onClose = (e: CloseEvent) => {
@@ -104,12 +109,9 @@ export class Ws {
 
       case 'notification_created': {
         if (message.data.item.user_uuid === _token?.user_uuid) {
-          const notification: PostNotification = {
-            ...message.data.item,
-            type: 'post',
-          };
-          addNotification(notification);
-          addNewNotification(notification);
+          const notificationModel = PostNotificationModel.createFromDTO(message.data.item);
+          Notifications.add(notificationModel);
+          NotificationPopups.add(notificationModel);
         }
         break;
       }

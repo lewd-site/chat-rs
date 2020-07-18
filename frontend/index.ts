@@ -10,6 +10,7 @@ import PostList from './components/PostList.svelte';
 import PostPopups from './components/PostPopups.svelte';
 import config from './config';
 import EventEmitter from './event-emitter';
+import { PostNotification } from './models/Notification';
 import Api from './services/api';
 import Coub from './services/coub';
 import Sso from './services/sso';
@@ -17,8 +18,9 @@ import Tenor from './services/tenor';
 import TikTok from './services/tiktok';
 import YouTube from './services/youtube';
 import { showAuthModal, userUuid } from './stores/auth';
-import { setNotifications } from './stores/notifications';
 import { nsfwMode, toggleNSFWMode } from './stores/files';
+import Notifications from './stores/Notifications';
+import NotificationPopups from './stores/NotificationPopups';
 import { Posts, posts, addPosts, unloadOldPosts } from './stores/posts';
 import Ws from './ws';
 import utils from './utils';
@@ -92,7 +94,8 @@ userUuid.subscribe((uuid) => {
   }
 
   window.api?.getNotifications().then((notifications) => {
-    setNotifications(notifications);
+    const notificationModels = notifications.map(PostNotification.createFromDTO);
+    Notifications.replaceAll(notificationModels);
   });
 });
 
@@ -173,3 +176,9 @@ nsfwMode.subscribe((nsfwMode) => {
     document.body.classList.remove('nsfw');
   }
 });
+
+setInterval(() => {
+  if (!document.hidden) {
+    NotificationPopups.handleTick();
+  }
+}, 1000);
