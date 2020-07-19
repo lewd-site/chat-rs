@@ -1,6 +1,6 @@
 import 'regenerator-runtime/runtime';
 
-import Sentry from '@sentry/browser';
+import * as Sentry from '@sentry/browser';
 import AuthModal from './components/AuthModal.svelte';
 import Gallery from './components/Gallery.svelte';
 import MediaBox from './components/MediaBox.svelte';
@@ -49,7 +49,7 @@ if (typeof config.sentryDsn !== undefined && config.sentryDsn !== null) {
       release: process.env.GIT_SHA,
     });
   } catch (e) {
-    console.log("Can't init Sentry: ", e);
+    console.error("Can't init Sentry: ", e);
   }
 }
 
@@ -104,7 +104,7 @@ token.subscribe((token) => {
         email: token.user_email,
       });
     } catch (e) {
-      console.error("Can't set Sentry user context: ", e);
+      console.warn("Can't set Sentry user context: ", e);
     }
   }
 });
