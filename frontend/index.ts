@@ -17,7 +17,7 @@ import Sso from './services/sso';
 import Tenor from './services/tenor';
 import TikTok from './services/tiktok';
 import YouTube from './services/youtube';
-import { showAuthModal, userUuid } from './stores/auth';
+import { showAuthModal, userUuid, token } from './stores/auth';
 import { nsfwMode, toggleNSFWMode } from './stores/files';
 import Notifications from './stores/Notifications';
 import NotificationPopups from './stores/NotificationPopups';
@@ -90,6 +90,24 @@ window.tiktok = new TikTok();
 window.tenor = new Tenor();
 window.youtube = new YouTube();
 window.ws = new Ws(config.wsUrl);
+
+token.subscribe((token) => {
+  if (!token) {
+    return;
+  }
+
+  if (typeof config.sentryDsn !== undefined && config.sentryDsn !== null) {
+    try {
+      Sentry.setUser({
+        id: token.user_uuid,
+        username: token.user_name,
+        email: token.user_email,
+      });
+    } catch (e) {
+      console.error("Can't set Sentry user context: ", e);
+    }
+  }
+});
 
 userUuid.subscribe((uuid) => {
   if (!uuid) {
