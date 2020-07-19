@@ -1,18 +1,18 @@
 {
-    "include": ["frontend/**/*.ts"],
-    "exclude": ["node_modules/**/*"],
-    "compilerOptions": {
-        "target": "ES2015",
-        "module": "CommonJS",
-        "lib": ["DOM", "DOM.Iterable", "ES2017"],
-        "outDir": "./www",
-        "allowJs": true,
-        "esModuleInterop": true,
-        "noImplicitAny": true,
-        "strict": true,
-        "types": ["svelte"],
-        "sourceMap": true,
-        "inlineSources": true,
-        "sourceRoot": "/"
-    }
+  "compilerOptions": {
+    "allowJs": true,
+    "esModuleInterop": true,
+    "inlineSources": true,
+    "lib": ["DOM", "DOM.Iterable", "ES2017"],
+    "module": "CommonJS",
+    "noImplicitAny": true,
+    "outDir": "./www",
+    "sourceMap": true,
+    "sourceRoot": "/",
+    "strict": true,
+    "target": "ES2015",
+    "types": ["node", "svelte"]
+  },
+  "exclude": ["node_modules/**/*"],
+  "include": ["frontend/**/*.ts"]
 }

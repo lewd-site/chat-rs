@@ -44,7 +44,10 @@ declare global {
 
 if (typeof config.sentryDsn !== undefined && config.sentryDsn !== null) {
   try {
-    Sentry.init({ dsn: `${config.sentryDsn}` });
+    Sentry.init({
+      dsn: `${config.sentryDsn}`,
+      release: process.env.GIT_SHA,
+    });
   } catch (e) {
     console.log("Can't init Sentry: ", e);
   }

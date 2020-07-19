@@ -6,11 +6,12 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "parcel watch -d www/assets --public-url /assets frontend/index.ts",
-    "build": "parcel build -d www/assets --public-url /assets frontend/index.ts"
+    "start": "GIT_SHA=$(git rev-parse HEAD) parcel watch -d www/assets --public-url /assets frontend/index.ts",
+    "build": "GIT_SHA=$(git rev-parse HEAD) parcel build -d www/assets --public-url /assets frontend/index.ts"
   },
   "devDependencies": {
     "@types/jwt-decode": "^2.2.1",
+    "@types/node": "^14.0.23",
     "@types/prosemirror-commands": "^1.0.1",
     "@types/prosemirror-history": "^1.0.1",
     "@types/prosemirror-inputrules": "^1.0.2",
