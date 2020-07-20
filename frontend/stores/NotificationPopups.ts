@@ -9,7 +9,7 @@ export default {
 
   add(notification: Notification): number {
     const popup = new NotificationPopup(notification);
-    update((items) => [popup, ...items]);
+    update((items) => [...items, popup]);
     return popup.id;
   },
 
