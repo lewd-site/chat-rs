@@ -87,11 +87,7 @@
     const windowWidth = getViewWidth();
     const windowHeight = getViewHeight();
 
-    const scale = Math.min(
-      Math.min(windowWidth, 800) / file.width,
-      windowHeight / file.height,
-      1
-    );
+    const scale = Math.min(Math.min(windowWidth, 800) / file.width, windowHeight / file.height, 1);
 
     width = file.width * scale;
     height = file.height * scale;
@@ -259,7 +255,7 @@
     const scale = Math.min(
       windowWidth / $mediaBoxFile.width,
       windowHeight / $mediaBoxFile.height,
-      1
+      1,
     );
 
     handleZoom(originX, originY, scale / currentScale);
@@ -270,8 +266,7 @@
       return;
     }
 
-    let index =
-      $mediaBoxFiles.findIndex(file => $mediaBoxFile.id == file.id) - 1;
+    let index = $mediaBoxFiles.findIndex(file => $mediaBoxFile.id == file.id) - 1;
     if (index < 0) {
       index += $mediaBoxFiles.length;
     }
@@ -284,8 +279,7 @@
       return;
     }
 
-    let index =
-      $mediaBoxFiles.findIndex(file => $mediaBoxFile.id == file.id) + 1;
+    let index = $mediaBoxFiles.findIndex(file => $mediaBoxFile.id == file.id) + 1;
     if (index >= $mediaBoxFiles.length) {
       index -= $mediaBoxFiles.length;
     }
@@ -303,7 +297,7 @@
     const classes = [
       'media-box__file',
       file.id == currentFile.id ? 'media-box__file_current' : null,
-      'media-box__file_' + file.mimetype.split('/')[0]
+      'media-box__file_' + file.mimetype.split('/')[0],
     ];
 
     return classes.filter(c => c).join(' ');
@@ -337,28 +331,28 @@
       searchItems = [
         {
           name: 'IQDB',
-          url: `https://iqdb.org/?url=${pathURL}`
+          url: `https://iqdb.org/?url=${pathURL}`,
         },
         {
           name: 'Google',
-          url: `https://www.google.com/searchbyimage?image_url=${pathURL}`
+          url: `https://www.google.com/searchbyimage?image_url=${pathURL}`,
         },
         {
           name: 'Yandex',
-          url: `https://yandex.ru/images/search?rpt=imageview&img_url=${pathURL}`
+          url: `https://yandex.ru/images/search?rpt=imageview&img_url=${pathURL}`,
         },
         {
           name: 'TinEye',
-          url: `https://tineye.com/search/?url=${pathURL}`
+          url: `https://tineye.com/search/?url=${pathURL}`,
         },
         {
           name: 'SauceNAO',
-          url: `https://saucenao.com/search.php?url=${pathURL}`
+          url: `https://saucenao.com/search.php?url=${pathURL}`,
         },
         {
           name: 'trace.moe',
-          url: `https://trace.moe/?url=${pathURL}`
-        }
+          url: `https://trace.moe/?url=${pathURL}`,
+        },
       ];
     }
   }
@@ -370,10 +364,7 @@
     on:wheel={handleGalleryWheel}
     transition:hslide={{ duration: 300, origin: '100% 0' }}>
     <div class="media-box__buttons">
-      <button
-        class="media-box__close"
-        title="Закрыть"
-        on:click|preventDefault={handleCloseClick} />
+      <button class="media-box__close" title="Закрыть" on:click|preventDefault={handleCloseClick} />
 
       <button
         class="media-box__zoom-in"
@@ -395,10 +386,6 @@
         title="По размеру окна"
         on:click|preventDefault={handleZoomFit} />
 
-      <a title="Загрузить" href={src} download={$mediaBoxFile.name}>
-        <span class="media-box__download" />
-      </a>
-
       <div class="media-box__search" title="Поиск по картинке">
         <span class="media-box__search-icon" />
 
@@ -406,23 +393,20 @@
           <ul class="media-box__search-list">
             {#each searchItems as item}
               <li class="media-box__search-item">
-                <a
-                  class="media-box__search-link"
-                  href={item.url}
-                  target="_blank">
-                  {item.name}
-                </a>
+                <a class="media-box__search-link" href={item.url} target="_blank">{item.name}</a>
               </li>
             {/each}
           </ul>
         </div>
       </div>
+
+      <a title="Загрузить" href={src} download={$mediaBoxFile.name}>
+        <span class="media-box__download" />
+      </a>
     </div>
 
     {#if $mediaBoxFiles.length > 1}
-      <button
-        class="media-box__prev"
-        on:click|preventDefault={handlePrevious} />
+      <button class="media-box__prev" on:click|preventDefault={handlePrevious} />
 
       <div class="media-box__files">
         {#each $mediaBoxFiles as file}
@@ -431,10 +415,7 @@
             title={`${file.name}, ${file.width}x${file.height}, ${formatFileSize(file.size)}`}
             on:click|preventDefault={e => handleFileClick(file)}>
             <picture>
-              <img
-                class="media-box__preview"
-                src="/thumb/{file.md5}?max_width=360"
-                alt="Preview" />
+              <img class="media-box__preview" src="/thumb/{file.md5}?max_width=360" alt="Preview" />
             </picture>
           </div>
         {/each}
@@ -465,9 +446,7 @@
         {@html $mediaBoxFile.html}
       </div>
     {:else if $mediaBoxFile.mimetype.startsWith('video/') && src}
-      <VideoPlayer
-        className="media-box__media media-box__media_video"
-        file={$mediaBoxFile} />
+      <VideoPlayer className="media-box__media media-box__media_video" file={$mediaBoxFile} />
     {/if}
   </div>
 {/if}
