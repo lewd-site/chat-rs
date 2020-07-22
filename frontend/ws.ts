@@ -46,13 +46,13 @@ export class Ws {
     this.ws.addEventListener('error', this.onError);
 
     const ws = this.ws;
-    this.keepAliveInterval = setInterval(() => {
+    this.keepAliveInterval = (setInterval(() => {
       if (ws.readyState !== ws.OPEN) {
         return;
       }
 
       ws.send('keepalive');
-    }, 60000);
+    }, 60000) as unknown) as number;
   };
 
   private close = () => {
@@ -75,6 +75,11 @@ export class Ws {
 
       setPosts(posts);
     });
+
+    // Auth required to get notifications.
+    if (!window.sso?.loaded) {
+      return;
+    }
 
     window.api?.getNotifications().then((notifications) => {
       const notificationModels = notifications.map(PostNotification.createFromDTO);

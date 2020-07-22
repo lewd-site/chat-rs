@@ -44,6 +44,7 @@ export class Sso {
   private _accessToken: string | null = null;
   private _refreshToken: string | null = null;
   private _accessTokenData: TokenData | null = null;
+  private _loaded = false;
 
   public get hasAccessToken(): boolean {
     return this._accessToken !== null;
@@ -72,6 +73,10 @@ export class Sso {
     return exp <= now;
   }
 
+  public get loaded(): boolean {
+    return this._loaded;
+  }
+
   public constructor(private readonly loadCallback?: () => void) {
     this.bind();
 
@@ -79,19 +84,7 @@ export class Sso {
     this.element.setAttribute('hidden', '');
     this.element.src = config.ssoOrigin;
     document.body.appendChild(this.element);
-
-    this.element.addEventListener('load', this.handleLoad);
   }
-
-  private handleLoad = () => {
-    this.element.removeEventListener('load', this.handleLoad);
-
-    setTimeout(() => {
-      if (this.loadCallback) {
-        this.loadCallback();
-      }
-    });
-  };
 
   public bind: () => void = () => {
     window.addEventListener('message', this.handleMessage);
@@ -102,7 +95,13 @@ export class Sso {
   };
 
   private handleMessage = (e: MessageEvent) => {
-    if (e.data.command === 'set_token') {
+    if (e.data === 'sso_loaded') {
+      this._loaded = true;
+
+      if (this.loadCallback) {
+        this.loadCallback();
+      }
+    } else if (e.data.command === 'set_token') {
       this._accessToken = e.data.access_token || null;
       this._refreshToken = e.data.refresh_token || null;
 
