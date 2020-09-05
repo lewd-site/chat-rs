@@ -13,13 +13,20 @@ pub struct Ws {
 
 impl Ws {
     fn handle_connection(clients: &WsClients, addr: SocketAddr, stream: TcpStream) {
-        let websocket = tungstenite::accept(stream).unwrap();
-        let client = Arc::new(Mutex::new(websocket));
+        let websocket = tungstenite::accept(stream);
+        match websocket {
+            Ok(websocket) => {
+                let client = Arc::new(Mutex::new(websocket));
 
-        Arc::clone(&clients)
-            .lock()
-            .unwrap()
-            .insert(addr, Arc::clone(&client));
+                Arc::clone(&clients)
+                    .lock()
+                    .unwrap()
+                    .insert(addr, Arc::clone(&client));
+            },
+            Err(e) => {
+                println!("WebSocket connection error: {}", e);
+            },
+        }
     }
 
     pub fn new(address: &str) -> Ws {
