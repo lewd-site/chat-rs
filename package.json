@@ -35,7 +35,7 @@
   "dependencies": {
     "@sentry/browser": "^5.19.2",
     "@simonwep/pickr": "^1.7.1",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "jwt-decode": "^2.2.0",
     "normalize.css": "^8.0.1",
     "pcg": "^0.1.0",
